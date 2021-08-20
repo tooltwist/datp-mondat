@@ -32,7 +32,7 @@ export default {
   // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
   buildModules: [
     // https://vite.nuxtjs.org/getting-started/installation
-    //'nuxt-vite',
+    'nuxt-vite',
     // https://go.nuxtjs.dev/eslint
     '@nuxtjs/eslint-module'
   ],
@@ -54,4 +54,7 @@ export default {
   buefy: {
     css: false
   },
+
+  // Hack/fix: See https://vite.nuxtjs.org/misc/common-issues/
+  // ssr: false
 }
