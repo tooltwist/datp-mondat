@@ -1,43 +1,26 @@
-<template>
-  <section class="section">
-    <div class="columns is-mobile">
-      <card
-        title="Pipelines"
-        icon="github"
-      >
-        Open source on <a href="https://github.com/buefy/buefy">
-          GitHub
-        </a>
-      </card>
+<template lang="pug">
+  section.section
+    .columns.is-mobile
+      card(title="Pipelines", icon="github")
+        | Open source on&nbsp;
+        a(href="https://github.com/buefy/buefy")
+          | GitHub
 
-      <card
-        title="Transactions"
-        icon="cellphone-link"
-      >
-        <b class="has-text-grey">
-          Every
-        </b> component is responsive
-      </card>
+      card(title="Transactions", icon="cellphone-link")
+        b.has-text-grey
+          | Every
+        | &nbsp;component is responsive 123
 
-      <card
-        title="Nodes"
-        icon="alert-decagram"
-      >
-        Built with <a href="https://vuejs.org/">
-          Vue.js
-        </a> and <a href="http://bulma.io/">
-          Bulma
-        </a>
-      </card>
+      card(title="Nodes", icon="alert-decagram")
+        | Built with&nbsp;
+        a(href="https://vuejs.org/")
+          | Vue.js
+        | &nbsp;and&nbsp;
+        a(href="http://bulma.io/")
+          | Bulma
 
-      <card
-        title="Configuration"
-        icon="arrange-bring-to-front"
-      >
-        Configure D.A.T.E.
-      </card>
-    </div>
-  </section>
+      card(title="Configuration", icon="arrange-bring-to-front")
+        | Configure D.A.T.E.
 </template>
 
 <script>

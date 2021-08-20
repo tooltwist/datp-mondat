@@ -1,61 +1,45 @@
-<template>
-  <div>
-    <nav
-      class="navbar header has-shadow is-primary"
-      role="navigation"
-      aria-label="main navigation"
-    >
-      <div class="navbar-brand">
-        <a
-          class="navbar-item"
-          href="/"
-        >
-          <img
-            src="~assets/buefy.png"
-            alt="Buefy"
-            height="28"
-          >
-        </a>
+<template lang="pug">
+  .my-default-layout
+    nav.navbar.header.has-shadow.is-primary(role="navigation", aria-label="main navigation")
+      .navbar-brand
+        a.navbar-item(href="/")
+          //- img(src="~assets/buefy.png", alt="Buefy", height="28")
+          .heading-name D.A.T.E.
+          .heading-description - Distributed Asynchronous Transaction Engine
 
-        <div class="navbar-burger">
-          <span />
-          <span />
-          <span />
-        </div>
-      </div>
-    </nav>
+        .navbar-burger
+          span
+          span
+          span
 
-    <section class="main-content columns">
-      <aside class="column is-2 section">
-        <p class="menu-label is-hidden-touch">
-          General
-        </p>
-        <ul class="menu-list">
-          <li
-            v-for="(item, key) of items"
-            :key="key"
-          >
-            <NuxtLink
-              :to="item.to"
-              exact-active-class="is-active"
-            >
-              <b-icon :icon="item.icon" /> {{ item.title }}
-            </NuxtLink>
-          </li>
-        </ul>
-      </aside>
+    section.main-content.columns
+      aside.column.is-2.section
+        p.menu-label.is-hidden-touch
+          | General
+        ul.menu-list
+          li(v-for="(item, key) of items", :key="key")
+            NuxtLink(:to="item.to", exact-active-class="is-active")
+              b-icon(:icon="item.icon")
+              | &nbsp;{{ item.title }}
+        br
+        br
+        p.menu-label.is-hidden-touch
+          | Development
+        ul.menu-list
+          li(v-for="(item, key) of devitems", :key="key")
+            NuxtLink(:to="item.to", exact-active-class="is-active")
+              b-icon(:icon="item.icon")
+              | &nbsp;{{ item.title }}
 
-      <div class="container column is-10">
-        <Nuxt />
-      </div>
-    </section>
-  </div>
+      .container.column.is-10
+        Nuxt
 </template>
 
 <script>
 export default {
   data () {
     return {
+      // For icons see https://materialdesignicons.com/
       items: [
         {
           title: 'Home',
@@ -63,12 +47,96 @@ export default {
           to: { name: 'index' }
         },
         {
-          title: 'Inspire',
-          icon: 'lightbulb',
-          to: { name: 'inspire' }
+          title: 'Performance',
+          icon: 'gauge',
+          to: { name: 'performance' }
+        },
+        {
+          title: 'Transactions',
+          icon: 'bank-transfer',
+          to: { name: 'transactions' }
+        },
+        {
+          title: 'Pipelines',
+          icon: 'transit-connection',
+          to: { name: 'pipelines' }
+        },
+        {
+          title: 'Nodes',
+          icon: 'state-machine',
+          to: { name: 'nodes' }
+        },
+        {
+          title: 'Queues',
+          icon: 'human-queue',
+          to: { name: 'queues' }
+        },
+        {
+          title: 'Resolution',
+          icon: 'account-alert',
+          to: { name: 'resolution' }
+        },
+        // {
+        //   title: 'Alerts',
+        //   icon: 'alert',
+        //   to: { name: 'alerts' }
+        // },
+        {
+          title: 'Abandoned',
+          // icon: 'sync-alert',
+          icon: 'head-question-outline',
+          to: { name: 'abandoned' }
+        },
+        {
+          title: 'Blockage',
+          icon: 'timer-off-outline',
+          to: { name: 'blockages' }
+        },
+      ],//- items
+
+      devitems: [
+        {
+          title: 'Test Client',
+          icon: 'ab-testing',
+          to: { name: 'test-client' }
+        },
+        {
+          title: 'Step types',
+          icon: 'call-merge',
+          to: { name: 'step-types' }
+        },
+        {
+          title: 'Mapping',
+          icon: 'arrow-left-right-bold',
+          to: { name: 'mapping' }
+        },
+        {
+          title: 'Setup',
+          icon: 'cog-outline',
+          to: { name: 'setup' }
         }
-      ]
+      ]//- devitems
     }
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.my-default-layout {
+  .heading-name {
+    display: inline-block;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1.5em;
+    font-weight: 600;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    padding-left: 10px;
+    padding-left: 10px;
+  }
+  .heading-description {
+    display: inline-block;
+    font-size: 1.1em;
+    padding-left: 20px;
+  }
+}
+</style>
