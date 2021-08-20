@@ -1,11 +1,11 @@
 <template lang="pug">
-  .my-default-layout
+  .my-default-layout.is-dark-mode-active
     nav.navbar.header.has-shadow.is-primary(role="navigation", aria-label="main navigation")
       .navbar-brand
         a.navbar-item(href="/")
           //- img(src="~assets/buefy.png", alt="Buefy", height="28")
           .heading-name D.A.T.E.
-          .heading-description - Distributed Asynchronous Transaction Engine
+          .heading-description Distributed Asynchronous Transaction Engine
 
         .navbar-burger
           span
