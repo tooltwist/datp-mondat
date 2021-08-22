@@ -30,6 +30,10 @@
             NuxtLink(:to="item.to", exact-active-class="is-active")
               b-icon(:icon="item.icon")
               | &nbsp;{{ item.title }}
+          li
+            NuxtLink(:to="'/no-such-page'", exact-active-class="is-active")
+              b-icon(icon="monitor")
+              span(@click.prevent="toggleDarkMode") &nbsp;Dark mode
 
       .container.column.is-10
         Nuxt
@@ -39,6 +43,8 @@
 export default {
   data () {
     return {
+      darkMode: false,
+
       // For icons see https://materialdesignicons.com/
       items: [
         {
@@ -117,7 +123,28 @@ export default {
         }
       ]//- devitems
     }
-  }
+  },//- date()
+
+  methods: {
+    selectTransaction: function (row) {
+      const txId = row.txId
+      // console.log(`selectTransaction(${txId})`)
+      this.$router.push({ path: `/steps/${txId}` })
+    },
+
+    toggleDarkMode: function() {
+      // alert(`toggle`)
+      const htmlClassName = 'is-dark-mode-active'
+
+      this.isDarkModeActive = !this.isDarkModeActive
+      if (this.isDarkModeActive) {
+        document.documentElement.classList.add(htmlClassName)
+      } else {
+        document.documentElement.classList.remove(htmlClassName)
+      }
+    }//- toggleDarkMode
+  }//- methods
+
 }
 </script>
 

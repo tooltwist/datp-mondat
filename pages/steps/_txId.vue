@@ -1,15 +1,20 @@
 <template lang="pug">
   .my-steps-page
     section.section
-      h2.title.is-3.has-text-grey
-        //- | Steps&nbsp;&nbsp;
-        | Transaction Steps&nbsp;&nbsp;
-        b-icon(icon="bank-transfer", size="is-large")
       .is-pulled-right
         b-button(type="is-success", @click="backToTransactions") Back
-      h3.subtitle.is-5.has-text-grey
-        //- | Transaction {{txId}}
+      h2.title.is-3.has-text-grey
+        //- | Steps&nbsp;&nbsp;
+        | Transaction {{txId}}
+        //- b-icon(icon="bank-transfer", size="is-large")
+      //- h3.subtitle.is-5.has-text-grey
         | {{txId}}
+      br
+      .container
+        .notification.is-primary
+          p The table below shows steps that have actually been run.
+            | Steps that have not been initiated yet wil not be shown. Note that the steps shown here may not match up with the current pipeline definition
+            | for the transaction type, if a new version of the pipeline is in use.
       br
       //- .buttons.has-text-right
       b-table(:data="steps", :columns="columns", :row-class="() => 'my-table-row'")
