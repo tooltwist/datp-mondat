@@ -31,12 +31,23 @@ table.table {
       vertical-align: middle;
     }
   }
+
 }
 
 .b-table {
   .table {
     border: 0;
     border-radius: 0;
+
+    // Phil
+    border: solid 1px $base-color;
+    th {
+      border-bottom: solid 1px $base-color;
+    }
+    tr:hover {
+      color: black;
+      background-color: $base-color-light !important;
+    }
   }
 
   /* This stylizes buefy's pagination */

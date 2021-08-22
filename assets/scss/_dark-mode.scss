@@ -173,6 +173,15 @@ html {
       &.is-striped tbody tr:not(.is-selected):nth-child(even) {
         background-color: $dark-mode-light-border-color;
       }
+
+      // Phil
+      border: solid 1px $dark-mode-border-color;
+      th {
+        border-bottom: solid 1px $dark-mode-border-color;
+      }
+      tr:hover {
+        color: #3e8ed0;
+      }
     }
 
     .b-table .table-wrapper + .level {

@@ -11,9 +11,7 @@
             | by invoking further pipelines.
       br
       br
-      //- h3.subtitle.is-6.has-text-grey
-      //- br
-      b-table(:data="pipelines", :columns="columns", :hoverable="true", @select="selectPipeline", :row-class="() => 'my-table-row'")
+      b-table(:data="pipelines", :columns="columns", :hoverable="true", :bordered="false", :narrowed="true", @select="selectPipeline", :row-class="() => 'my-table-row'")
       //- br
       //- | {{pipelines}}
 </template>
@@ -25,14 +23,14 @@ export default {
       pipelines: [ ],
       columns: [
         {
+            field: 'description',
+            label: 'Description',
+        },
+        {
             field: 'name',
             label: 'Pipeline name',
             // width: '500',
             // numeric: true
-        },
-        {
-            field: 'description',
-            label: 'Description',
         },
         {
             field: 'version',
@@ -79,9 +77,21 @@ export default {
 </script>
 
 <style lang="scss">
+@import "@/assets/scss/main.scss";
+
 .my-pipelines-page {
   .my-table-row {
     cursor: pointer;
   }
+
+  // table.table {
+  //   border: solid 1px $dark-mode-border-color;
+  //   th {
+  //     border-bottom: solid 1px $dark-mode-border-color;
+  //   }
+  //   td:hover {
+  //     color: #3e8ed0;
+  //   }
+  // }
 }
 </style>

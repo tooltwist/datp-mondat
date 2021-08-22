@@ -17,7 +17,7 @@
             | for the transaction type, if a new version of the pipeline is in use.
       br
       //- .buttons.has-text-right
-      b-table(:data="steps", :columns="columns", :row-class="() => 'my-table-row'")
+      b-table(:data="steps", :columns="columns", :narrowed="true", :row-class="() => 'my-table-row'")
       //- br
       //- | {{steps}}
 </template>
@@ -36,6 +36,12 @@ export default {
             // numeric: true
         },
         {
+            field: 'note',
+            label: 'Note',
+            cellClass: "my-bold-cell",
+            // cellClass: "is-primary",
+        },
+        {
             field: 'stepId',
             label: 'Step',
         },
@@ -50,12 +56,6 @@ export default {
         {
             field: 'stepType',
             label: 'Step type',
-        },
-        {
-            field: 'note',
-            label: 'Note',
-            cellClass: "my-bold-cell",
-            // cellClass: "is-primary",
         },
         // {
         //     field: 'startTime',

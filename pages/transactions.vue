@@ -11,7 +11,7 @@
           p The following are the most recently run transactions.
       br
 
-      b-table(:data="transactions", :columns="columns", :hoverable="true", @select="selectTransaction", :row-class="() => 'my-table-row'")
+      b-table(:data="transactions", :columns="columns", :hoverable="true", :row-class="rowClass", :narrowed="true", @select="selectTransaction")
       //- br
       //- | {{transactions}}
 </template>
@@ -29,6 +29,12 @@ export default {
             // numeric: true
         },
         {
+            field: 'transactionType',
+            label: 'Type',
+            // width: '500',
+            // numeric: true
+        },
+        {
             field: 'status',
             label: 'Status',
         },
@@ -36,7 +42,12 @@ export default {
             field: 'startTime',
             label: 'Start time',
         },
-      ]
+        // {
+        //     field: 'color',
+        //     label: 'Start time',
+        // },
+      ],//- columns
+      polling: null
     }
   },
   async asyncData({ $axios }) {
@@ -47,24 +58,49 @@ export default {
   // async fetch() {
   //   console.log(`fetch()`)
   // },
-  // created() {
-  //   // alert('yarp')
-  //   console.log(`created()`)
-  // },
+  created() {
+    // alert('yarp')
+    console.log(`created()`)
+    this.polling = setInterval(async () => {
+      this.transactions = await this.$axios.$get('http://localhost:8080/transactions')
+    }, 2000)
+  },
+  beforeDestroy () {
+    clearInterval(this.polling)
+  },
   methods: {
     selectTransaction: function (row) {
       const txId = row.txId
       // console.log(`selectTransaction(${txId})`)
       this.$router.push({ path: `/steps/${txId}` })
     },
+
+    rowClass: function(row) {
+      // console.log(`row=`, row)
+      if (row.color) {
+        return `rowstyle-${row.color}`
+      }
+      return ''
+    },//- rowClass
   }
-}
+}//- export default
 </script>
 
 <style lang="scss">
+@import "@/assets/scss/main.scss";
+
 .my-transactions-page {
-  .my-table-row {
-    cursor: pointer;
+
+  .rowstyle-red {
+    color: coral;
   }
+  .rowstyle-blue {
+    background-color: blueviolet;
+    color: whitesmoke;
+  }
+  .rowstyle-green {
+    color: greenyellow;
+  }
+
 }
 </style>

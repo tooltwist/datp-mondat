@@ -77,6 +77,8 @@ $card-header-border-bottom-color: $base-color-light;
 
 /* Table: Bulma override */
 $table-cell-border: 1px solid $white-bis;
+//yarp
+$table-foot-cell-border: 1px solid $white-bis;
 
 /* Table: specifics */
 $table-avatar-size: $size-base * 1.5;
@@ -136,9 +138,13 @@ $state-colors:
 $dark-mode-background-color: $black-ter;
 $dark-mode-lighter-background-color: $grey-darker;
 $dark-mode-color: $white-ter;
+
+// YARP
 $dark-mode-border-color: $white-ter;
+// $dark-mode-border-color: red;
 $dark-mode-border: 1px solid $dark-mode-border-color;
 $dark-mode-light-border-color: $grey-darker;
+// $dark-mode-light-border-color: pink;
 $dark-mode-light-border: 1px solid $dark-mode-light-border-color;
 $dark-mode-link-color: $cyan;
 $dark-mode-link-active-color: $white-ter;

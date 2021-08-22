@@ -6,11 +6,8 @@
       h2.title.is-3.has-text-grey
         //- | Steps&nbsp;&nbsp;
         | Pipeline '{{pipelineName}}'&nbsp;&nbsp;
-        //- b-icon(icon="bank-transfer", size="is-large")
-      //- h3.subtitle.is-5.has-text-grey
-        //- | Transaction {{pipelineName}}
-        | {{pipelineName}}
-      StepBox(:definition="definition")
+      .pipeline-section
+        StepBox(:definition="definition")
 </template>
 
 <script>
@@ -44,6 +41,10 @@ export default {
 
 <style lang="scss">
 .my-steps-page {
+  .pipeline-section {
+    padding-left: 80px;
+  }
+
   .my-table-row {
     cursor: pointer;
   }
