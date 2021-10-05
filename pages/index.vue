@@ -1,26 +1,28 @@
 <template lang="pug">
   section.section
     .columns.is-mobile
-      card(title="Pipelines", icon="github")
-        | Open source on&nbsp;
-        a(href="https://github.com/buefy/buefy")
-          | GitHub
 
-      card(title="Transactions", icon="cellphone-link")
-        b.has-text-grey
-          | Every
-        | &nbsp;component is responsive 123
+      NuxtLink(to="/performance")
+        card(title="Performance", icon="gauge")
+          | System monitoring
 
-      card(title="Nodes", icon="alert-decagram")
-        | Built with&nbsp;
-        a(href="https://vuejs.org/")
-          | Vue.js
-        | &nbsp;and&nbsp;
-        a(href="http://bulma.io/")
-          | Bulma
+      NuxtLink(to="/nodes")
+        card(title="Nodes", icon="state-machine")
+          | Distributed processing
 
-      card(title="Configuration", icon="arrange-bring-to-front")
-        | Configure D.A.T.E.
+      NuxtLink(to="/pipelines")
+        card(title="Pipelines", icon="transit-connection")
+          | Monitor specific pipelines
+
+      NuxtLink(to="/transactions")
+        card(title="Transactions", icon="bank-transfer")
+          | Investigate transactions
+
+      NuxtLink(to="/queues")
+        card(title="Queues", icon="human-queue")
+          | Throttle throughput
+
+
 </template>
 
 <script>

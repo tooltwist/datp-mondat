@@ -1,36 +1,49 @@
 <template lang="pug">
   .my-pipelines-page
     section.section
-      h2.title.is-3.has-text-grey
+      h2.title.is-3
+        .datemon-heading-icon
+          b-icon(icon="transit-connection", size="is-medium")
         | Pipelines
-        b-icon(icon="transit-connection", size="is-large")
-      .container
-        .notification.is-primary
-          p A pipeline is a series of steps used to process a transaction.
-          p Each transacion type maps onto a specific pipeline, however the steps in a pipeline may delegate their funcrtionality
-            | by invoking further pipelines.
-      br
-      br
-      b-table(:data="pipelines", :columns="columns", :hoverable="true", :bordered="false", :narrowed="true", @select="selectPipeline", :row-class="() => 'my-table-row'")
+
+      DatemonNotification
+        | A pipeline is a series of steps used to process a transaction.
+        | Each transaction type maps onto a specific pipeline, however the steps in a pipeline may delegate their funcrtionality
+        | by invoking further pipelines.
+
+      DatemonTable(:data="pipelines", :columns="columns", @select="selectPipeline")
+
+
+      //- br
+      //- br
+      //- b-table(:data="pipelines", :columns="columns", :hoverable="true", :bordered="false", :narrowed="true", @select="selectPipeline", :row-class="() => 'my-table-row'")
       //- br
       //- | {{pipelines}}
 </template>
 
 <script>
+import DatemonNotification from "../components/DatmonNotification.vue"
+import DatemonTable from "../components/DatmonTable.vue"
+
 export default {
+  components: {
+    DatemonNotification,
+    DatemonTable,
+  },
+
   data: function () {
     return {
       pipelines: [ ],
       columns: [
         {
-            field: 'description',
-            label: 'Description',
-        },
-        {
             field: 'name',
             label: 'Pipeline name',
             // width: '500',
             // numeric: true
+        },
+        {
+            field: 'description',
+            label: 'Description',
         },
         {
             field: 'version',
@@ -39,9 +52,13 @@ export default {
       ]
     }
   },
-  async asyncData({ $axios }) {
+  async asyncData({ $axios, $daptEndpoint }) {
     // console.log(`asyncData()`)
-    const pipelines = await $axios.$get('http://localhost:8080/pipelines')
+    const url = `${$daptEndpoint}/pipelines`
+    console.log(`url=`, url)
+    const pipelines = await $axios.$get(url)
+
+    // const pipelines = await $axios.$get('http://localhost:8080/pipelines')
     return { pipelines }
   },
   // async fetch() {

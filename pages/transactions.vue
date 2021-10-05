@@ -1,23 +1,35 @@
 <template lang="pug">
-  .my-transactions-page
-    section.section
-      h2.title.is-3.has-text-grey
-        | Recent Transactions&nbsp;&nbsp;
-        //- b-icon(icon="bank-transfer", size="is-large")
-      //- h3.subtitle.is-6.has-text-grey
-      //- br
-      .container
-        .notification.is-primary
-          p The following are the most recently run transactions.
-      br
+.my-transactions-page
+  section.section
+    b-field.is-pulled-right
+      b-checkbox(v-model="autoUpdate") Auto-update
+    h2.title.is-3
+      .datemon-heading-icon
+        b-icon(icon="bank-transfer", size="is-medium")
+      | Recent Transactions
 
-      b-table(:data="transactions", :columns="columns", :hoverable="true", :row-class="rowClass", :narrowed="true", @select="selectTransaction")
-      //- br
-      //- | {{transactions}}
+    DatemonNotification
+      | The following are the most recently run transactions.
+
+    DatemonTable(:data="transactions", :columns="columns2", :rows="16", @select="selectTransaction")
+
+    //- br
+    //- br
+    //- b-table(:data="transactions", :columns="columns", :hoverable="true", :row-class="rowClass", :narrowed="false", @select="selectTransaction")
+    //- br
+    //- | {{transactions}}
 </template>
 
 <script>
+import DatemonNotification from "../components/DatmonNotification.vue"
+import DatemonTable from "../components/DatmonTable.vue"
+
 export default {
+  components: {
+    DatemonNotification,
+    DatemonTable,
+  },
+
   data: function () {
     return {
       transactions: [ ],
@@ -47,29 +59,64 @@ export default {
         //     label: 'Start time',
         // },
       ],//- columns
-      polling: null
+
+      columns2: [
+        {
+          // field: "txId",
+          label: "transaction id",
+          // width:
+          type: 'transactionIconId'
+        },
+        // {
+        //   field: "txId",
+        //   label: "transaction id",
+        // },
+        {
+          field: "transactionType",
+          label: "type",
+          // width:
+        },
+        {
+          field: "status",
+          label: "status",
+          // width:
+          type: 'transactionStatus'
+        },
+        {
+          field: "startTime",
+          label: "start time",
+          // width:
+        },
+
+      ],//- columns2
+
+      polling: null, // handle from setInterval
+      autoUpdate: true, // Constantly refresh the screen
     }
-  },
-  async asyncData({ $axios }) {
-    console.log(`asyncData()`)
-    const transactions = await $axios.$get('http://localhost:8080/transactions')
+  },//- data
+
+  async asyncData({ $axios, $daptEndpoint }) {
+    const url = `${$daptEndpoint}/transactions`
+    const transactions = await $axios.$get(url)
     return { transactions }
-  },
-  // async fetch() {
-  //   console.log(`fetch()`)
-  // },
+  },//- asyncData
+
   created() {
-    // alert('yarp')
-    console.log(`created()`)
     this.polling = setInterval(async () => {
-      this.transactions = await this.$axios.$get('http://localhost:8080/transactions')
+      if (this.autoUpdate) {
+        const url = `${this.$daptEndpoint}/transactions`
+        this.transactions = await this.$axios.$get(url)
+      }
     }, 2000)
-  },
+  },//- created
+
   beforeDestroy () {
     clearInterval(this.polling)
-  },
+  },//- beforeDestroy
+
   methods: {
     selectTransaction: function (row) {
+      // console.log(`selectTRansaction!!!`, row)
       const txId = row.txId
       // console.log(`selectTransaction(${txId})`)
       this.$router.push({ path: `/steps/${txId}` })
@@ -91,16 +138,10 @@ export default {
 
 .my-transactions-page {
 
-  .rowstyle-red {
-    color: coral;
+  .datemon-heading-icon {
+    display: inline-block;
+    color: #16aa58;
+    padding-right: 20px;
   }
-  .rowstyle-blue {
-    background-color: blueviolet;
-    color: whitesmoke;
-  }
-  .rowstyle-green {
-    color: greenyellow;
-  }
-
 }
 </style>

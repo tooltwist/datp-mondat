@@ -149,8 +149,10 @@ html {
     }
 
     .table {
-      background-color: transparent;
-      color: $dark-mode-color;
+      //yarp background-color: transparent;
+      background-color: #28253a;
+      //yarp color: $dark-mode-color;
+      color: rgba(255, 255, 255, 0.8);
 
       thead {
         td, th {
@@ -160,7 +162,14 @@ html {
 
       td, th {
         border-color: $dark-mode-light-border-color;
+        // yarp
+        border-bottom-color: rgba(255, 255, 255, 0.1);
       }
+
+      //yarp
+      // tr {
+      //   border-bottom-color: red;
+      // }
 
       &.is-hoverable.is-striped tbody tr:not(.is-selected):hover {
         background-color: $dark-mode-light-border-color;
@@ -175,17 +184,23 @@ html {
       }
 
       // Phil
-      border: solid 1px $dark-mode-border-color;
+      // border: solid 1px $dark-mode-border-color;
       th {
         border-bottom: solid 1px $dark-mode-border-color;
       }
       tr:hover {
         color: #3e8ed0;
+
+        //yarp
+        background-color: #322f44;
+        margin-bottom: 1px;
+
       }
     }
 
     .b-table .table-wrapper + .level {
       background-color: transparent;
+      background-color: red;
 
       .pagination-link {
         background-color: transparent;
@@ -205,7 +220,9 @@ html {
     }
 
     .title {
-      color: $grey-lighter;
+      // Phil
+      // color: $grey-lighter;
+      color: #fff;
     }
 
     .subtitle {
@@ -225,7 +242,18 @@ html {
     }
 
     a {
-      color: $dark-mode-link-color;
+      // color: $dark-mode-link-color;
+      // Phil
+      // opacity: 0.4;
+      font-family: "Work Sans";
+      font-size: 14px;
+      font-weight: normal;
+      font-stretch: normal;
+      font-style: normal;
+      line-height: 1.43;
+      letter-spacing: normal;
+      color: #fff;
+
     }
 
     .media {
@@ -233,7 +261,10 @@ html {
     }
 
     nav.navbar {
-      background-color: $dark-mode-background-color;
+      //yarp
+      // background-color: $dark-mode-background-color;
+      background-color: $dark-mode-yarp-background-color;
+
       box-shadow: 0 1px $dark-mode-light-border-color;
 
       .navbar-item {
@@ -269,6 +300,10 @@ html {
       }
     }
 
+    aside {
+      background-color: #36334b;
+    }
+
     aside.aside {
       background-color: $dark-mode-background-color;
       box-shadow: 1px 0 $dark-mode-light-border-color;
@@ -280,6 +315,11 @@ html {
         .aside-close {
           color: $dark-mode-color;
         }
+      }
+
+      .menu-list li {
+        //Phil
+        background: red;
       }
 
       .menu-list li.is-active {
@@ -294,6 +334,20 @@ html {
     .menu-list a {
       &.is-active {
         color: $dark-mode-link-active-color;
+
+        // Phil
+        background-color: #25b063;
+        // margin: 0 0 0 23.9px;
+        font-family: "Work Sans";
+        font-size: 14px;
+        font-weight: bold;
+        font-stretch: normal;
+        font-style: normal;
+        line-height: 1.43;
+        letter-spacing: normal;
+        text-align: left;
+        color: #fff;
+        opacity: 1.0;
       }
       &:hover {
         color: $dark-mode-link-hover-color;

@@ -6,7 +6,8 @@ $size-base: 1rem;
 $default-padding: $size-base * 1.5;
 
 /* Default font */
-$family-sans-serif: "Nunito", sans-serif;
+//Phil $family-sans-serif: "Nunito", sans-serif;
+$family-sans-serif: "Web-Sans", sans-serif;
 
 /* Base color */
 $base-color: #2e323a;
@@ -49,7 +50,10 @@ $menu-item-active-color: $black-ter;
 $menu-item-active-background-color: transparent;
 
 /* Aside: specifics */
-$aside-width: $size-base * 14;
+//yarp
+// $aside-width: $size-base * 14;
+$aside-width: 5px;
+
 $aside-mobile-width: $size-base * 15;
 $aside-icon-width: $size-base * 3;
 $aside-submenu-font-size: $size-base * .95;
@@ -135,8 +139,13 @@ $state-colors:
                 ('white', $white, $black-ter);
 
 /* Dark Mode */
-$dark-mode-background-color: $black-ter;
-$dark-mode-lighter-background-color: $grey-darker;
+//yarp
+// $dark-mode-background-color: $black-ter;
+// $dark-mode-lighter-background-color: $grey-darker;
+$dark-mode-background-color: #28253a;
+$dark-mode-lighter-background-color: red;
+$dark-mode-yarp-background-color: #36334b;
+
 $dark-mode-color: $white-ter;
 
 // YARP
@@ -144,9 +153,13 @@ $dark-mode-border-color: $white-ter;
 // $dark-mode-border-color: red;
 $dark-mode-border: 1px solid $dark-mode-border-color;
 $dark-mode-light-border-color: $grey-darker;
-// $dark-mode-light-border-color: pink;
+// Phil
+$dark-mode-light-border-color: #999;
 $dark-mode-light-border: 1px solid $dark-mode-light-border-color;
-$dark-mode-link-color: $cyan;
+// Phil
+//$dark-mode-link-color: $cyan;
+$dark-mode-link-color: white;
+
 $dark-mode-link-active-color: $white-ter;
 $dark-mode-link-hover-color: $white-bis;
 $dark-mode-overlay-background-color: rgba($black, .85);

@@ -24,6 +24,8 @@ export default {
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
+    '~plugins/config.js',
+    // '~plugins/google-charts.js',
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
@@ -34,7 +36,9 @@ export default {
     // https://vite.nuxtjs.org/getting-started/installation
     'nuxt-vite',
     // https://go.nuxtjs.dev/eslint
-    '@nuxtjs/eslint-module'
+    '@nuxtjs/eslint-module',
+    // https://google-fonts.nuxtjs.org/setup
+    '@nuxtjs/google-fonts',
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
@@ -56,6 +60,19 @@ export default {
   buefy: {
     css: false
   },
+
+  // https://google-fonts.nuxtjs.org/options
+  googleFonts: {
+    families: {
+      'Work+Sans': true,
+      // Lato: [100, 300],
+      // Raleway: {
+      //   wght: [100, 400],
+      //   ital: [100]
+      // },
+    },
+    display: 'swap'
+  }
 
   // Hack/fix: See https://vite.nuxtjs.org/misc/common-issues/
   // ssr: false
