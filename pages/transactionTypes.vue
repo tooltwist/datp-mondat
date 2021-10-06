@@ -5,8 +5,8 @@
     button.button.is-primary.is-pulled-right(@click="newMapping") Add Mapping
     h2.title.is-3
       .datemon-heading-icon
-        b-icon(icon="arrow-left-right-bold", size="is-medium")
-      | Transaction to Pipeline mapping
+        b-icon(icon="shape", size="is-medium")
+      | Transaction types
 
     DatemonNotification
       | Each transaction type is mapped to a specific pipeline version.

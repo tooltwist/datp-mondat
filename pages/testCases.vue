@@ -13,8 +13,8 @@
       b-icon(icon="ab-testing", size="is-large")
     h2.title.is-3
       .datemon-heading-icon
-        b-icon(icon="ab-testing", size="is-medium")
-      | Test Cases
+        b-icon(icon="bike-fast", size="is-medium")
+      | Testing
 
     //- | {{testCases}}
     DatemonTable(:data="testCases", :columns="columns", :rows="0", @select="selectTestCase", @runTest="doRunTest")

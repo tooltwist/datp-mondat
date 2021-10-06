@@ -30,6 +30,15 @@
         br
         br
         p.menu-label.is-hidden-touch
+          | Testing
+        ul.menu-list
+          li(v-for="(item, key) of testitems", :key="key")
+            NuxtLink(:to="item.to", exact-active-class="is-active")
+              b-icon(:icon="item.icon")
+              | &nbsp;{{ item.title }}
+        br
+        br
+        p.menu-label.is-hidden-touch
           | Development
         ul.menu-list
           li(v-for="(item, key) of devitems", :key="key")
@@ -106,37 +115,47 @@ export default {
         },
       ],//- items
 
-      devitems: [
+
+      testitems: [
         {
           title: 'Testing',
-          icon: 'ab-testing',
+          icon: 'bike-fast',
           to: { name: 'testCases' }
         },
         // {
-        //   title: 'Step types',
-        //   icon: 'call-merge',
-        //   to: { name: 'step-types' }
+        //   title: 'Tracing',
+        //   icon: 'eye',
+        //   to: '/forms/messages'
         // },
+      ],
+
+      devitems: [
         {
-          title: 'Tx mapping',
-          icon: 'arrow-left-right-bold',
-          to: { name: 'transactionMapping' }
+          title: 'TX Types',
+          icon: 'shape',
+          to: { name: 'transactionTypes' }
+        },
+        {
+          title: 'Standard API',
+          icon: 'api',
+          to: '/forms/standard'
         },
         {
           title: 'Field mapping',
           icon: 'arrow-left-right-bold',
-          to: { name: 'fieldMapping' }
+          to: '/forms/providers'
+          // to: { name: '/forms/providers' }
         },
         // {
-        //   title: 'Load testing',
-        //   icon: 'arrow-left-right-bold',
-        //   to: { name: 'loadTesting' }
+        //   title: 'UI example',
+        //   icon: 'form-textbox-password',
+        //   to: '/forms/getFees'
         // },
-        {
-          title: 'Setup',
-          icon: 'cog-outline',
-          to: { name: 'setup' }
-        }
+        // {
+        //   title: 'Setup',
+        //   icon: 'cog-outline',
+        //   to: { name: 'setup' }
+        // }
       ]//- devitems
     }
   },//- date()
@@ -215,6 +234,11 @@ export default {
     text-align: left;
     color: #b5b7c0;
 
+  }
+
+  .menu-label {
+    margin-left: 32px;
+    color: #16aa58;
   }
 }
 </style>
