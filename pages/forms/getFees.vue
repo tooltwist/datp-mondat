@@ -129,7 +129,7 @@ export default {
       }
 
       // See https://www.npmjs.com/package/ava-http
-      const endpoint = `http://0.0.0.0:4000/gateway`
+      const endpoint = `http://localhost:57990/gateway`
       const url = `${endpoint}/${OPERATION}/${this.providerCode}`
       // console.log(`url=`, url)
       const body = {
@@ -153,14 +153,14 @@ export default {
       this.providerName = provider.name
 
       // Load countries
-      const url = `http://0.0.0.0:4000/gateway/countries/${provider.code}`;
+      const url = `http://localhost:57990/gateway/countries/${provider.code}`;
       const reply = await axios.get(url);
       // console.log(`currencies=`, reply)
       this.countries = reply.data;
       // console.log(`this.countries=`, this.countries)
 
       // Load currencies
-      const url2 = `http://0.0.0.0:4000/gateway/currencies/${provider.code}`;
+      const url2 = `http://localhost:57990/gateway/currencies/${provider.code}`;
       const reply2 = await axios.get(url2);
       // console.log(`currencies=`, reply2)
       this.currencies = reply2.data;
@@ -173,14 +173,14 @@ export default {
     // this.loadLatestMessages();
 
     // Get the providers
-    const url = `http://0.0.0.0:4000/gateway/providers`;
+    const url = `http://localhost:57990/gateway/metadata/domains`;
     const reply = await axios.get(url);
     // console.log(`reply=`, reply)
     this.providers = reply.data;
     console.log(`this.providers=`, this.providers)
 
     // // Load currencies
-    // const url2 = `http://0.0.0.0:4000/gateway/currencies`;
+    // const url2 = `http://localhost:57990/gateway/currencies`;
     // const reply2 = await axios.get(url2);
     // console.log(`currencies=`, reply2)
     // this.currencies = reply2.data;

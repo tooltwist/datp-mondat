@@ -10,7 +10,22 @@
     DatemonNotification
       | This page allows forms to be defined, and mapped against our standard API forms.
 
-    hr
+    //- | {{checkArrows}}
+    //- hr
+    //- span(style="font-size:9px; line-height:0.5;")
+    //-   b {{theLeftViewName}}
+    //-   | : {{theLeftView}}
+    //- //- hr
+    //- br
+    //- span(style="font-size:9px; line-height:0.9;")
+    //-   b {{theRightViewName}}
+    //-   | : {{theRightView}}
+    //- br
+    //- span(style="font-size:9px; line-height:0.9;")
+    //-   b mappng:&nbsp;
+    //-   | {{theMapping}}
+    //- hr
+    br
 
     b-field(horizontal, label="Remittance Provider")
       b-select(
@@ -18,10 +33,10 @@
         v-model="providerCode",
         @input="changeProvider"
       )
-        option(v-for="p in providers", :value="p.code", :key="p.code") {{ p.name }}
+        option(v-for="p in activeProviders", :value="p.code", :key="p.code") {{ p.name }} {{p.status}}
         //- option(v-for="s in services", :value="s.service", :key="s.service")
           | {{s.service}} - {{s.description}}
-      .is-pulled-right.is-size-7(v-show="currentView") {{ currentView }}
+      .is-pulled-right.is-size-7(v-show="currentViewName") {{ currentViewName }}
 
     b-field(v-if="providerCode", horizontal, label="Service")
       b-select(
@@ -40,7 +55,7 @@
             //- | {{s.label}}
             | {{ s.service }} - {{ s.description }}
 
-    b-field(v-if="providerCode && serviceCode", horizontal, label="Connector")
+    //- b-field(v-if="providerCode && serviceCode", horizontal, label="Connector")
       b-select(
         placeholder="Select a backend connector",
         v-model="connector"
@@ -75,14 +90,17 @@
           | {{ mt.description }}
 
     br
-    //- | {{currentlyLoadedView}} VS {{currentView}}
-    b-tabs(v-if="currentlyLoadedView === currentView", @input="checkArrows++")
+    //- | {{currentlyLoadedView}} VS {{currentViewName}}
+    | {{currentViewName}}
+    hr
+    b-tabs(v-if="currentlyLoadedView === currentViewName", @input="checkArrows++")
       b-tab-item(key="fields", label="Fields")
-        formservice-fields(:view="currentView", :fields="currentView.fields")
+        //ZZZZZ Does this work????
+        formservice-fields(:view="currentViewName", :fields="currentViewName.fields", @updated="rightSideViewHasChanged")
 
       b-tab-item(key="visual", label="Visual mapping")
         formservice-mapping-visual(
-          :view="currentView",
+          :view="currentViewName",
           :provider="providerCode",
           :service="serviceCode",
           :messageType="messageType",
@@ -90,24 +108,29 @@
         )
 
       b-tab-item(key="mapping", label="Mapping table")
-        //- b-table(v-if="messageType.toLowerCase().indexOf('request')>=0", :data="currentView.mapping", :columns="mappingRequestColumns")
-        //- b-table(v-else, :data="currentView.mapping", :columns="mappingResponseColumns")
+        //- b-table(v-if="messageType.toLowerCase().indexOf('request')>=0", :data="currentViewName.mapping", :columns="mappingRequestColumns")
+        //- b-table(v-else, :data="currentViewName.mapping", :columns="mappingResponseColumns")
         formservice-mapping-request(
           v-if="messageType.toLowerCase().indexOf('request') >= 0",
-          :view="currentView",
+          :messageType="messageType"
+        )
+    //- formservice-mapping-request(
+          v-if="messageType.toLowerCase().indexOf('request') >= 0",
+          :view="currentViewName",
           :provider="providerCode",
           :service="serviceCode",
           :messageType="messageType"
         )
-        formservice-mapping-response(
+    //- hr
+    //- formservice-mapping-response(
           v-else,
-          :view="currentView",
+          :view="currentViewName",
           :provider="providerCode",
           :service="serviceCode",
           :messageType="messageType"
         )
 
-    hr
+    //- hr
     .notification.is-danger(v-if="error") Invalid amount
 </template>
 
@@ -119,6 +142,7 @@ import FormserviceMappingVisual from '../../components/formservice-mapping-visua
 import FormserviceMappingRequest from '../../components/formservice-mapping-request.vue'
 import FormserviceMappingResponse from '../../components/formservice-mapping-response.vue'
 import DatemonNotification from "../../components/DatmonNotification.vue"
+import formserviceMisc from '../../lib/formservice-misc';
 
 export default {
   name: "Messages",
@@ -148,24 +172,24 @@ export default {
         { type: 'request', description: 'Request to backend' },
         { type: 'response', description: 'Response from backend' },
       ],
-      connectors: [
-        {
-          connector: 'mock-generic',
-          description: 'Generic mock backend'
-        },
-        {
-          connector: 'mock-cebuana',
-          description: 'Mock Cebuana backend'
-        },
-        {
-          connector: 'mock-ussc',
-          description: 'Mock USSC backend'
-        },
-        {
-          connector: 'mock-wu',
-          description: 'Mock Western Union backend'
-        }
-      ],
+      // connectors: [
+      //   {
+      //     connector: 'mock-generic',
+      //     description: 'Generic mock backend'
+      //   },
+      //   {
+      //     connector: 'mock-cebuana',
+      //     description: 'Mock Cebuana backend'
+      //   },
+      //   {
+      //     connector: 'mock-ussc',
+      //     description: 'Mock USSC backend'
+      //   },
+      //   {
+      //     connector: 'mock-wu',
+      //     description: 'Mock Western Union backend'
+      //   }
+      // ],
       // views: [ ],
 
       ZZZview: { },
@@ -185,7 +209,7 @@ export default {
       providerCode: '',
       serviceCode: '',
       messageType: 'request',
-      connector: '',
+      // connector: '',
 
       // This view has been confirmed to exist
       currentlyLoadedView: '',
@@ -243,12 +267,13 @@ export default {
   },
 
   async asyncData({ params, $http }) {
-    console.log(`asyncData()`)
-    const url = `http://0.0.0.0:4000/gateway/providers`;
+    console.log(`providers.vue:asyncData()`)
+    const url = `http://localhost:57990/gateway/metadata/domains`
+    // console.log(`url=`, url)
     const reply = await axios.get(url);
     // console.log(`reply=`, reply)
     const providers = reply.data;
-    console.log(`providers=`, providers)
+    // console.log(`providers=`, providers)
     return { providers }
   },
 
@@ -257,7 +282,7 @@ export default {
   //   // this.loadLatestMessages();
 
   //   // Get the providers
-  //   const url = `http://0.0.0.0:4000/gateway/providers`;
+  //   const url = `http://localhost:57990/gateway/metadata/domains`;
   //   const reply = await axios.get(url);
   //   // console.log(`reply=`, reply)
   //   this.providers = reply.data;
@@ -273,12 +298,49 @@ export default {
     //   }
     //   return '???'
     // }
-    currentView: function () {
-      if (this.providerCode && this.serviceCode && this.messageType) {
-        return `${this.providerCode}-${this.serviceCode}-${this.messageType}`
-      }
-      return null
+    currentViewName: function () {
+      return formserviceMisc.viewName(this.providerCode, this.serviceCode, this.messageType)
+      // if (this.providerCode && this.serviceCode && this.messageType) {
+      //   return `${this.providerCode}-${this.serviceCode}-${this.messageType}`
+      // }
+      // return null
     },
+
+    stdViewName: function () {
+      const provider = 'std'
+      return formserviceMisc.viewName(provider, this.serviceCode, this.messageType)
+      // if (this.serviceCode && this.messageType) {
+      //   return `${provider}-${this.serviceCode}-${this.messageType}`
+      // }
+      // return null
+    },
+
+    activeProviders: function () {
+      return this.providers.filter(p => {
+        return (p.status !== 'inactive') && (p.status !== 'noplugin')
+      })
+    },
+
+    theMapping: function () {
+      return this.$store.state.viewMapping.mapping
+    },
+
+    theLeftViewName: function () {
+      return this.$store.state.viewMapping.leftViewName
+    },
+
+    theLeftView: function () {
+      return this.$store.state.viewMapping.leftView
+    },
+
+    theRightView: function () {
+      return this.$store.state.viewMapping.rightView
+    },
+
+    theRightViewName: function () {
+      return this.$store.state.viewMapping.rightViewName
+    },
+
   },
 
   methods: {
@@ -294,7 +356,7 @@ export default {
     //   }
 
     //   // See https://www.npmjs.com/package/ava-http
-    //   const endpoint = `http://0.0.0.0:4000/gateway`
+    //   const endpoint = `http://localhost:57990/gateway`
     //   const url = `${endpoint}/${OPERATION}/${this.providerCode}`
     //   // console.log(`url=`, url)
     //   const body = {
@@ -325,8 +387,8 @@ export default {
       }
 
       // Load services
-      // const url3 = `http://0.0.0.0:4000/gateway/metadata/services/${this.providerCode}`;
-      const url3 = `http://0.0.0.0:4000/gateway/metadata/services`;
+      // const url3 = `http://localhost:57990/gateway/metadata/services/${this.providerCode}`;
+      const url3 = `http://localhost:57990/gateway/metadata/services`;
       const reply3 = await axios.get(url3);
       console.log(`reply3=`, reply3)
       // this.services = reply3.data;
@@ -358,39 +420,14 @@ export default {
     },
 
     changeView: async function () {
-      console.log(`changeView(${this.currentView}) ----- START`)
+      // console.log(`changeView(${this.currentViewName}) ----- START`)
 
       // We load the view here, not to load it, but so it gets created if necessary
-      const requiredView = this.currentView // computed from provider/service/messageType
-      const createIfNotFound = true
-      this.viewDef = await FormserviceMisc.getView(requiredView, createIfNotFound)
-
-      // setTimeout(() => {
-        // console.log(`set currentlyLoadedView`)
-        this.currentlyLoadedView = requiredView
-      // }, 3000)
-      console.log(`changeView(${this.currentView}) ----- END`)
-
-      // ZZZZZ Hack to set connector
-      if (this.providerCode === 'cebuana') {
-        this.connector = 'mock-cebuana'
-      } else {
-        this.connector = 'mock-generic'
-      }
-
-    // //   this.loadViews()
-    // // },
-
-    // // async loadViews () {
-
-    //   // Load views
-    //   // const url = `http://0.0.0.0:4000/gateway/metadata/views/${this.providerCode}/${this.serviceCode}?fields=true&mappings=true`;
-    //   const url = `http://0.0.0.0:4000/gateway/metadata/views/${this.providerCode}/${this.serviceCode}`;
-    //   console.log(`url=`, url)
-    //   const reply = await axios.get(url);
-    //   // console.log(`views=`, reply)
-    //   this.views = reply.data;
-    //   console.log(`this.views=`, this.views)
+      const requiredView = this.currentViewName // computed from provider/service/messageType
+      const mappingId = this.currentViewName
+      this.$store.dispatch('viewMapping/prepare', { leftViewName: this.stdViewName, rightViewName: this.currentViewName, mappingId })
+      this.currentlyLoadedView = requiredView
+      // console.log(`changeView(${this.currentViewName}) ----- END`)
     },
 
     tabLabel(view) {
@@ -412,13 +449,11 @@ export default {
       return view.view + 'Z'
     },
 
+    rightSideViewHasChanged() {
+      console.log('rightSideViewHasChanged()')
+      this.$store.dispatch('viewMapping/reloadRightView', { })
+    },
   },
-
-  // async messageDescription(message) {
-  //   switch (message) {
-  //     case
-  //   }
-  // }
 };
 </script>
 

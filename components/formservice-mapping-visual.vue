@@ -13,7 +13,7 @@
   //- | {{overlayClass()}}, {{arrowBeingMoved}}
   //- .my-mousemove-overlay(@mousemove="mousemove")
   .my-frame(ref="myframe")
-    .my-overlay(@mousemove="mousemove", @mouseup="upOnOverlay", :class="overlayClass()")
+    .my-overlay(@mousemove="onMousemove", @mouseup="upOnOverlay", :class="overlayClass()")
       svg.my-svg(id="svgelem", zheight="200", xmlns="http://www.w3.org/2000/svg")
         defs
           marker(id="arrowhead" markerWidth="10" markerHeight="7", refX="10" refY="3.5" orient="auto")
@@ -23,33 +23,61 @@
 
     .columns
       .column
-        h1.title.is-6 Standard fields ({{stdViewname}})
-        //- pre
-        //-   | {{JSON.stringify(stdView,'',2)}}
-        //- pre
-        //-   | {{JSON.stringify(stdObject,'',2)}}
-        //- .is-size-7 {{authViewname}}
-        //- .is-size-7 {{utilViewname}}
+        h1.title.is-6 Standard fields ({{theLeftViewName}})
         .my-leftList(v-for="row,index in leftRows")
           .my-row
             .my-indent(:style="indentStyle(row)")
             .my-text(:ref="refId(row.id)", :id="refId(row.id)", @mousedown="downOnRow(-(index+1))", @mouseup="upOnRow", :class="{ 'my-selected-row': (row.id == selectedRowId) }")
               | {{ row.text }}
+              //- | {{ row.text }} = {{row.path}}
               //- | {{ row.text }} = {{refId(row.id)}}
 
       .column
-        h1.title.is-6 Backend fields ({{backendViewname}})
-        //- pre
-          | {{JSON.stringify(backendView,'',2)}}
+        h1.title.is-6 Backend fields ({{theRightViewName}})
         .my-rightList(v-for="row,index in rightRows")
           .my-row
             .my-indent(:style="indentStyle(row)")
             .my-text(:ref="refId(row.id)", :id="refId(row.id)", @mousedown="downOnRow(index+1)", @mouseup="upOnRow", :class="{ 'my-selected-row': (row.id == selectedRowId) }")
               | {{ row.text }}
+              //- | {{ row.text }} = {{row.path}}
               //- | {{ row.text }} = {{refId(row.id)}}
 
   br
-  //- input(type="button", @click="positionArrows", value="Update mapping")
+  br
+  .is-pulled-right
+    // Without this line the arrows will not display
+    span(style="font-size:5px;") {{sequence}}
+  hr
+  //- br
+  //- | id: {{$store.state.viewMapping.mappingId}}
+  //- br
+  //- | mapping: {{theMapping}}
+  //- pre(style="font-size:9px;")
+  //-   | {{JSON.stringify(arrows, '', 2)}}
+  //- hr
+  //- //- pre(style="font-size:9px;")
+  //-   | {{JSON.stringify(arrows, '', 2)}}
+  //- br
+  //- br
+  //- br
+  //- br
+  //- br
+  //- br
+  //- br
+  //- br
+  //- br
+  //- br
+  //- br
+  //- br
+  //- br
+  //- br
+  //- br
+  //- br
+  //- br
+  //- br
+  //- br
+  //- br
+  //- br
   br
   br
   br
@@ -72,267 +100,48 @@
   br
   br
   br
-  br
-  br
-  br
-  br
-  br
-  br
-  br
-  br
-  br
-  br
-  br
-  br
-  br
-  br
-  br
-  br
-  br
-  br
-  br
-  br
-  br
-  br
-  </template>
+</template>
 
 <script>
 import FormserviceMisc from '../lib/formservice-misc'
-const zzzzz = 99999
 
 export default {
   props: {
     view: String,
     // fields: Array,
-    provider: String,
-    service: String,
+    // provider: String,
+    // service: String,
     messageType: String,
 
+    // This value changes every time the tab is changed.
     checkArrows: Number,
   },
   data: function () {
     return {
-
-    stdViewname: '',
-    authViewname: '',
-    utilViewname: '',
-    backendViewname: '',
-
-    stdView: { },
-    authView: { },
-    utilView: { },
-    backendView: { },
-
-    stdObject: { },
-    authObject: { },
-    utilObject: { },
-    backendObject: { },
-
-
-
-
       leftRows: [ ],
       rightRows: [ ],
 
       arrows: [
-        {
-          leftId: -2,
-          rightId: +2,
-          x1: 20,
-          y1: 80,
-          x2: 700,
-          y2: 200,
-        },
-        {
-          leftId: -3,
-          rightId: +3,
-          x1: 20,
-          y1: 80,
-          x2: 700,
-          y2: 200,
-        },
-        {
-          leftId: -4,
-          rightId: +4,
-          x1: 20,
-          y1: 80,
-          x2: 700,
-          y2: 200,
-        },
-        {
-          leftId: -15,
-          rightId: +5,
-          x1: 20,
-          y1: 80,
-          x2: 700,
-          y2: 200,
-        },
+        // {
+        //   leftId: -2,
+        //   rightId: +2,
+        //   x1: 20,
+        //   y1: 80,
+        //   x2: 700,
+        //   y2: 200,
+        // },
       ],
 
       arrowBeingMoved: 0, // negative=left end, positive=right end, zero=none, subtract one from index
+
       selectedRowId: 0,
 
-      dataLeft: `{
-        "location_id" : 1,
-        "user_id" : 1,
-        "trx_date" : "2019-12-01",
-        "customer_id" : 1,
-        "currency_id" : 1,
-        "remco_id" : 9,
-        "trx_type" : 1,
-        "is_domestic" : 0,
-        "customer_name" : "das",
-        "service_charge" : 1,
-        "remote_location_id" : 1,
-        "dst_amount" : 1,
-        "total_amount" : 1,
-        "remote_user_id" : 1,
-        "originating_country" : "mindanao",
-        "destination_country" : "PH",
-        "purpose_transaction" : "TEST",
-        "source_fund" : "salary",
-        "occupation" : "helper",
-        "relation_to" : "mother",
-        "birth_date" : "2018-12-03",
-        "birth_place" : "sulo",
-        "birth_country" : "PH",
-        "id_type" : "UMID",
-        "id_number" : 123,
-        "address" : "test address",
-        "barangay" : "test barangay",
-        "city" :  "test city",
-        "province" : "test province",
-        "zip_code" : "30303",
-        "country" : "PH",
-         "contact_number" : "09123456978",
-        "current_address" : "{}",
-        "permanent_address" : "{}",
-        "risk_score" : 1,
-        "risk_criteria" : "{}",
-         "form_type" : "OAR",
-        "form_number" : "dsa",
-        "payout_type" : 1,
-        "sender_name": "testsa",
-        "receiver_name": "testsa",
-        "principal_amount": 32,
-        "control_number": "P6F1C6L211",
-        "client_reference_no": "11915191",
-        "reference_number": "TEST0987654321TEST12",
-        "location_name": "aguirre",
-        "send_currency_id": "6",
-        "beneficiary_id": 5342
-      }`,
+      // We count up this sequence with each update.
+      sequence: 0,
 
-      dataRight: `{
-        "location_id": 371,
-        "location_name": "Information Technology Department",
-        "user_id": 5188,
-        "trx_date": "2020-02-21",
-        "customer_id": "6276847",
-        "currency_id": "1",
-        "remco_id": "7",
-        "trx_type": "1",
-        "is_domestic": "1",
-        "customer_name": "ALVIN CAMITAN",
-        "service_charge": "1",
-        "remote_location_id": 371,
-        "dst_amount": "0.00",
-        "total_amount": "100",
-        "remote_user_id": 5188,
-        "originating_country": "Philippines",
-        "destination_country": "PH",
-        "purpose_transaction": "Sendd",
-        "source_fund": "Savings",
-        "occupation": "N/A",
-        "relation_to": "Family",
-        "birth_date": "1995-09-06",
-        "birth_place": "ERMITA,BOHOL",
-        "birth_country": "Philippines",
-        "id_type": "445",
-        "id_number": "ASD292929291",
-        "address": "Imortal",
-        "barangay": "Hello World",
-        "city": "ANDA",
-        "province": "BOHOL",
-        "country": "Philippines",
-        "zip_code": "1000A",
-        "contact_number": "09065595959",
-        "current_address": {
-        "address_1": "Imortal",
-        "address_2": null,
-        "barangay": "Hello World",
-        "city": "ANDA",
-        "province": "BOHOL",
-        "zip_code": "1000A",
-        "country": "Philippines"
-        },
-        "permanent_address": {
-        "address_1": "Imortal",
-        "address_2": null,
-        "barangay": "Hello World",
-        "city": "ANDA",
-        "province": "BOHOL",
-        "zip_code": "1000A",
-        "country": "Philippines"
-        },
-        "risk_score": 1,
-        "risk_criteria": 1,
-        "form_type": "0",
-        "form_number": "0",
-        "payout_type": 1,
-        "sender_name": "JOMAR TE TEST",
-        "receiver_name": "ALVIN CAMITAN",
-        "principal_amount": "100",
-        "client_reference_no": "b41c69b5b0fc5e3cf7cb",
-        "reference_number": "20200701PHB692534172",
-        "sender_first_name": "JOMAR",
-        "sender_middle_name": "TE",
-        "sender_last_name": "TEST",
-        "receiver_first_name": "ALVIN",
-        "receiver_middle_name": "",
-        "receiver_last_name": "CAMITAN",
-        "receiver_contact_number": "0922261616161",
-        "kyc_verified": true,
-        "gender": "M"
-      }`,
-
-      // testDataLeft: {
-      //   module: "prereq",
-      //   request: "feeinquiry",
-      //   param: {
-      //     foreign_reference_no: "123123sadasd",
-      //     principal_amount: "100000",
-      //     fixed_amount_flag: "N",
-      //     destination_country_code: "PH",
-      //     destination_currency_code: "PHP",
-      //     transaction_type: "SO",
-      //     promo_code: "",
-      //     message: [],
-      //     message_line_count: "0",
-      //     terminal_id: "WBPt",
-      //     operator_id: "001",
-      //   },
-      // },
-
-      // testDataRight: {
-      //   module: "prereq",
-      //   request: "feeinquiry",
-      //   param: {
-      //     foreign_reference_no: "123123sadasd",
-      //     principal_amount: "100000",
-      //     fixed_amount_flag: "N",
-      //     destination_country_code: "PH",
-      //     destination_currency_code: "PHP",
-      //     transaction_type: "SO",
-      //     promo_code: "",
-      //     message: [],
-      //     message_line_count: "0",
-      //     terminal_id: "WBPt",
-      //     operator_id: "001",
-      //   },
-      // },
-
-      // json: '',
+      // We pause to give time for the JSON rows to be rendered, so their positions
+      // are settled before we position arrows between them.
+      intervalTimer: null,
     };
   },
 
@@ -373,97 +182,160 @@ export default {
   },
 
   watch: {
-    checkArrows: function( ){
-      // console.log(`checkArrows have changed ${this.checkArrows}`)
-      setTimeout(() => {
-        this.positionArrows()
-      }, 150)
+    checkArrows: {
+      handler() { this.load() }, deep:true
+    },
+    '$store.state.viewMapping.mapping': {
+      handler() { this.load() }, deep:true
+    },
+    '$store.state.viewMapping.leftView': {
+      handler() { this.load() }, deep:true
+    },
+    '$store.state.viewMapping.rightView': {
+      handler() { this.load() }, deep:true
     },
   },
 
   mounted: async function() {
-
-    // Load the required views.
-    this.stdViewname = FormserviceMisc.viewName('std', this.service, this.messageType)
-    this.authViewname = FormserviceMisc.viewName('auth', this.service, this.messageType)
-    this.utilViewname = FormserviceMisc.viewName('util', this.service, this.messageType)
-    this.backendViewname = FormserviceMisc.viewName(this.provider, this.service, this.messageType)
-
-    this.stdView = await FormserviceMisc.getView(this.stdViewname)
-    // this.authView = await FormserviceMisc.getView(this.authViewname)
-    // this.utilView = await FormserviceMisc.getView(this.utilViewname)
-    this.backendView = await FormserviceMisc.getView(this.backendViewname)
-
-    // this.dataRight = FormserviceMisc.fieldsToObject(this.backendView)
-    console.log(`this.stdView=`, this.stdView)
-
-    this.stdObject = FormserviceMisc.fieldsToObject(this.stdView.fields)
-    console.log(`this.stdObject=`, this.stdObject)
-    this.backendObject = FormserviceMisc.fieldsToObject(this.backendView.fields)
-    console.log(`this.backendObject=`, this.backendObject)
-
-
-    // Prepare the rows on the left
-    // let objLeft = JSON.parse(this.dataLeft)
-    let objLeft = this.stdObject
-    // objLeft = this.testDataLeft
-
-    // console.log(`objLeft=`, objLeft)
-    const json = JSON.stringify(objLeft, '', 4)
-    console.log(`json=`, json)
-    const arr = json.split('\n')
-    for (const l of arr) {
-      this.leftRows.push({
-        id: -(this.leftRows.length + 1), // -1, -2, -3... (no zero)
-        text: l,
-        left: 0,
-        right: 0,
-        top: 0,
-        bottom: 0,
-      })
-    }
-
-    // Prepare the rows on the right
-    // let objRight = JSON.parse(this.dataRight)
-    let objRight = this.backendObject
-    // objRight = this.testDataRight
-    const jsonRight = JSON.stringify(objRight, '', 4)
-    const arrRight = jsonRight.split('\n')
-    for (const l of arrRight) {
-      this.rightRows.push({
-        id: +(this.rightRows.length + 1), // 1, 2, 3... (no zero)
-        text: l,
-        left: 0,
-        right: 0,
-        top: 0,
-        bottom: 0,
-      })
-    }
-
-    // // Give the elements time to display
-    // setTimeout(() => {
-    // }, 750)
-
+    this.load()
   },
 
-  updated: function () {
-    console.log(`UPDATED`)
-    this.positionArrows()
-  },
 
   computed: {
+    theMapping: function () {
+      return this.$store.state.viewMapping.mapping
+    },
 
+    theLeftView: function () {
+      return this.$store.state.viewMapping.leftView
+    },
+
+    theLeftViewName: function () {
+      return this.$store.state.viewMapping.leftViewName
+    },
+
+    theRightView: function () {
+      return this.$store.state.viewMapping.rightView
+    },
+
+    theRightViewName: function () {
+      return this.$store.state.viewMapping.rightViewName
+    },
   },
 
   methods: {
+
+    load: async function () {
+      // console.log(`--------------------------------\n\n\n`)
+      // console.log(`visual:load()`, this.$store.state.viewMapping.mapping)
+
+      if (this.theRightView === null) {
+        return
+      }
+
+      const stdObject = FormserviceMisc.fieldsToObject(this.theLeftView.fields, true)
+      const backendObject = FormserviceMisc.fieldsToObject(this.theRightView.fields, true)
+
+      // Prepare the rows on the left
+      const json = JSON.stringify(stdObject, '', 4)
+      const arr = json.split('\n')
+      this.leftRows = [ ]
+      for (const l of arr) {
+        const { line, path } = FormserviceMisc.unscrambleLineOfJson(l)
+        this.leftRows.push({
+          id: -(this.leftRows.length + 1), // -1, -2, -3... (no zero)
+          text: line,
+          path: path,
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+        })
+      }
+
+      // Prepare the rows on the right
+      const jsonRight = JSON.stringify(backendObject, '', 4)
+      const arrRight = jsonRight.split('\n')
+      this.rightRows = [ ]
+      for (const l of arrRight) {
+        const { line, path } = FormserviceMisc.unscrambleLineOfJson(l)
+        this.rightRows.push({
+          id: +(this.rightRows.length + 1), // 1, 2, 3... (no zero)
+          text: line,
+          path: path,
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+        })
+      }
+
+      // // Create the arrows
+      const mapping = this.$store.state.viewMapping.mapping
+      const arrows = [ ]
+      for (const map of mapping) {
+        // console.log(`--------`)
+        // console.log(`map=`, map)
+        const arrow = {
+          visible: true
+        }
+        // Find the left field (source)
+        const sourcePrefix = 'request:'
+        if (map.source.startsWith(sourcePrefix)) {
+          let source = map.source.substring(sourcePrefix.length)
+          for (let i = 0; i < this.leftRows.length; i++) {
+            const row = this.leftRows[i]
+            // console.log(`  <-- ${row.path}`)
+            if (row.path === source) {
+              // console.log(`FOUND LEFT MAP (source) ${i+1}`)
+              arrow.leftId = -(i + 1)
+            }
+          }
+        }
+        // Find the right field (toField)
+        for (let i = 0; i < this.rightRows.length; i++) {
+          const row = this.rightRows[i]
+            // console.log(`  --> ${row.path}`)
+          if (row.path === map.field) {
+            // console.log(`FOUND RIGHT MAP (field) ${i+1}`)
+            arrow.rightId = i + 1
+          }
+        }
+        // console.log(`arrow=`, arrow)
+        if (arrow.leftId && arrow.rightId) {
+          arrows.push(arrow)
+        }
+      }
+      this.arrows = arrows
+      this.positionArrowsInAWhile()
+    },
+
+    positionArrowsInAWhile: function () {
+      if (this.intervalTimer === null) {
+        this.intervalTimer = setTimeout(() => {
+          // console.log(`positioning after delay`)
+          this.intervalTimer = null
+          this.positionArrows()
+          this.sequence++
+        }, 100)
+      }
+    },
+
     positionArrows: function() {
-      console.log(`positionArrows()`, this.$refs)
-// return
+      // console.log(`positionArrows()`, this.$refs)
+
       const frameBox = this.$refs.myframe.getBoundingClientRect()
 
       // Set row coordinates
       for (const row of this.leftRows) {
-        const left = this.$refs[this.refId(row.id)][0]
+        const refId = this.refId(row.id)
+        const refs = this.$refs[refId]
+        if (!refs) {
+          // The DOM element is not created yet
+          console.log(`$ref has not been created yet`)
+          return
+        }
+        const left = refs[0]
         const rect = left.getBoundingClientRect()
         row.top = rect.top - frameBox.top
         row.bottom = rect.bottom - frameBox.top
@@ -471,7 +343,14 @@ export default {
         row.right = rect.right - frameBox.left
       }
       for (const row of this.rightRows) {
-        const right = this.$refs[this.refId(row.id)][0]
+        const refId = this.refId(row.id)
+        const refs = this.$refs[refId]
+        if (!refs) {
+          // The DOM element is not created yet
+          console.log(`$ref has not been created yet`)
+          return
+        }
+        const right = refs[0]
         const rect = right.getBoundingClientRect()
         row.top = rect.top - frameBox.top
         row.bottom = rect.bottom - frameBox.top
@@ -514,7 +393,7 @@ export default {
     },
 
     downOnRow: function(rowId) {
-      // console.log(`down(${rowId})`)
+      // console.log(`downOnRow(${rowId})`)
       if (rowId < 0) {
         // Left side row - find the arrow
         let foundArrow = 0
@@ -526,20 +405,21 @@ export default {
           }
         }
         if (!foundArrow) {
-          console.log(`New arrow`)
+          // console.log(`New arrow`)
           const leftRow = this.leftRows[(-rowId) - 1]
           const newArrow = {
             leftId: rowId,
             rightId: 0,
+            visible: true,
             x1: leftRow.right,
             y1: (leftRow.top + leftRow.bottom) / 2,
             x2: leftRow.right,
             y2: (leftRow.top + leftRow.bottom) / 2,
           }
-          console.log(`newArrow=`, newArrow)
+          // console.log(`newArrow=`, newArrow)
           this.arrows.push(newArrow)
           this.arrowBeingMoved = this.arrows.length
-          console.log(`this.arrowBeingMoved=`, this.arrowBeingMoved)
+          // console.log(`this.arrowBeingMoved=`, this.arrowBeingMoved)
         }
       } else if (rowId > 0) {
         // Right side row - find the arrow
@@ -554,40 +434,96 @@ export default {
     },
 
     upOnRow: function() {
-      // console.log(`up`)
+      // console.log(`upOnRow()`)
     },
 
-    upOnOverlay: function() {
-      if (this.selectedRowId === 0) {
+    upOnOverlay: async function() {
+      console.log(`upOnOverlay()`)
+      // const mappingId = this.backendViewname
+      const mappingId = this.theRightViewName
 
-        // No selected row, so delete the arrow
-        if (this.arrowBeingMoved > 0) {
-          // Right end
-          const actualIndex = this.arrowBeingMoved - 1
-          this.arrows.splice(actualIndex, 1)
-        } else if (this.arrowBeingMoved < 0) {
-          // Left end
-          const actualIndex = (-this.arrowBeingMoved) - 1
-          this.arrows.splice(actualIndex, 1)
-        }
-      } else {
+      if (this.selectedRowId !== 0) {
+        // console.log(`**** ADD`)
 
         // Have a selected row
+        let arrowIndex
+        let arrow
         if (this.arrowBeingMoved > 0) {
           // Right end
-          const actualIndex = this.arrowBeingMoved - 1
-          const arrow = this.arrows[actualIndex]
+          arrowIndex = this.arrowBeingMoved - 1
+          arrow = this.arrows[arrowIndex]
           arrow.rightId = this.selectedRowId
         } else if (this.arrowBeingMoved < 0) {
           // Left end
-          const actualIndex = (-this.arrowBeingMoved) - 1
-          const arrow = this.arrows[actualIndex]
+          arrowIndex = (-this.arrowBeingMoved) - 1
+          arrow = this.arrows[arrowIndex]
           arrow.leftId = this.selectedRowId
         }
+        const fromIndex = (-arrow.leftId) - 1 // Non-zero negative indexes (-1=>0, -2=>1, -3=>2 etc)
+        const toIndex = arrow.rightId - 1 // Non-zero positive indexes (1=>0, 2=>1, 3=>2 etc)
+        // console.log(`fromIndex=`, fromIndex)
+        // console.log(`toIndex=`, toIndex)
+
+        // Set the mapping to the right side field
+        if (fromIndex < this.leftRows.length && toIndex < this.rightRows.length) {
+          const from = 'request:' + this.leftRows[fromIndex].path
+          const to = this.rightRows[toIndex].path
+          // console.log(`from=`, from)
+          // console.log(`to=`, to)
+          await FormserviceMisc.addMapping(mappingId, -1, to, from, null)
+
+          // Delete any arrow already pointing to the same right side
+          // console.log(`arrowBeingMoved=`, this.arrowBeingMoved)
+          for (let i = this.arrows.length - 1; i >= 0; i--) {
+            const arrow2 = this.arrows[i]
+            // console.log(`${i}: arrow2=`, arrow2)
+            if (i === arrowIndex) {
+              // console.log(`CURRENT ARROW`)
+            } else {
+              // console.log(`OTHER ARROW ${arrow2.rightId}`)
+              if (arrow2.rightId === arrow.rightId) {
+                // console.log(`  - DELETE ARROW`)
+                this.arrows.splice(i, 1)
+              }
+            }
+          }
+
+          // All done - reload the mapping.
+          this.selectedRowId = 0
+          this.arrowBeingMoved = 0
+          this.$store.dispatch('viewMapping/reloadMapping')
+          return
+        }
       }
+
+      // No selected row, or broken link, so delete the arrow
+      let toIndex = -1
+      if (this.arrowBeingMoved > 0) {
+        // Right end
+        // console.log(`**** DELETE 1`)
+        const arrowIndex = this.arrowBeingMoved - 1
+        const arrow = this.arrows[arrowIndex]
+        toIndex = arrow.rightId - 1 // Non-zero positive indexes (1=>0, 2=>1, 3=>2 etc)
+        this.arrows.splice(arrowIndex, 1)
+      } else if (this.arrowBeingMoved < 0) {
+        // Left end
+        // console.log(`**** DELETE 2`)
+        const arrowIndex = (-this.arrowBeingMoved) - 1
+        const arrow = this.arrows[arrowIndex]
+        toIndex = arrow.rightId - 1 // Non-zero positive indexes (1=>0, 2=>1, 3=>2 etc)
+        this.arrows.splice(arrowIndex, 1)
+      }
+
+      if (toIndex >= 0 && toIndex < this.rightRows.length) {
+        // console.log(`YARP 10 ${toIndex} of ${this.rightRows.length}`)
+        const to = this.rightRows[toIndex].path
+        const reply = await FormserviceMisc.addMapping(mappingId, -1, to, '-', null)
+        // console.log(`reply=`, reply)
+      }
+
       this.selectedRowId = 0
       this.arrowBeingMoved = 0
-      this.positionArrows()
+      this.$store.dispatch('viewMapping/reloadMapping')
     },
 
     overlayClass: function () {
@@ -600,7 +536,7 @@ export default {
       return { marginLeft: `${pixels}px`}
     },
 
-    mousemove: function(evt) {
+    onMousemove: function(evt) {
       const frameBox = this.$refs.myframe.getBoundingClientRect()
       const x = evt.x - frameBox.left
       const y = evt.y - frameBox.top

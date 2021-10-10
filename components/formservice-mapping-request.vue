@@ -1,6 +1,6 @@
 <template lang="pug">
 .formservice-mapping
-  .is-pulled-right.is-size-7 {{view}}
+  .is-pulled-right.is-size-7 {{backendViewName}}
   h1.title.is-5 Request for {{provider}} / {{service}}
   //- br
   //- | mapping: {{mappingId}}
@@ -16,8 +16,8 @@
   //-   | {{JSON.stringify(backendView.fields,'', 2)}}
   //- hr
 
-  b-table.my-table.is-size-7(v-if="backendView"
-    :data="backendView.fields",
+  b-table.my-table.is-size-7(v-if="tableView"
+    :data="tableView.fields",
     hoverable)
 
     b-table-column(field="_source", label="Where does this value come from?", v-slot="props")
@@ -130,22 +130,11 @@ export default {
     service: String,
     messageType: String,
 
-    view: String,
+    // view: String,
   },
   data: function () {
     return {
-      mappingId: '',
-      mapping: [ ],
-
-      // Names of views
-      stdViewname: null,
-      authViewname: null,
-      utilViewname: null,
-      backendViewname: null,
-
-      // View definitions
-      stdView: null,
-      backendView: null,
+      tableView: null,
 
       // Columns in the table
       mappingColumns: [
@@ -161,134 +150,85 @@ export default {
           field: 'name',
           label: 'Name'
         },
-
-        // {
-        //   field: 'label',
-        //   label: 'Label'
-        // },
-        // {
-        //   field: 'type',
-        //   label: 'Type'
-        // },
-        // {
-        //   field: 'properties.isMandatory',
-        //   label: 'Mandatory'
-        // },
       ],
-
-      // responseColumns: [
-      //   {
-      //     field: 'field',
-      //     label: 'Field'
-      //   },
-      //   {
-      //     field: 'converter',
-      //     label: 'Converter'
-      //   },
-      //   {
-      //     field: 'source',
-      //     label: 'Where does this value come from?'
-      //   }
-      // ],
-
     };
   },
 
-  // created: function () {
-  //   // console.log(`created()`);
-
-  //   // Prepare the rows on the left
-  //   let objLeft = JSON.parse(this.dataLeft)
-  //   // objLeft = this.testDataLeft
-  //   const json = JSON.stringify(objLeft, '', 4)
-  //   const arr = json.split('\n')
-  //   for (const l of arr) {
-  //     this.leftRows.push({
-  //       id: -(this.leftRows.length + 1), // -1, -2, -3... (no zero)
-  //       text: l,
-  //       left: 0,
-  //       right: 0,
-  //       top: 0,
-  //       bottom: 0,
-  //     })
-  //   }
-
-  //   // Prepare the rows on the right
-  //   let objRight = JSON.parse(this.dataRight)
-  //   objRight = this.testDataRight
-  //   const jsonRight = JSON.stringify(objRight, '', 4)
-  //   const arrRight = jsonRight.split('\n')
-  //   for (const l of arrRight) {
-  //     this.rightRows.push({
-  //       id: this.rightRows.length + 1, // 1, 2, 3... (no zero)
-  //       text: l,
-  //       left: 0,
-  //       right: 0,
-  //       top: 0,
-  //       bottom: 0,
-  //     })
-  //   }
+  // mounted: async function() {
+  //   // this.positionArrows()
+  //   this.loadMapping()
   // },
 
   watch: {
-    view: async function () { await this.loadMapping() },
-    provider: async function () { await this.loadMapping() },
-    service: async function () { await this.loadMapping() },
-    messageType: async function () { await this.loadMapping() },
+    '$store.state.viewMapping.mapping': {
+      handler() { this.load() }, deep:true
+    },
+    '$store.state.viewMapping.leftView': {
+      handler() { this.load() }, deep:true
+    },
+    '$store.state.viewMapping.rightView': {
+      handler() { this.load() }, deep:true
+    },
   },
 
-  mounted: async function() {
-    // this.positionArrows()
-    this.loadMapping()
-  },
+  computed: {
+    stdView: function () {
+      return this.$store.state.viewMapping.leftView
+    },
 
+    backendView: function () {
+      return this.$store.state.viewMapping.rightView
+    },
+
+    backendViewName: function () {
+      return this.$store.state.viewMapping.rightViewName
+    }
+  },
 
   methods: {
 
-    loadMapping: async function() {
-      console.log(`formservice-mapping-request.loadMapping() --- START`)
+    load: async function () {
+      // console.log("\n\n\nLOADING TABLE TAB!!!!!\n\n\n")
+      // console.log(`this.backendView=`, this.backendView)
+      if (this.backendView === null) {
+        return
+      }
+      // console.log(`this.backendView=`, this.backendView)
 
-      // Load all the views that may be involved in the mapping.
-      this.stdViewname = FormserviceMisc.viewName('std', this.service, 'response')
-      this.authViewname = FormserviceMisc.viewName('auth', this.service, this.messageType)
-      this.utilViewname = FormserviceMisc.viewName('util', this.service, this.messageType)
-      this.backendViewname = FormserviceMisc.viewName(this.provider, this.service, this.messageType)
-
-      const stdView = await FormserviceMisc.getView(this.stdViewname)
-      // // this.authView = await FormserviceMisc.getView(this.authViewname)
-      // // this.utilView = await FormserviceMisc.getView(this.utilViewname)
-      const backendView = await FormserviceMisc.getView(this.backendViewname)
-
-      // Get the mapping
-      this.mappingId = FormserviceMisc.mappingId(this.provider, this.service, this.messageType)
-      this.mapping = await FormserviceMisc.getMapping(this.mappingId)
+      const viewForTable = { fields: [ ] }
 
       // Create an index of standard fields
+      const mapping = this.$store.state.viewMapping.mapping
       const index = { }
-      for (const field of backendView.fields) {
-        index[field.name] = field
+      for (const field of this.backendView.fields) {
+
+        // Clone, via JSON
+        const json = JSON.stringify(field, '', 2)
+        const newField = JSON.parse(json)
+        viewForTable.fields.push(newField)
+        // console.log(`field=`, field)
+        // console.log(`  json=`, json)
+        // console.log(`  newField=`, newField)
+
+        index[field.name] = newField
       }
 
       // Add the mappings to the view
-      for (const map of this.mapping) {
+      for (const map of mapping) {
         let field = index[map.field]
         if (!field) {
           field = {
             // name: `[${map.name}]`,
             name: `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Unknown field &nbsp;&nbsp; (${map.field})`,
           }
-          backendView.fields.push(field)
+          viewForTable.fields.push(field)
         }
         field._name = map.name
         field._converter = map.converter
         field._source = map.source
       }
-      // console.log(`this.stdView.fields=`, JSON.stringify(stdView.fields, '', 2))
-      this.stdView = stdView
-      this.backendView = backendView
-      console.log(`formservice-mapping-request.loadMapping() --- END`)
-    },//- loadMapping
-
+      this.tableView = viewForTable
+    },//- load()
   },
 };
 </script>
