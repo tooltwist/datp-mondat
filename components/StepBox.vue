@@ -202,6 +202,7 @@ export default {
     },
 
     onDelete () {
+      // alert(`onDelete()`)
       console.log(`Deleting step ${this.originalId}`)
       this.$emit('deleted', { id: this.originalId })
     }

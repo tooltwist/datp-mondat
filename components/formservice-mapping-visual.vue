@@ -545,6 +545,10 @@ export default {
       if (this.arrowBeingMoved > 0) {
         // Right end of arrow
         const index = this.arrowBeingMoved - 1
+        if (index < 0 || index >= this.arrows.length) {
+          console.log(`Internal error: bad arrow index [SHHDUDU]`)
+          return
+        }
         this.arrows[index].x2 = x
         this.arrows[index].y2 = y
 
@@ -560,6 +564,10 @@ export default {
       } else if (this.arrowBeingMoved < 0) {
         // left end of arrow
         const index = (-this.arrowBeingMoved) - 1
+        if (index < 0 || index >= this.arrows.length) {
+          console.log(`Internal error: bad arrow index [SHHHWWE]`)
+          return
+        }
         this.arrows[index].x1 = x
         this.arrows[index].y1 = y
 

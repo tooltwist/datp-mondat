@@ -191,17 +191,22 @@ export default {
     onStepDelete({ id }) {
       console.log(`onStepDelete(${id})`)
 
+      const before = JSON.stringify(this.steps, '', 2)
+      console.log(`before = ${before}`)
+
       for (let i = 0; i < this.steps.length; i++) {
         const step = this.steps[i]
       // for (const step of this.definition.steps) {
         if (step.id === id) {
           console.log(`found step at ${i}`, step)
-          this.$delete(this.steps, 1)
+          this.$delete(this.steps, i)
           console.log(`this.steps=`, this.steps)
           this.dirty = true
           break
         }
       }
+      const after = JSON.stringify(this.steps, '', 2)
+      console.log(`after = ${after}`)
       // this.nextId = resequence(this.steps)
     },//- onStepDelete
   }

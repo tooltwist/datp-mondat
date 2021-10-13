@@ -1,6 +1,8 @@
 <template lang="pug">
 .my-providers
-  section.section
+  section.section(v-if="loadError")
+    .notification.is-danger Error: {{loadError}}
+  section.section(v-else)
     //- h1.title Standard API Definitions
     h2.title.is-3
       .datemon-heading-icon
@@ -33,6 +35,7 @@
             //- | {{s.label}}
             | {{s.service}} - {{s.description}}
 
+    .is-pulled-right(v-if="currentView") {{currentView}}
     b-field(v-if="providerCode", horizontal, label="Message type")
       b-select(placeholder="Select a message type", v-model="messageType")
         option(v-for="mt in messageTypes", :value="mt.type", :key="mt.type")
@@ -212,72 +215,49 @@ export default {
           label: 'Mandatory'
         }
       ],
-      // mappingRequestColumns: [
-      //   {
-      //     field: 'source',
-      //     label: 'Source'
-      //   },
-      //   {
-      //     field: 'converter',
-      //     label: 'Converter'
-      //   },
-      //   {
-      //     field: 'field',
-      //     label: 'Field',
-      //     // width: 200,
-      //   },
-      // ],
-      // mappingResponseColumns: [
-      //   {
-      //     field: 'field',
-      //     label: 'Field',
-      //     // width: 200,
-      //   },
-      //   {
-      //     field: 'converter',
-      //     label: 'Converter'
-      //   },
-      //   {
-      //     field: 'source',
-      //     label: 'Source'
-      //   }
-      // ],
+
+      categories: [ ],
 
       // Error message
+      loadError: '',
       error: ''
     };
   },
 
   async asyncData({ params, $http }) {
     console.log(`asyncData()`)
-    // const url = `http://localhost:57990/gateway/metadata/domains`;
-    // const reply = await axios.get(url);
-    // // console.log(`reply=`, reply)
-    // const providers = reply.data;
-    // console.log(`providers=`, providers)
+    try {
+      // const url = `http://localhost:57990/gateway/metadata/domains`;
+      // const reply = await axios.get(url);
+      // // console.log(`reply=`, reply)
+      // const providers = reply.data;
+      // console.log(`providers=`, providers)
+      // const providerCode = 'std'
+      // const url3 = `http://localhost:57990/gateway/metadata/services/${providerCode}`;
+      const url3 = `http://localhost:57990/gateway/metadata/services`;
+      const reply3 = await axios.get(url3);
+      // console.log(`reply3=`, reply3)
 
-    // const providerCode = 'std'
-    // const url3 = `http://localhost:57990/gateway/metadata/services/${providerCode}`;
-    const url3 = `http://localhost:57990/gateway/metadata/services`;
-    const reply3 = await axios.get(url3);
-    // console.log(`reply3=`, reply3)
-
-    // Group the services by category
-    const categories = [ ]
-    let currentCategory = null
-    for (const s of reply3.data) {
-      if (currentCategory === null || currentCategory.category !== s.category) {
-        currentCategory = {
-          category: s.category,
-          description: s.category_description,
-          services: [ ]
+      // Group the services by category
+      const categories = [ ]
+      let currentCategory = null
+      for (const s of reply3.data) {
+        if (currentCategory === null || currentCategory.category !== s.category) {
+          currentCategory = {
+            category: s.category,
+            description: s.category_description,
+            services: [ ]
+          }
+          categories.push(currentCategory)
         }
-        categories.push(currentCategory)
+        currentCategory.services.push(s)
       }
-      currentCategory.services.push(s)
+      // console.log(`categories=`, categories)
+      return { categories }
+    } catch (e) {
+      console.log(`e=`, e)
+      return { loadError: 'Could not load services' }
     }
-    // console.log(`categories=`, categories)
-    return { categories }
   },
 
   // mounted: async function () {

@@ -1,80 +1,83 @@
 <template lang="pug">
 .formservice-fields
-  //- h1.title.is-size-3 formservice-fields - {{ view }}
-  //- | {{ viewDef.fields }}
-  b-table.my-table.is-size-7(
-    v-if="viewDef !== null",
-    :data="viewDef.fields",
-    :columns="viewFieldsColumns",
-    hoverable,
-    @click="editRow",
-    draggable
-    @dragstart="dragstart"
-    @drop="drop"
-    @dragover="dragover"
-    @dragleave="dragleave"
-  )
-  hr
-  .is-pulled-right
-    | &nbsp;&nbsp;&nbsp;
-    button.button.is-small.is-primary(@click="newField") Add field
-  .is-pulled-right
-    | &nbsp;&nbsp;&nbsp;
-    button.button.is-small.is-pulled-right(@click="viewExample") View an example
-  .is-pulled-right
-    | &nbsp;&nbsp;&nbsp;
-    button.button.is-small.is-pulled-right(@click="viewLearnByExample") Define using an example
-  i.is-size-7 Click on a row to edit or delete
-
-  // Modal for editing field details
-  b-modal(v-model="isModalActive", :width="640", scroll="keep")
-    formservice-field-edit(
-      :view="viewDef",
-      :field="fieldDef",
-      v-on:save="saveField",
-      v-on:cancel="cancelFieldEdit",
-      v-on:delete="deleteField"
+  div(v-if="loadError")
+    .notification.is-danger Error: {{loadError}}
+  div(v-else)
+    //- h1.title.is-size-3 formservice-fields - {{ view }}
+    //- | {{ viewDef.fields }}
+    b-table.my-table.is-size-7(
+      v-if="viewDef !== null",
+      :data="viewDef.fields",
+      :columns="viewFieldsColumns",
+      hoverable,
+      @click="editRow",
+      draggable
+      @dragstart="dragstart"
+      @drop="drop"
+      @dragover="dragover"
+      @dragleave="dragleave"
     )
+    hr
+    .is-pulled-right
+      | &nbsp;&nbsp;&nbsp;
+      button.button.is-small.is-primary(@click="newField") Add field
+    .is-pulled-right
+      | &nbsp;&nbsp;&nbsp;
+      button.button.is-small.is-pulled-right(@click="viewExample") View an example
+    .is-pulled-right
+      | &nbsp;&nbsp;&nbsp;
+      button.button.is-small.is-pulled-right(@click="viewLearnByExample") Define using an example
+    i.is-size-7 Click on a row to edit or delete
 
-  // Modal showing example message
-  b-modal(v-model="showViewExampleModal", :width="640", scroll="keep")
-    .card
-      header.card-header
-        p.card-header-title Example for {{ view }}
-      .card-content
-        .content
-          pre.is-size-7
-            | {{ exampleObject }}
+    // Modal for editing field details
+    b-modal(v-model="isModalActive", :width="640", scroll="keep")
+      formservice-field-edit(
+        :view="viewDef",
+        :field="fieldDef",
+        v-on:save="saveField",
+        v-on:cancel="cancelFieldEdit",
+        v-on:delete="deleteField"
+      )
 
-  // Modal for entering example message
-  b-modal(v-model="showLearnByExampleModal", :width="640", scroll="keep")
-    .card
-      header.card-header
-        p.card-header-title Please paste a typical message for {{ view }}
-      .card-content
-        .content(v-if="!showLearnedFields")
-          b-field(label="Example JSON", label-position="on-border", :message="jsonToLearnError", :type="jsonToLearnError ? 'is-danger' : ''")
-            b-input(type="textarea", v-model="jsonToLearn", rows="26", size="is-small", @input="validateJsonToLearn")
-        .content(v-if="showLearnedFields")
-          // https://buefy.org/documentation/table
-          b-table.my-table.is-size-7(
-            :data="learnedFields",
-            :columns="learnedFieldsColumns",
-            :checked-rows.sync="checkedLearnedFields"
-            :is-row-checkable="(row) => !row.alreadyExists"
-            checkable
-          )
-          //- | {{learnedFields}}
-          //- hr
-          //- | {{checkedLearnedFields}}
+    // Modal showing example message
+    b-modal(v-model="showViewExampleModal", :width="640", scroll="keep")
+      .card
+        header.card-header
+          p.card-header-title Example for {{ view }}
+        .card-content
+          .content
+            pre.is-size-7
+              | {{ exampleObject }}
 
-      footer.card-footer
-        a.card-footer-item(v-if="!showLearnedFields", href="#", card-footer-item, @click="doLearn") Scan JSON
-        a.card-footer-item(v-if="showLearnedFields", href="#", card-footer-item, @click="learnAccept") Accept
-        a.card-footer-item(v-if="showLearnedFields", href="#", card-footer-item, @click="learnBack") Back
-        a.card-footer-item(href="#", card-footer-item, @click="doCancelLearn") Cancel
+    // Modal for entering example message
+    b-modal(v-model="showLearnByExampleModal", :width="640", scroll="keep")
+      .card
+        header.card-header
+          p.card-header-title Please paste a typical message for {{ view }}
+        .card-content
+          .content(v-if="!showLearnedFields")
+            b-field(label="Example JSON", label-position="on-border", :message="jsonToLearnError", :type="jsonToLearnError ? 'is-danger' : ''")
+              b-input(type="textarea", v-model="jsonToLearn", rows="26", size="is-small", @input="validateJsonToLearn")
+          .content(v-if="showLearnedFields")
+            // https://buefy.org/documentation/table
+            b-table.my-table.is-size-7(
+              :data="learnedFields",
+              :columns="learnedFieldsColumns",
+              :checked-rows.sync="checkedLearnedFields"
+              :is-row-checkable="(row) => !row.alreadyExists"
+              checkable
+            )
+            //- | {{learnedFields}}
+            //- hr
+            //- | {{checkedLearnedFields}}
 
-    //- formservice-field-edit(:view="viewDef", :field="fieldDef", v-on:save="saveField", v-on:cancel="cancelFieldEdit", v-on:delete="deleteField")
+        footer.card-footer
+          a.card-footer-item(v-if="!showLearnedFields", href="#", card-footer-item, @click="doLearn") Scan JSON
+          a.card-footer-item(v-if="showLearnedFields", href="#", card-footer-item, @click="learnAccept") Accept
+          a.card-footer-item(v-if="showLearnedFields", href="#", card-footer-item, @click="learnBack") Back
+          a.card-footer-item(href="#", card-footer-item, @click="doCancelLearn") Cancel
+
+      //- formservice-field-edit(:view="viewDef", :field="fieldDef", v-on:save="saveField", v-on:cancel="cancelFieldEdit", v-on:delete="deleteField")
 </template>
 
 <script>
@@ -136,6 +139,8 @@ export default {
           label: "ReadOnly",
         },
       ],
+
+      loadError: '',
 
 
       viewDef: {},
@@ -201,43 +206,49 @@ export default {
 
   methods: {
     loadViewDef: async function (viewName) {
-      // console.log(`loadViewDef(${viewName})`, typeof(viewName))
+      console.log(`loadViewDef(${viewName})`, typeof(viewName))
 
       if (!viewName) {
         this.viewDef = null
         return
       }
 
-      const createIfNotFound = true
-      this.viewDef = await formserviceMisc.getView(viewName, createIfNotFound)
-      // console.log(`this.viewDef=`, this.viewDef)
+      try {
+        const createIfNotFound = true
+        this.viewDef = await formserviceMisc.getView(viewName, createIfNotFound)
+        console.log(`this.viewDef=`, this.viewDef)
 
-      // const url = `http://localhost:57990/formservice/view/${viewName}`;
-      // console.log(`url=`, url);
-      // const reply = await axios.get(url);
-      // console.log(`viewsX=`, reply.data);
-      // const viewDef = reply.data;
 
-      // // Patch in reference descriptions
-      // for (const field of viewDef.fields) {
-      //   if (field.reference) {
-      //     field._reference = field.reference.view;
-      //   }
-      //   // field._sequence = 0 // We can increment this to force display update
-      // }
-      for (const field of this.viewDef.fields) {
-        field._id = this.fieldId++;
-      //   // Check all properties are defined, even if not return by the API (so they are reactive)
-      //   if (!field.properties) field.properties = {};
-      //   if (!field.properties.isPrimaryKey){
-      //     field.properties.isPrimaryKey = false;}
-      //   if (!field.properties.isDescription){
-      //     field.properties.isDescription = false;}
-      //   if (!field.properties.isMandatory) {field.properties.isMandatory = false;}
-      //   if (!field.properties.readonly) {field.properties.readonly = false;}
-      //   if (!field.properties.dollars2) {field.properties.dollars2 = false;}
+        // const url = `http://localhost:57990/formservice/view/${viewName}`;
+        // console.log(`url=`, url);
+        // const reply = await axios.get(url);
+        // console.log(`viewsX=`, reply.data);
+        // const viewDef = reply.data;
+
+        // // Patch in reference descriptions
+        // for (const field of viewDef.fields) {
+        //   if (field.reference) {
+        //     field._reference = field.reference.view;
+        //   }
+        //   // field._sequence = 0 // We can increment this to force display update
+        // }
+        for (const field of this.viewDef.fields) {
+          field._id = this.fieldId++;
+        //   // Check all properties are defined, even if not return by the API (so they are reactive)
+        //   if (!field.properties) field.properties = {};
+        //   if (!field.properties.isPrimaryKey){
+        //     field.properties.isPrimaryKey = false;}
+        //   if (!field.properties.isDescription){
+        //     field.properties.isDescription = false;}
+        //   if (!field.properties.isMandatory) {field.properties.isMandatory = false;}
+        //   if (!field.properties.readonly) {field.properties.readonly = false;}
+        //   if (!field.properties.dollars2) {field.properties.dollars2 = false;}
+        }
+        // this.viewDef = viewDef;
+      } catch (e) {
+        console.log(`e=`, e)
+        this.loadError = 'Could not load view definition'
       }
-      // this.viewDef = viewDef;
 
     },
 

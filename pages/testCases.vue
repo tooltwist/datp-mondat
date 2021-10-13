@@ -198,19 +198,19 @@ export default {
 
   methods: {
     validateInput() {
-      console.log(`validateInput()`)
-      console.log(`this.selectedRecord.inputData=`, this.selectedRecord.inputData)
+      // console.log(`validateInput()`)
+      // console.log(`this.selectedRecord.inputData=`, this.selectedRecord.inputData)
       try {
         const obj = JSON.parse(this.selectedRecord.inputData)
         this.errorMsg = ''
       } catch (e) {
-        console.log(`e=`, e)
+        // console.log(`e=`, e)
         this.errorMsg = e
       }
     },
 
     formatInput() {
-      console.log(`formatInput()`)
+      // console.log(`formatInput()`)
       try {
         const obj = JSON.parse(this.selectedRecord.inputData)
         const json = JSON.stringify(obj, '', 2)
@@ -223,8 +223,8 @@ export default {
     },//- formatInput
 
     selectTestCase(row) {
-      console.log(`selectTestCase()`)
-      console.log(`row=`, row)
+      // console.log(`selectTestCase()`)
+      // console.log(`row=`, row)
 
       this.selectedRecord = row
       this.isNew = false
@@ -326,26 +326,36 @@ export default {
 
       // Run the test
       this.readytToTestAgain = false
-      this.testTimer = `0 ms`
+      this.testTimer = ``
       this.testTimer2 = ``
       const url = `http://localhost:57990/datp/1.0/initiate/${this.selectedRecord.transactionType}`
-      const data = await JSON.parse(this.selectedRecord.inputData)
-      // console.log(`url=`, url)
-      // console.log(`data=`, data)
-      this.startTime = Date.now()
-      const response = await this.$axios.$put(url, data)
-      const endTime = Date.now()
+      let response
+      try {
+        const data = await JSON.parse(this.selectedRecord.inputData)
+        // console.log(`url=`, url)
+        // console.log(`data=`, data)
+        this.startTime = Date.now()
+        response = await this.$axios.$put(url, data)
+        const endTime = Date.now()
 
-      // console.log(`response=`, response)
-      this.testResponse = JSON.stringify(response, '', 2)
-      this.testTimer = `${endTime - this.startTime}ms`
-      this.readytToTestAgain = true
+        // console.log(`response=`, response)
+        this.testResponse = JSON.stringify(response, '', 2)
+        this.testTimer = `${endTime - this.startTime}ms`
+        this.readytToTestAgain = true
+
+      } catch (e) {
+        console.log(`e=`, e)
+        // alert(`Error invoking API`)
+        this.testResponse = e.toString()
+        this.readytToTestAgain = true
+        return
+      }
 
       // See if we need to poll for a result
       const transactionId = response.metadata.transactionId
       const inquiryToken = response.metadata.inquiryToken
 
-        this.pollResponse = `polling...`
+      this.pollResponse = `polling...`
 
 
       switch (response.metadata.responseType) {
@@ -359,17 +369,22 @@ export default {
           this.pollResponse = `polling...`
           this.polling = setInterval(async () => {
             // console.log(`check result`)
-            const url2 = `http://localhost:57990/datp/1.0/result/${transactionId}`
-            // console.log(`url2=`, url2)
-            const response2 = await this.$axios.$get(url2, {
-              // Put inquiryToken in a header
-            })
-            // console.log(`response2=`, response2)
-            if (response2.status === 'complete') {
-              this.stopAnyPolling()
-              this.pollResponse = JSON.stringify(response2, '', 2)
-              const endTime2 = Date.now()
-              this.testTimer2 = `, ${endTime2 - this.startTime}ms`
+            try {
+              const url2 = `http://localhost:57990/datp/1.0/result/${transactionId}`
+              // console.log(`url2=`, url2)
+              const response2 = await this.$axios.$get(url2, {
+                // Put inquiryToken in a header
+              })
+              // console.log(`response2=`, response2)
+              if (response2.status !== 'running') {
+                this.stopAnyPolling()
+                this.pollResponse = JSON.stringify(response2, '', 2)
+                const endTime2 = Date.now()
+                this.testTimer2 = `, ${endTime2 - this.startTime}ms`
+              }
+            } catch (e) {
+              console.log(`e=`, e)
+              alert(`Error polling for result.`)
             }
           }, POLLING_INTERVAL)
           break
