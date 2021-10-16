@@ -247,7 +247,7 @@ export default {
     },
 
     async doSave() {
-      console.log(`doSave()`, this.selectedRecord)
+      // console.log(`doSave()`, this.selectedRecord)
       // return
       if (this.isNew) {
         // Check the type is not already used
@@ -281,7 +281,7 @@ export default {
     },
 
     async doDelete() {
-      console.log(`doDelete()`, this.selectedRecord)
+      // console.log(`doDelete()`, this.selectedRecord)
       // return
       try {
         const url = `${this.$daptEndpoint}/testCase/${this.selectedRecord.name}`
@@ -396,7 +396,7 @@ export default {
     },
 
     doCancelTest() {
-      console.log(`doCancelTest()`)
+      // console.log(`doCancelTest()`)
       this.showTestModal = false
       this.stopAnyPolling()
     },

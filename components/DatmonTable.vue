@@ -74,8 +74,8 @@ export default {
     },
 
     doButtonClick(col, row) {
-      console.log(`col=`, col)
-      console.log(`row=`, row)
+      // console.log(`col=`, col)
+      // console.log(`row=`, row)
       if (col.customEvent) {
         this.$emit(col.customEvent, row)
       } else {

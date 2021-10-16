@@ -33,7 +33,8 @@
         v-model="providerCode",
         @input="changeProvider"
       )
-        option(v-for="p in activeProviders", :value="p.code", :key="p.code") {{ p.name }} {{p.status}}
+        //- option(v-for="p in activeProviders", :value="p.code", :key="p.code") {{ p.name }} {{p.status}}
+        option(v-for="p in activeProviders", :value="p.code", :key="p.code") {{ p.name }}
         //- option(v-for="s in services", :value="s.service", :key="s.service")
           | {{s.service}} - {{s.description}}
       .is-pulled-right.is-size-7(v-show="currentViewName") {{ currentViewName }}
@@ -267,7 +268,7 @@ export default {
   },
 
   async asyncData({ params, $http }) {
-    console.log(`providers.vue:asyncData()`)
+    // console.log(`providers.vue:asyncData()`)
     const url = `http://localhost:57990/gateway/metadata/domains`
     // console.log(`url=`, url)
     const reply = await axios.get(url);
@@ -390,7 +391,7 @@ export default {
       // const url3 = `http://localhost:57990/gateway/metadata/services/${this.providerCode}`;
       const url3 = `http://localhost:57990/gateway/metadata/services`;
       const reply3 = await axios.get(url3);
-      console.log(`reply3=`, reply3)
+      // console.log(`reply3=`, reply3)
       // this.services = reply3.data;
       // console.log(`this.services=`, this.services)
 

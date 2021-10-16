@@ -112,7 +112,7 @@ export default {
   methods: {
 
     loadMapping: async function() {
-      console.log(`formservice-mapping-response.loadMapping() --- START`)
+      // console.log(`formservice-mapping-response.loadMapping() --- START`)
 
       // // Load the required views.
       this.stdViewname = FormserviceMisc.viewName('std', this.service, 'response')
@@ -157,7 +157,7 @@ export default {
         }
       }
       this.stdView = stdView
-      console.log(`formservice-mapping-response.loadMapping() --- END`)
+      // console.log(`formservice-mapping-response.loadMapping() --- END`)
     },//- loadMapping
 
 
@@ -173,7 +173,7 @@ export default {
     },
 
     mappingType: function (fieldName) {
-      console.log(`mappingType(${fieldName})`)
+      // console.log(`mappingType(${fieldName})`)
 
       if (fieldName.startsWith(NO_FIELD_PREFIX)) {
         return 'unmapped'
@@ -315,7 +315,7 @@ export default {
 function findViewField (view, fieldName, createIfNotFound) {
   // console.log(`findViewField(${fieldName}, ${createIfNotFound})`)
   for (const f of view.fields) {
-    console.log(`  -> ${f.name}`)
+    // console.log(`  -> ${f.name}`)
     if (f.name === fieldName) {
       // console.log(`  FOUND`)
       return f

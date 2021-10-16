@@ -55,7 +55,7 @@ export default {
   async asyncData({ $axios, $daptEndpoint }) {
     // console.log(`asyncData()`)
     const url = `${$daptEndpoint}/pipelines`
-    console.log(`url=`, url)
+    // console.log(`url=`, url)
     const pipelines = await $axios.$get(url)
 
     // const pipelines = await $axios.$get('http://localhost:8080/pipelines')
@@ -71,7 +71,7 @@ export default {
   methods: {
     selectPipeline: function (row) {
       const pipelineName = row.name
-      console.log(`selectPipeline(${pipelineName})`)
+      // console.log(`selectPipeline(${pipelineName})`)
       this.$router.push({ path: `/pipeline/${pipelineName}` })
     },
 

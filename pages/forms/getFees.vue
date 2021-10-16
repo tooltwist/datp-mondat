@@ -118,7 +118,7 @@ export default {
   },
   methods: {
     async getFees() {
-      console.log(`getFees`)
+      // console.log(`getFees`)
       const OPERATION = 'getFees'
 
       this.error = ''
@@ -169,7 +169,7 @@ export default {
   },
 
   async mounted() {
-    console.log(`mounted`)
+    // console.log(`mounted`)
     // this.loadLatestMessages();
 
     // Get the providers
@@ -177,7 +177,7 @@ export default {
     const reply = await axios.get(url);
     // console.log(`reply=`, reply)
     this.providers = reply.data;
-    console.log(`this.providers=`, this.providers)
+    // console.log(`this.providers=`, this.providers)
 
     // // Load currencies
     // const url2 = `http://localhost:57990/gateway/currencies`;

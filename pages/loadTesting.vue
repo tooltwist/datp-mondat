@@ -296,7 +296,7 @@ export default {
     },//- doResetAll
 
     async testCaseChanged(index) {
-      console.log(`testCaseChanged()`)
+      // console.log(`testCaseChanged()`)
       // Give the value time to change
       setTimeout(async () => {
         this.testRunner(index)
@@ -349,7 +349,7 @@ export default {
       }
       const test = this.tests[index]
       if (this.timeouts[index] != null) {
-        console.log(`------- clear ${index}`)
+        // console.log(`------- clear ${index}`)
         clearInterval(this.timeouts[index])
         this.timeouts[index] = null
       }
@@ -417,7 +417,7 @@ export default {
           const setFromMidiValue = (midiVal, index) => {
             const perc = Math.floor((midiVal / 16383) * 100)
             if (this.tests[index].value !== perc) {
-              console.log(`Setting from midi: ${index}, ${perc}`)
+              // console.log(`Setting from midi: ${index}, ${perc}`)
               this.tests[index].value = perc
               this.restartTestIfRequired(index)
             }

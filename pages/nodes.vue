@@ -165,9 +165,9 @@ export default {
 
   methods: {
     selectNode: function (nodeId) {
-      console.log(`selectNode`, nodeId)
+      // console.log(`selectNode`, nodeId)
       // const pipelineName = row.name
-      console.log(`selectPipeline(${nodeId})`)
+      // console.log(`selectPipeline(${nodeId})`)
       this.$router.push({ path: `/node/${nodeId}` })
     },
   }//- methods

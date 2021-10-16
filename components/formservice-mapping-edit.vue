@@ -100,11 +100,11 @@ export default {
     // console.log(`this.field=`, this.field)
 
     // console.log(`this.targetView=`, this.targetView)
-    console.log(`this.sourceViews=`, this.sourceViews)
+    // console.log(`this.sourceViews=`, this.sourceViews)
 
     // Find the mapping for this field
     for (const m of this.mapping) {
-      console.log(`m=`, m)
+      // console.log(`m=`, m)
       if (m.field === this.field) {
         // console.log(`FOUND MAPPING`)
         this.currentMapping = m
@@ -134,7 +134,7 @@ export default {
       const fieldName = this.tmp.field
       for (const field of this.targetView.fields) {
         if (field.name === fieldName) {
-          console.log(`Found field`)
+          // console.log(`Found field`)
           this.currentField = field
           if (this.tmp.field.startsWith('unmapped#')) {
             this.nameMessage = ``

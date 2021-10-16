@@ -438,7 +438,7 @@ export default {
     },
 
     upOnOverlay: async function() {
-      console.log(`upOnOverlay()`)
+      // console.log(`upOnOverlay()`)
       // const mappingId = this.backendViewname
       const mappingId = this.theRightViewName
 

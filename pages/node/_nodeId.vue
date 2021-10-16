@@ -73,7 +73,7 @@ export default {
   },//- data
 
   async asyncData({ $axios, $daptEndpoint, params }) {
-    console.log(`asyncData()`)
+    // console.log(`asyncData()`)
     // return { node: {} }
 
     // A bit lazy here, we'll select all nodes...
@@ -82,7 +82,7 @@ export default {
 
     // Now find our node
     const nodeId = params.nodeId
-    console.log(`nodeId=`, nodeId)
+    // console.log(`nodeId=`, nodeId)
     for (const node of nodes) {
       if (node.nodeId === nodeId) {
         return { nodeId, node }

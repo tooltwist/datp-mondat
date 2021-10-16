@@ -86,8 +86,8 @@ export default {
     }
   },
   async asyncData({ $axios, $daptEndpoint, params }) {
-    console.log(`asyncData()`, params)
-    console.log(params.pipelineName);
+    // console.log(`asyncData()`, params)
+    // console.log(params.pipelineName);
     const pipelineName = params.pipelineName
 
 
@@ -99,23 +99,23 @@ export default {
     // const nodeId = params.nodeId
     const nodeName = 'master'
     let node = null
-    console.log(`nodeName=`, nodeName)
+    // console.log(`nodeName=`, nodeName)
     for (const n of nodes) {
-      console.log(`n=`, n)
+      // console.log(`n=`, n)
       if (n.name === nodeName) {
         // return { nodeId, node }
         node = n
         break
       }
     }
-    console.log(`node=`, node)
+    // console.log(`node=`, node)
     const stepTypes = node.stepTypes
 
 
 
     // Get details of the specific pipeline
     const url = `${$daptEndpoint}/pipeline/${pipelineName}/definition`
-    console.log(`url=`, url)
+    // console.log(`url=`, url)
     const definition = await $axios.$get(url)
     // const definition = await $axios.$get(`http://localhost:8080/pipeline/${pipelineName}/description`)
     // console.log(`definition=`, definition)
@@ -142,7 +142,7 @@ export default {
     },
 
     savePipeline: async function () {
-      console.log(`savePipeline()`)
+      // console.log(`savePipeline()`)
 
       this.nextId = resequence(this.steps)
       const definition = {
@@ -153,14 +153,14 @@ export default {
       }
 
       const url = `${this.$daptEndpoint}/pipeline/draft`
-      console.log(`url=`, url)
+      // console.log(`url=`, url)
       const reply = await this.$axios.$post(url, definition)
-      console.log(`reply=`, reply)
+      // console.log(`reply=`, reply)
     },
 
     // When dragging from the step type list to the steps list, we need to create a new step.
     stepFromStepType: function(stepType, arg2, arg3, arg4) {
-      console.log(`stepFromStepType(): stepType=`, stepType)
+      // console.log(`stepFromStepType(): stepType=`, stepType)
 
       // Return a step
       const rec = {
@@ -172,13 +172,13 @@ export default {
     },//- stepFromStepType
 
     onStepDefinitionChange({ id, definition }) {
-      console.log(`onStepDefinitionChange()`)
-      console.log(`id=`, id)
-      console.log(`definition=`, definition)
+      // console.log(`onStepDefinitionChange()`)
+      // console.log(`id=`, id)
+      // console.log(`definition=`, definition)
 
       for (const step of this.steps) {
         if (step.id === id) {
-          console.log(`found step`, step)
+          // console.log(`found step`, step)
           step.definition = definition
           this.dirty = true
           return
@@ -189,24 +189,24 @@ export default {
     },//- onStepDefinitionChange
 
     onStepDelete({ id }) {
-      console.log(`onStepDelete(${id})`)
+      // console.log(`onStepDelete(${id})`)
 
       const before = JSON.stringify(this.steps, '', 2)
-      console.log(`before = ${before}`)
+      // console.log(`before = ${before}`)
 
       for (let i = 0; i < this.steps.length; i++) {
         const step = this.steps[i]
       // for (const step of this.definition.steps) {
         if (step.id === id) {
-          console.log(`found step at ${i}`, step)
+          // console.log(`found step at ${i}`, step)
           this.$delete(this.steps, i)
-          console.log(`this.steps=`, this.steps)
+          // console.log(`this.steps=`, this.steps)
           this.dirty = true
           break
         }
       }
       const after = JSON.stringify(this.steps, '', 2)
-      console.log(`after = ${after}`)
+      // console.log(`after = ${after}`)
       // this.nextId = resequence(this.steps)
     },//- onStepDelete
   }

@@ -228,7 +228,7 @@ export default {
   created() {
     this.polling = setInterval(async () => {
       if (this.autoUpdate) {
-        console.log(`update`)
+        // console.log(`update`)
         const nodeId = 'master'
         this.performance15 = await this.$axios.$get(`${this.$daptEndpoint}/${nodeId}/recentPerformance?duration=15`)
         this.performance300 = await this.$axios.$get(`${this.$daptEndpoint}/${nodeId}/recentPerformance?duration=300`)

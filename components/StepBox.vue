@@ -145,7 +145,7 @@ export default {
 
   created: function () {
     // Set the JSON string version of the definition
-    console.log(`created()`)
+    // console.log(`created()`)
     this.definition = this.step.definition
 
     // Save the values we came in with
@@ -165,8 +165,8 @@ export default {
 
   methods: {
     onInput () {
-      console.log(`onInput()`)
-      console.log(`this.json=`, this.json)
+      // console.log(`onInput()`)
+      // console.log(`this.json=`, this.json)
       try {
         const obj = JSON.parse(this.json)
         this.errorMsg = ''
@@ -190,12 +190,12 @@ export default {
           const newDefinition = obj
           newDefinition.stepType = this.originalStepType
           newDefinition.description = this.description
-          console.log(`EMMITTING`)
+          // console.log(`EMMITTING`)
           this.$emit('changed', { id: this.originalId, definition: newDefinition })
         } catch (e) {
           console.log(`Invalid JSON`)
           this.errorMsg = e.toString()
-          console.log(`NOT EMMITTING`)
+          // console.log(`NOT EMMITTING`)
           console.log(`this.errorMsg=`, this.errorMsg)
         }
       }
@@ -203,7 +203,7 @@ export default {
 
     onDelete () {
       // alert(`onDelete()`)
-      console.log(`Deleting step ${this.originalId}`)
+      // console.log(`Deleting step ${this.originalId}`)
       this.$emit('deleted', { id: this.originalId })
     }
   },//- methods

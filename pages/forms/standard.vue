@@ -225,7 +225,7 @@ export default {
   },
 
   async asyncData({ params, $http }) {
-    console.log(`asyncData()`)
+    // console.log(`asyncData()`)
     try {
       // const url = `http://localhost:57990/gateway/metadata/domains`;
       // const reply = await axios.get(url);

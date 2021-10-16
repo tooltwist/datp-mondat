@@ -118,26 +118,30 @@ export default {
           field: "type",
           label: "Type",
         },
-        {
-          field: "_reference",
-          label: "Reference",
-        },
-        {
-          field: "properties.isPrimaryKey",
-          label: "Key",
-        },
-        {
-          field: "properties.isDescription",
-          label: "Desc",
-        },
+        // {
+        //   field: "_reference",
+        //   label: "Reference",
+        // },
+        // {
+        //   field: "properties.isPrimaryKey",
+        //   label: "Key",
+        // },
+        // {
+        //   field: "properties.isDescription",
+        //   label: "Desc",
+        // },
         {
           field: "properties.isMandatory",
           label: "Mandatory",
         },
         {
-          field: "properties.readonly",
-          label: "ReadOnly",
+          field: "exampleValue",
+          label: "Example",
         },
+        // {
+        //   field: "properties.readonly",
+        //   label: "ReadOnly",
+        // },
       ],
 
       loadError: '',
@@ -206,7 +210,7 @@ export default {
 
   methods: {
     loadViewDef: async function (viewName) {
-      console.log(`loadViewDef(${viewName})`, typeof(viewName))
+      // console.log(`loadViewDef(${viewName})`, typeof(viewName))
 
       if (!viewName) {
         this.viewDef = null
@@ -216,7 +220,7 @@ export default {
       try {
         const createIfNotFound = true
         this.viewDef = await formserviceMisc.getView(viewName, createIfNotFound)
-        console.log(`this.viewDef=`, this.viewDef)
+        // console.log(`this.viewDef=`, this.viewDef)
 
 
         // const url = `http://localhost:57990/formservice/view/${viewName}`;
@@ -253,8 +257,8 @@ export default {
     },
 
     viewExample: function () {
-      console.log(`viewExample()`);
-      console.log(`this.viewDef=`, this.viewDef)
+      // console.log(`viewExample()`);
+      // console.log(`this.viewDef=`, this.viewDef)
 
       // Create an object version of this field definition
       this.exampleObject = FormserviceMisc.fieldsToObject(this.viewDef.fields);
@@ -263,31 +267,35 @@ export default {
     },
 
     newField: function () {
-      console.log(`newField()`);
+      // console.log(`newField()`);
       this.fieldDef = {
         _id: -1, // Indicates a new field
+        label: '',
+        exampleValue: '',
+        defaultValue: '',
         type: "string",
         properties: {},
+        allowableValues: '',
       };
       this.isModalActive = true;
     },
 
     editRow: function (row) {
-      console.log(`edit()`, row)
+      // console.log(`edit()`, row)
       this.fieldDef = row
       this.isModalActive = true
     },
 
     saveField: async function (newField) {
-      console.log(`saveField()`, newField);
+      // console.log(`saveField()`, newField);
       this.isModalActive = false;
 
       // See if this is a new field
       if (newField._id < 0) {
-        console.log(`NEW FIELD`);
+        // console.log(`NEW FIELD`);
         const field = { _id: this.viewDef.fields.length, properties: {} };
         FormserviceMisc.mergeInFieldDefinition(newField, field);
-        console.log(`field=`, field);
+        // console.log(`field=`, field);
         field.sequence = this.viewDef.fields.length;
         this.viewDef.fields.push(field);
 
@@ -295,11 +303,11 @@ export default {
         const url = `http://localhost:57990/formservice/field/${this.view}`;
         // console.log(`url=`, url)
         const reply = await axios.post(url, field);
-        console.log(`reply=`, reply.data);
+        // console.log(`reply=`, reply.data);
         if (reply.status === 200) {
           this.$buefy.toast.open({ message: "Field added", type: "is-info" });
         } else {
-          console.log(`reply=`, reply);
+          // console.log(`reply=`, reply);
           this.$buefy.toast.open({
             message: "Error adding field",
             type: "is-danger",
@@ -321,11 +329,11 @@ export default {
         const url = `http://localhost:57990/formservice/field/${this.view}/${originalFieldName}`;
         // console.log(`url=`, url)
         const reply = await axios.put(url, field);
-        console.log(`reply=`, reply.data);
+        // console.log(`reply=`, reply.data);
         if (reply.status === 200) {
           this.$buefy.toast.open({ message: "Field updated", type: "is-info" });
         } else {
-          console.log(`reply=`, reply);
+          // console.log(`reply=`, reply);
           this.$buefy.toast.open({
             message: "Error updating field",
             type: "is-danger",
@@ -346,11 +354,11 @@ export default {
     },
 
     findFieldByName: function (name) {
-      console.log(`findFieldByName(${name})`)
+      // console.log(`findFieldByName(${name})`)
       for (const field of this.viewDef.fields) {
-        console.log(`  -->  field.name=`, field.name)
+        // console.log(`  -->  field.name=`, field.name)
         if (field.name === name) {
-          console.log(`   found`)
+          // console.log(`   found`)
           return field;
         }
       }
@@ -358,12 +366,12 @@ export default {
     },
 
     cancelFieldEdit: async function (newField) {
-      console.log(`cancelFieldEdit()`);
+      // console.log(`cancelFieldEdit()`);
       this.isModalActive = false;
     },
 
     deleteField: async function (newField) {
-      console.log(`deleteField()`, newField);
+      // console.log(`deleteField()`, newField);
       const vm = this;
       this.$buefy.dialog.confirm({
         message: `Are you sure you want to delete this field?`,
@@ -389,16 +397,16 @@ export default {
 
             // Delete it from the database
             const url = `http://localhost:57990/formservice/field/${this.view}/${name}`;
-            console.log(`url=`, url);
+            // console.log(`url=`, url);
             const reply = await axios.delete(url);
-            console.log(`reply=`, reply.data);
+            // console.log(`reply=`, reply.data);
             if (reply.status === 200) {
               vm.$buefy.toast.open({
                 message: "Field deleted",
                 type: "is-info",
               });
             } else {
-              console.log(`reply=`, reply);
+              // console.log(`reply=`, reply);
               vm.$buefy.toast.open({
                 message: "Error deleting field",
                 type: "is-danger",
@@ -456,7 +464,7 @@ export default {
       for (let i = 0; i < this.viewDef.fields.length; i++) {
         const field = this.viewDef.fields[i]
         if (field.sequence !== i) {
-          console.log(`Update ${i} ${field.name}`)
+          // console.log(`Update ${i} ${field.name}`)
           field.sequence = i
           const url = `http://localhost:57990/formservice/field/${this.view}/${field.name}`;
           const promise = await axios.put(url, field)
@@ -474,7 +482,7 @@ export default {
         const reply = await promise
         // console.log(`reply=`, reply.data);
         if (reply.status !== 200) {
-          console.log(`reply=`, reply);
+          // console.log(`reply=`, reply);
           problems++
         }
       }
@@ -505,7 +513,7 @@ export default {
     },
 
     validateJsonToLearn: function () {
-      console.log(`validateJsonToLearn`)
+      // console.log(`validateJsonToLearn`)
       try {
         JSON.parse(this.jsonToLearn)
         this.jsonToLearnError = ''
@@ -516,7 +524,7 @@ export default {
     },
 
     doLearn: async function () {
-      console.log(`doLearn()`)
+      // console.log(`doLearn()`)
       const obj = JSON.parse(this.jsonToLearn)
       this.learnedFields = [ ]
       this.checkedLearnedFields = [ ]
@@ -526,7 +534,7 @@ export default {
     },
 
     doCancelLearn: function () {
-      console.log(`doCancalLearn()`)
+      // console.log(`doCancalLearn()`)
       this.showLearnByExampleModal = false
     },
 
@@ -569,7 +577,7 @@ export default {
         if (reply.status === 200) {
           // this.$buefy.toast.open({ message: "Field added", type: "is-info" });
         } else {
-          console.log(`reply=`, reply);
+          // console.log(`reply=`, reply);
           this.$buefy.toast.open({
             message: "Error adding field",
             type: "is-danger",
