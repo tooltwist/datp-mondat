@@ -223,7 +223,7 @@ export default {
         // console.log(`this.viewDef=`, this.viewDef)
 
 
-        // const url = `http://localhost:57990/formservice/view/${viewName}`;
+        // const url = `${this.$datpEndpoint}//formservice/view/${viewName}`;
         // console.log(`url=`, url);
         // const reply = await axios.get(url);
         // console.log(`viewsX=`, reply.data);
@@ -300,7 +300,7 @@ export default {
         this.viewDef.fields.push(field);
 
         // Now insert into the database
-        const url = `http://localhost:57990/formservice/field/${this.view}`;
+        const url = `${this.$datpEndpoint}//formservice/field/${this.view}`;
         // console.log(`url=`, url)
         const reply = await axios.post(url, field);
         // console.log(`reply=`, reply.data);
@@ -326,7 +326,7 @@ export default {
         // console.log(`after=`, JSON.stringify(field, '', 2))
 
         // Now update the database
-        const url = `http://localhost:57990/formservice/field/${this.view}/${originalFieldName}`;
+        const url = `${this.$datpEndpoint}//formservice/field/${this.view}/${originalFieldName}`;
         // console.log(`url=`, url)
         const reply = await axios.put(url, field);
         // console.log(`reply=`, reply.data);
@@ -396,7 +396,7 @@ export default {
             vm.viewDef.fields.splice(fieldIndex, 1);
 
             // Delete it from the database
-            const url = `http://localhost:57990/formservice/field/${this.view}/${name}`;
+            const url = `${this.$datpEndpoint}//formservice/field/${this.view}/${name}`;
             // console.log(`url=`, url);
             const reply = await axios.delete(url);
             // console.log(`reply=`, reply.data);
@@ -466,7 +466,7 @@ export default {
         if (field.sequence !== i) {
           // console.log(`Update ${i} ${field.name}`)
           field.sequence = i
-          const url = `http://localhost:57990/formservice/field/${this.view}/${field.name}`;
+          const url = `${this.$datpEndpoint}//formservice/field/${this.view}/${field.name}`;
           const promise = await axios.put(url, field)
           promises.push(promise)
           // const reply = await axios.put(url, field);
@@ -570,7 +570,7 @@ export default {
         this.viewDef.fields.push(field);
 
         // Now insert into the database
-        const url = `http://localhost:57990/formservice/field/${this.view}`;
+        const url = `${this.$datpEndpoint}//formservice/field/${this.view}`;
         // console.log(`url=`, url)
         const reply = await axios.post(url, field);
         // console.log(`reply=`, reply.data);

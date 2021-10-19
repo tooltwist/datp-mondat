@@ -384,7 +384,7 @@ export default {
         if (tc.name === testCaseName) {
           // Run the test
           //ZZZZZ
-          const url = `http://localhost:57990/datp/1.0/initiate/${tc.transactionType}`
+          const url = `${this.$datpEndpoint}//datp/1.0/initiate/${tc.transactionType}`
           const data = await JSON.parse(tc.inputData)
           console.log(`url=`, url)
           console.log(`data=`, data)

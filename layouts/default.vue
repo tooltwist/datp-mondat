@@ -65,37 +65,37 @@ export default {
         {
           title: 'Home',
           icon: 'home',
-          to: { name: 'index' }
+          to: { name: 'mondat/index' }
         },
         {
           title: 'Performance',
           icon: 'gauge',
-          to: { name: 'performance' }
+          to: { name: 'mondat/performance' }
         },
         {
           title: 'Nodes',
           icon: 'state-machine',
-          to: { name: 'nodes' }
+          to: { name: 'mondat/nodes' }
         },
         {
           title: 'Pipelines',
           icon: 'transit-connection',
-          to: { name: 'pipelines' }
+          to: { name: 'mondat/pipelines' }
         },
         {
           title: 'Transactions',
           icon: 'bank-transfer',
-          to: { name: 'transactions' }
+          to: { name: 'mondat/transactions' }
         },
         {
           title: 'Queues',
           icon: 'human-queue',
-          to: { name: 'queues' }
+          to: { name: 'mondat/queues' }
         },
         {
           title: 'Resolution',
           icon: 'account-alert',
-          to: { name: 'resolution' }
+          to: { name: 'mondat/resolution' }
         },
         // {
         //   title: 'Alerts',
@@ -106,12 +106,12 @@ export default {
           title: 'Abandoned',
           // icon: 'sync-alert',
           icon: 'head-question-outline',
-          to: { name: 'abandoned' }
+          to: { name: 'mondat/abandoned' }
         },
         {
           title: 'Blockage',
           icon: 'timer-off-outline',
-          to: { name: 'blockages' }
+          to: { name: 'mondat/blockages' }
         },
       ],//- items
 
@@ -120,7 +120,7 @@ export default {
         {
           title: 'Testing',
           icon: 'bike-fast',
-          to: { name: 'testCases' }
+          to: { name: 'mondat/testCases' }
         },
         // {
         //   title: 'Tracing',
@@ -133,17 +133,17 @@ export default {
         {
           title: 'TX Types',
           icon: 'shape',
-          to: { name: 'transactionTypes' }
+          to: { name: 'mondat/transactionTypes' }
         },
         {
           title: 'Standard API',
           icon: 'api',
-          to: '/forms/standard'
+          to: 'mondat/forms/standard'
         },
         {
           title: 'Field mapping',
           icon: 'arrow-left-right-bold',
-          to: '/forms/providers'
+          to: 'mondat/forms/providers'
           // to: { name: '/forms/providers' }
         },
         // {

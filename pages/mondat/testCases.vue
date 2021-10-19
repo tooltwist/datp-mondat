@@ -328,7 +328,7 @@ export default {
       this.readytToTestAgain = false
       this.testTimer = ``
       this.testTimer2 = ``
-      const url = `http://localhost:57990/datp/1.0/initiate/${this.selectedRecord.transactionType}`
+      const url = `${this.$datpEndpoint}//datp/1.0/initiate/${this.selectedRecord.transactionType}`
       let response
       try {
         const data = await JSON.parse(this.selectedRecord.inputData)
@@ -370,7 +370,7 @@ export default {
           this.polling = setInterval(async () => {
             // console.log(`check result`)
             try {
-              const url2 = `http://localhost:57990/datp/1.0/result/${transactionId}`
+              const url2 = `${this.$datpEndpoint}//datp/1.0/result/${transactionId}`
               // console.log(`url2=`, url2)
               const response2 = await this.$axios.$get(url2, {
                 // Put inquiryToken in a header

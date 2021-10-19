@@ -6,12 +6,12 @@ export default {
   website : {
     protocol: 'http',
     host: 'localhost',
-    port: 3000,
+    port: 33380,
   },
   api: {
     protocol: 'http',
     host: 'localhost',
-    port: 57990,
+    port: 33370,
     prefix: 'mondat',
     version: '1.0',
   }

@@ -2,23 +2,23 @@
   section.section
     .columns.is-mobile
 
-      NuxtLink(to="/performance")
+      NuxtLink(to="/mondat/performance")
         card(title="Performance", icon="gauge")
           | System monitoring
 
-      NuxtLink(to="/nodes")
+      NuxtLink(to="/mondat/nodes")
         card(title="Nodes", icon="state-machine")
           | Distributed processing
 
-      NuxtLink(to="/pipelines")
+      NuxtLink(to="/mondat/pipelines")
         card(title="Pipelines", icon="transit-connection")
           | Monitor specific pipelines
 
-      NuxtLink(to="/transactions")
+      NuxtLink(to="/mondat/transactions")
         card(title="Transactions", icon="bank-transfer")
           | Investigate transactions
 
-      NuxtLink(to="/queues")
+      NuxtLink(to="/mondat/queues")
         card(title="Queues", icon="human-queue")
           | Throttle throughput
 

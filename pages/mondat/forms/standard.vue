@@ -227,14 +227,14 @@ export default {
   async asyncData({ params, $http }) {
     // console.log(`asyncData()`)
     try {
-      // const url = `http://localhost:57990/gateway/metadata/domains`;
+      // const url = `${this.$datpEndpoint}//gateway/metadata/domains`;
       // const reply = await axios.get(url);
       // // console.log(`reply=`, reply)
       // const providers = reply.data;
       // console.log(`providers=`, providers)
       // const providerCode = 'std'
-      // const url3 = `http://localhost:57990/gateway/metadata/services/${providerCode}`;
-      const url3 = `http://localhost:57990/gateway/metadata/services`;
+      // const url3 = `${this.$datpEndpoint}//gateway/metadata/services/${providerCode}`;
+      const url3 = `${this.$datpEndpoint}//gateway/metadata/services`;
       const reply3 = await axios.get(url3);
       // console.log(`reply3=`, reply3)
 
@@ -265,7 +265,7 @@ export default {
   //   // this.loadLatestMessages();
 
   //   // Get the providers
-  //   const url = `http://localhost:57990/gateway/metadata/domains`;
+  //   const url = `${this.$datpEndpoint}//gateway/metadata/domains`;
   //   const reply = await axios.get(url);
   //   // console.log(`reply=`, reply)
   //   this.providers = reply.data;
@@ -302,7 +302,7 @@ export default {
     //   }
 
     //   // See https://www.npmjs.com/package/ava-http
-    //   const endpoint = `http://localhost:57990/gateway`
+    //   const endpoint = `${this.$datpEndpoint}//gateway`
     //   const url = `${endpoint}/${OPERATION}/${this.providerCode}`
     //   // console.log(`url=`, url)
     //   const body = {
@@ -333,7 +333,7 @@ export default {
     //   }
 
     //   // Load services
-    //   const url3 = `http://localhost:57990/gateway/metadata/services/${this.providerCode}`;
+    //   const url3 = `${this.$datpEndpoint}//gateway/metadata/services/${this.providerCode}`;
     //   const reply3 = await axios.get(url3);
     //   console.log(`reply3=`, reply3)
     //   this.services = reply3.data;
@@ -350,8 +350,8 @@ export default {
     // // async loadViews () {
 
     //   // Load views
-    //   // const url = `http://localhost:57990/gateway/metadata/views/${this.providerCode}/${this.serviceCode}?fields=true&mappings=true`;
-    //   const url = `http://localhost:57990/gateway/metadata/views/${this.providerCode}/${this.serviceCode}?createIfNotFound=true`;
+    //   // const url = `${this.$datpEndpoint}//gateway/metadata/views/${this.providerCode}/${this.serviceCode}?fields=true&mappings=true`;
+    //   const url = `${this.$datpEndpoint}//gateway/metadata/views/${this.providerCode}/${this.serviceCode}?createIfNotFound=true`;
     //   console.log(`url=`, url)
     //   const reply = await axios.get(url);
     //   // console.log(`views=`, reply)

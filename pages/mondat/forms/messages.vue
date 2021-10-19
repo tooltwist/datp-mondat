@@ -124,7 +124,7 @@ export default {
     async loadLatestMessages() {
       // console.log(`loadLatestMessages`)
 
-      const url = `http://localhost:57990/admin/latestLogEntries/service,request,backendRequest,backendResponse,response`;
+      const url = `${this.$datpEndpoint}//admin/latestLogEntries/service,request,backendRequest,backendResponse,response`;
       const reply = await axios.get(url);
       const data = reply.data;
       // console.log(`data=`, data)
