@@ -9,141 +9,91 @@
 
     DatemonNotification
       | This page allows forms to be defined, and mapped against our standard API forms.
-
-    //- | {{checkArrows}}
-    //- hr
-    //- span(style="font-size:9px; line-height:0.5;")
-    //-   b {{theLeftViewName}}
-    //-   | : {{theLeftView}}
-    //- //- hr
-    //- br
-    //- span(style="font-size:9px; line-height:0.9;")
-    //-   b {{theRightViewName}}
-    //-   | : {{theRightView}}
-    //- br
-    //- span(style="font-size:9px; line-height:0.9;")
-    //-   b mappng:&nbsp;
-    //-   | {{theMapping}}
-    //- hr
     br
 
-    b-field(horizontal, label="Remittance Provider")
-      b-select(
-        placeholder="Select a remittance provider",
-        v-model="providerCode",
-        @input="changeProvider"
-      )
-        //- option(v-for="p in activeProviders", :value="p.code", :key="p.code") {{ p.name }} {{p.status}}
-        option(v-for="p in activeProviders", :value="p.code", :key="p.code") {{ p.name }}
-        //- option(v-for="s in services", :value="s.service", :key="s.service")
-          | {{s.service}} - {{s.description}}
-      .is-pulled-right.is-size-7(v-show="currentViewName") {{ currentViewName }}
 
-    b-field(v-if="providerCode", horizontal, label="Service")
-      b-select(
-        placeholder="Select a service",
-        v-model="serviceCode",
-        @input="changeView"
-      )
-        //- option(v-for="s in services", :value="s.service", :key="s.service")
-        //-   | {{s.service}} - {{s.description}}
-        optgroup(v-for="category in categories", :label="category.description")
-          option(
-            v-for="s in category.services",
-            :value="s.service",
-            :key="s.service"
+    span(v-if="loading")
+      | Loading...
+    span(v-else-if="loadError")
+      .notification.is-danger() {{loadError}}
+    template(v-else)
+      b-field(horizontal, label="Remittance Provider")
+        b-select(
+          placeholder="Select a remittance provider",
+          v-model="providerCode",
+          @input="changeProvider"
+        )
+          //- option(v-for="p in activeProviders", :value="p.code", :key="p.code") {{ p.name }} {{p.status}}
+          option(v-for="p in activeProviders", :value="p.code", :key="p.code") {{ p.name }}
+          //- option(v-for="s in services", :value="s.service", :key="s.service")
+            | {{s.service}} - {{s.description}}
+        .is-pulled-right.is-size-7(v-show="currentViewName") {{ currentViewName }}
+
+      b-field(v-if="providerCode", horizontal, label="Service")
+        b-select(
+          placeholder="Select a service",
+          v-model="serviceCode",
+          @input="changeView"
+        )
+          //- option(v-for="s in services", :value="s.service", :key="s.service")
+          //-   | {{s.service}} - {{s.description}}
+          optgroup(v-for="category in categories", :label="category.description")
+            option(
+              v-for="s in category.services",
+              :value="s.service",
+              :key="s.service"
+            )
+              //- | {{s.label}}
+              | {{ s.service }} - {{ s.description }}
+
+      b-field(v-if="providerCode", horizontal, label="Message type")
+        div
+          button.button(:class="{ 'is-primary is-light' : messageType==='request'}", @click="messageType='request'; changeView()")
+            | Request (API &nbsp;
+            b-icon(icon="arrow-right", size="is-small ", centered)
+            | &nbsp; {{providerCode}})
+          | &nbsp;&nbsp;&nbsp;
+          button.button(:class="{ 'is-primary is-light' : messageType==='response'}", @click="messageType='response'; changeView()")
+            | Reponse (API &nbsp;
+            b-icon(icon="arrow-left", size="is-medium ", centered)
+            | &nbsp; {{providerCode}})
+
+      br
+      | {{currentViewName}}
+      hr
+      b-tabs(v-if="currentlyLoadedView === currentViewName", @input="checkArrows++")
+        b-tab-item(key="fields", label="Fields")
+          //ZZZZZ Does this work????
+          formservice-fields(:view="currentViewName", :fields="currentViewName.fields", @updated="rightSideViewHasChanged")
+
+        b-tab-item(key="visual", label="Visual mapping")
+          formservice-mapping-visual(
+            :view="currentViewName",
+            :provider="providerCode",
+            :service="serviceCode",
+            :messageType="messageType",
+            :checkArrows="checkArrows"
           )
-            //- | {{s.label}}
-            | {{ s.service }} - {{ s.description }}
 
-    //- b-field(v-if="providerCode && serviceCode", horizontal, label="Connector")
-      b-select(
-        placeholder="Select a backend connector",
-        v-model="connector"
-      )
-        option(
-          v-for="c in connectors",
-          :value="c.connector",
-          :key="c.connector"
-        )
-          | {{ c.description }}
-
-    b-field(v-if="providerCode", horizontal, label="Message type")
-      div
-        button.button(:class="{ 'is-primary is-light' : messageType==='request'}", @click="messageType='request'; changeView()")
-          | Request (API &nbsp;
-          b-icon(icon="arrow-right", size="is-small ", centered)
-          | &nbsp; {{providerCode}})
-        | &nbsp;&nbsp;&nbsp;
-        button.button(:class="{ 'is-primary is-light' : messageType==='response'}", @click="messageType='response'; changeView()")
-          | Reponse (API &nbsp;
-          b-icon(icon="arrow-left", size="is-medium ", centered)
-          | &nbsp; {{providerCode}})
-
-
-    //- b-field(v-if="providerCode", horizontal, label="Message type")
-      b-select(
-        placeholder="Select a message type",
-        v-model="messageType",
-        @input="changeView"
-      )
-        option(v-for="mt in messageTypes", :value="mt.type", :key="mt.type")
-          | {{ mt.description }}
-
-    br
-    //- | {{currentlyLoadedView}} VS {{currentViewName}}
-    | {{currentViewName}}
-    hr
-    b-tabs(v-if="currentlyLoadedView === currentViewName", @input="checkArrows++")
-      b-tab-item(key="fields", label="Fields")
-        //ZZZZZ Does this work????
-        formservice-fields(:view="currentViewName", :fields="currentViewName.fields", @updated="rightSideViewHasChanged")
-
-      b-tab-item(key="visual", label="Visual mapping")
-        formservice-mapping-visual(
-          :view="currentViewName",
-          :provider="providerCode",
-          :service="serviceCode",
-          :messageType="messageType",
-          :checkArrows="checkArrows"
-        )
-
-      b-tab-item(key="mapping", label="Mapping table")
-        //- b-table(v-if="messageType.toLowerCase().indexOf('request')>=0", :data="currentViewName.mapping", :columns="mappingRequestColumns")
-        //- b-table(v-else, :data="currentViewName.mapping", :columns="mappingResponseColumns")
-        formservice-mapping-request(
-          v-if="messageType.toLowerCase().indexOf('request') >= 0",
-          :messageType="messageType"
-        )
-    //- formservice-mapping-request(
-          v-if="messageType.toLowerCase().indexOf('request') >= 0",
-          :view="currentViewName",
-          :provider="providerCode",
-          :service="serviceCode",
-          :messageType="messageType"
-        )
-    //- hr
-    //- formservice-mapping-response(
-          v-else,
-          :view="currentViewName",
-          :provider="providerCode",
-          :service="serviceCode",
-          :messageType="messageType"
-        )
-
-    //- hr
-    .notification.is-danger(v-if="error") Invalid amount
+        b-tab-item(key="mapping", label="Mapping table")
+          //- b-table(v-if="messageType.toLowerCase().indexOf('request')>=0", :data="currentViewName.mapping", :columns="mappingRequestColumns")
+          //- b-table(v-else, :data="currentViewName.mapping", :columns="mappingResponseColumns")
+          formservice-mapping-request(
+            v-if="messageType.toLowerCase().indexOf('request') >= 0",
+            :messageType="messageType"
+          )
+      .notification.is-danger(v-if="error") Invalid amount
 </template>
 
 <script>
 import axios from "axios";
-import FormserviceMisc from "../../lib/formservice-misc";
-import FormserviceFields from '../../components/formservice-fields'
-import FormserviceMappingVisual from '../../components/formservice-mapping-visual.vue'
-import FormserviceMappingRequest from '../../components/formservice-mapping-request.vue'
-import FormserviceMappingResponse from '../../components/formservice-mapping-response.vue'
-import DatemonNotification from "../../components/DatmonNotification.vue"
-import formserviceMisc from '../../lib/formservice-misc';
+import FormserviceMisc from "~/lib/formservice-misc";
+import FormserviceFields from '~/components/formservice-fields'
+import FormserviceMappingVisual from '~/components/formservice-mapping-visual.vue'
+import FormserviceMappingRequest from '~/components/formservice-mapping-request.vue'
+import FormserviceMappingResponse from '~/components/formservice-mapping-response.vue'
+import DatemonNotification from "~/components/DatmonNotification.vue"
+import formserviceMisc from '~/lib/formservice-misc';
 
 export default {
   name: "Messages",
@@ -156,45 +106,16 @@ export default {
   },
   data() {
     return {
-      providers: [
-        // {
-        //   provider: 'cebuana',
-        //   name: 'Cebuana'
-        // },
-        // {
-        //   provider: 'wu',
-        //   name: 'Western Union'
-        // }
-      ],
+      loading: true,
+      loadError: null,
 
+      providers: [ ],
       categories: [ ],
       // services: [ ],
       messageTypes: [
         { type: 'request', description: 'Request to backend' },
         { type: 'response', description: 'Response from backend' },
       ],
-      // connectors: [
-      //   {
-      //     connector: 'mock-generic',
-      //     description: 'Generic mock backend'
-      //   },
-      //   {
-      //     connector: 'mock-cebuana',
-      //     description: 'Mock Cebuana backend'
-      //   },
-      //   {
-      //     connector: 'mock-ussc',
-      //     description: 'Mock USSC backend'
-      //   },
-      //   {
-      //     connector: 'mock-wu',
-      //     description: 'Mock Western Union backend'
-      //   }
-      // ],
-      // views: [ ],
-
-      ZZZview: { },
-
 
       mode: 'mapping',
       providerName: '',
@@ -231,89 +152,33 @@ export default {
           label: 'Mandatory'
         }
       ],
-      // mappingRequestColumns: [
-      //   {
-      //     field: 'source',
-      //     label: 'Source'
-      //   },
-      //   {
-      //     field: 'converter',
-      //     label: 'Converter'
-      //   },
-      //   {
-      //     field: 'field',
-      //     label: 'Field',
-      //     // width: 200,
-      //   },
-      // ],
-      // mappingResponseColumns: [
-      //   {
-      //     field: 'field',
-      //     label: 'Field',
-      //     // width: 200,
-      //   },
-      //   {
-      //     field: 'converter',
-      //     label: 'Converter'
-      //   },
-      //   {
-      //     field: 'source',
-      //     label: 'Source'
-      //   }
-      // ],
 
       // Error message
       error: ''
     };
   },
 
-  async asyncData({ params, $http }) {
-    // console.log(`providers.vue:asyncData()`)
-    const url = `${this.$datpEndpoint}//gateway/metadata/domains`
-    // console.log(`url=`, url)
-    const reply = await axios.get(url);
-    // console.log(`reply=`, reply)
-    const providers = reply.data;
-    // console.log(`providers=`, providers)
-    return { providers }
+  async asyncData({ params, $http, $monitorEndpoint }) {
+    const url = `${$monitorEndpoint}/metadata/domains`
+    try {
+      const reply = await axios.get(url);
+      const providers = reply.data;
+      return { providers, loading: false }
+    } catch (e) {
+      console.log(`url=`, url)
+      console.log(`e.response=`, e.response)
+      return { loading: false, loadError: e.toString() }
+    }
   },
 
-  // mounted: async function () {
-  //   console.log(`mounted`)
-  //   // this.loadLatestMessages();
-
-  //   // Get the providers
-  //   const url = `${this.$datpEndpoint}//gateway/metadata/domains`;
-  //   const reply = await axios.get(url);
-  //   // console.log(`reply=`, reply)
-  //   this.providers = reply.data;
-  //   console.log(`this.providers=`, this.providers)
-  // },
-
   computed: {
-    // providerName: function () {
-    //   for (const p of this.providers) {
-    //     if (p.code === this.providerCode) {
-    //       return this.providerName
-    //     }
-    //   }
-    //   return '???'
-    // }
     currentViewName: function () {
       return formserviceMisc.viewName(this.providerCode, this.serviceCode, this.messageType)
-      // if (this.providerCode && this.serviceCode && this.messageType) {
-      //   return `${this.providerCode}-${this.serviceCode}-${this.messageType}`
-      // }
-      // return null
     },
 
     stdViewName: function () {
       const provider = 'std'
       return formserviceMisc.viewName(provider, this.serviceCode, this.messageType)
-      // if (this.serviceCode && this.messageType) {
-      //   return `${provider}-${this.serviceCode}-${this.messageType}`
-      // }
-      // return null
     },
 
     activeProviders: function () {
@@ -345,35 +210,6 @@ export default {
   },
 
   methods: {
-    // getFees: async function () {
-    //   console.log(`getFees`)
-    //   const OPERATION = 'getFees'
-
-    //   this.error = ''
-    //   const amount = parseInt(this.amount)
-    //   if (isNaN(amount)) {
-    //     this.error = `Invalid amount`
-    //     return
-    //   }
-
-    //   // See https://www.npmjs.com/package/ava-http
-    //   const endpoint = `${this.$datpEndpoint}//gateway`
-    //   const url = `${endpoint}/${OPERATION}/${this.providerCode}`
-    //   // console.log(`url=`, url)
-    //   const body = {
-    //     amount,
-    //     destination_country: this.countryCode,
-    //     currency: this.currencyCode,
-    //     promo_code: this.promoCode,
-    //   }
-    //   // console.log(`body=`, body)
-    //   const reply = await axios({
-    //     method: 'post',
-    //     url,
-    //     data: body })
-    //   // console.log(`reply.data=`, reply.data)
-    //   this.fees = reply.data
-    // },
 
     changeProvider: async function () {
       // console.log(`changeProvider(${this.providerCode})`)
@@ -388,8 +224,8 @@ export default {
       }
 
       // Load services
-      // const url3 = `${this.$datpEndpoint}//gateway/metadata/services/${this.providerCode}`;
-      const url3 = `${this.$datpEndpoint}//gateway/metadata/services`;
+      // const url3 = `${this.$monitorEndpoint}/metadata/services/${this.providerCode}`;
+      const url3 = `${this.$monitorEndpoint}/metadata/services`;
       const reply3 = await axios.get(url3);
       // console.log(`reply3=`, reply3)
       // this.services = reply3.data;

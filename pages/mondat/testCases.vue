@@ -5,7 +5,7 @@
       a.button.is-primary(@click="newRecord") Add test case
     .is-pulled-right
       | &nbsp;&nbsp;
-      a.button(href="/loadTesting", target="_blank") Load testing...
+      a.button(href="/mondat/loadTesting", target="_blank") Load testing...
 
 
     //- h2.title.is-3.has-text-grey
@@ -16,8 +16,12 @@
         b-icon(icon="bike-fast", size="is-medium")
       | Testing
 
-    //- | {{testCases}}
-    DatemonTable(:data="testCases", :columns="columns", :rows="0", @select="selectTestCase", @runTest="doRunTest")
+    span(v-if="loading")
+      | Loading...
+    span(v-else-if="loadError")
+      .notification.is-danger() {{loadError}}
+    template(v-else)
+      DatemonTable(:data="testCases", :columns="columns", :rows="0", @select="selectTestCase", @runTest="doRunTest")
 
 
 
@@ -116,8 +120,8 @@
 </template>
 
 <script>
-import DatemonNotification from "../components/DatmonNotification.vue"
-import DatemonTable from "../components/DatmonTable.vue"
+import DatemonNotification from "~/components/DatmonNotification.vue"
+import DatemonTable from "~/components/DatmonTable.vue"
 
 const POLLING_INTERVAL = 500
 
@@ -131,6 +135,8 @@ export default {
     return {
       testCases: [ ],
       mapping: [ ],
+      loading: true,
+      loadError: null,
 
       columns: [
         {
@@ -178,15 +184,19 @@ export default {
   },//- data
 
 
-  async asyncData({ $axios, $daptEndpoint }) {
-    // console.log(`asyncData()`)
-    const url = `${$daptEndpoint}/transactionMapping`
-    const mapping = await $axios.$get(url)
-
-    const url2 = `${$daptEndpoint}/testCases`
-    const testCases = await $axios.$get(url2)
-
-    return { mapping, testCases }
+  async asyncData({ $axios, $monitorEndpoint }) {
+    const url = `${$monitorEndpoint}/transactionMapping`
+    const url2 = `${$monitorEndpoint}/testCases`
+    try {
+      const mapping = await $axios.$get(url)
+      const testCases = await $axios.$get(url2)
+      return { mapping, testCases, loading: false }
+    } catch (e) {
+      console.log(`url=`, url)
+      console.log(`url2=`, url2)
+      console.log(`e.response=`, e.response)
+      return { nodes: [ ], loading: false, loadError: e.toString() }
+    }
   },//- asyncData
 
   beforeDestroy () {
@@ -264,7 +274,7 @@ export default {
       }
 
       // Save the mapping
-      const url = `${this.$daptEndpoint}/testCase`
+      const url = `${this.$monitorEndpoint}/testCase`
       // console.log(`url=`, url)
       const result = await this.$axios.$post(url, this.selectedRecord)
       // console.log(`result=`, result)
@@ -276,7 +286,7 @@ export default {
       this.showModal = false
 
       // Reload all the mappings
-      const url2 = `${this.$daptEndpoint}/testCases`
+      const url2 = `${this.$monitorEndpoint}/testCases`
       this.testCases = await this.$axios.$get(url2)
     },
 
@@ -284,7 +294,7 @@ export default {
       // console.log(`doDelete()`, this.selectedRecord)
       // return
       try {
-        const url = `${this.$daptEndpoint}/testCase/${this.selectedRecord.name}`
+        const url = `${this.$monitorEndpoint}/testCase/${this.selectedRecord.name}`
         // console.log(`url=`, url)
         const result = await this.$axios.$delete(url)
         // console.log(`result=`, result)
@@ -293,7 +303,7 @@ export default {
         this.showModal = false
 
         // Reload all the mappings
-        const url2 = `${this.$daptEndpoint}/testCases`
+        const url2 = `${this.$monitorEndpoint}/testCases`
         this.testCases = await this.$axios.$get(url2)
 
       } catch (e) {
@@ -328,7 +338,7 @@ export default {
       this.readytToTestAgain = false
       this.testTimer = ``
       this.testTimer2 = ``
-      const url = `${this.$datpEndpoint}//datp/1.0/initiate/${this.selectedRecord.transactionType}`
+      const url = `${this.$datpEndpoint}/initiate/${this.selectedRecord.transactionType}`
       let response
       try {
         const data = await JSON.parse(this.selectedRecord.inputData)
@@ -370,7 +380,7 @@ export default {
           this.polling = setInterval(async () => {
             // console.log(`check result`)
             try {
-              const url2 = `${this.$datpEndpoint}//datp/1.0/result/${transactionId}`
+              const url2 = `${this.$datpEndpoint}/result/${transactionId}`
               // console.log(`url2=`, url2)
               const response2 = await this.$axios.$get(url2, {
                 // Put inquiryToken in a header

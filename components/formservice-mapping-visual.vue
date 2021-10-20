@@ -470,7 +470,7 @@ export default {
           const to = this.rightRows[toIndex].path
           // console.log(`from=`, from)
           // console.log(`to=`, to)
-          await FormserviceMisc.addMapping(mappingId, -1, to, from, null)
+          await FormserviceMisc.addMapping(this.$formserviceEndpoint, mappingId, -1, to, from, null)
 
           // Delete any arrow already pointing to the same right side
           // console.log(`arrowBeingMoved=`, this.arrowBeingMoved)
@@ -517,8 +517,7 @@ export default {
       if (toIndex >= 0 && toIndex < this.rightRows.length) {
         // console.log(`YARP 10 ${toIndex} of ${this.rightRows.length}`)
         const to = this.rightRows[toIndex].path
-        const reply = await FormserviceMisc.addMapping(mappingId, -1, to, '-', null)
-        // console.log(`reply=`, reply)
+        await FormserviceMisc.addMapping(this.$formserviceEndpoint, mappingId, -1, to, '-', null)
       }
 
       this.selectedRowId = 0

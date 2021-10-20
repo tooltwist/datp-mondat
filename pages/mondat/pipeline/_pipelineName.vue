@@ -10,48 +10,28 @@
           b-icon(icon="bank-transfer", size="is-medium")
         | Pipeline Assembly
 
-      .columns
-        .column.is-6
-          .my-backdrop
-            .my-pipeline-header {{pipelineName}}
-            draggable(v-model="steps", :group="{ name: 'myList' }")
-              transition-group
-                div(v-for="step in steps", :key="step.id")
-                  //- | {{step}}
-                  StepBox(:step="step", @changed="onStepDefinitionChange", @deleted="onStepDelete")
-          //- hr
-          //- | {{steps}}
-          //- hr
-          //- | {{description}}
-        .column.is-1
-        .column.is-5
-          .my-backdrop
-            .my-pipeline-header-2 Available step types (drag)
-            //- | {{stepTypes}}
-            //- hr
-            draggable(v-model="stepTypes", :sort="false", :group="{ name: 'myList', put: false, pull: 'clone' }", :clone="stepFromStepType")
-              transition-group
-                div(v-for="st in stepTypes", :key="st.id")
-                  StepTypeBox(:stepType="st", :editing="true")
-                  //- el-collapse(:v-model="true")
-                    el-collapse-item
-                      | here is
-                      br
-                      | more stuff
 
-
-
-            //- | {{ stepTypes }}
-
-          //- hr
-          //- | dirty = {{dirty}}
-          //- br
-
-      //- h2.title.is-3.has-text-grey
-        //- | Steps&nbsp;&nbsp;
-        | Pipeline definition: '{{pipelineName}}'
-      //- .pipeline-section
-        StepBox(:definition="definition")
+      span(v-if="loading")
+        | Loading...
+      span(v-else-if="loadError")
+        .notification.is-danger() {{loadError}}
+      template(v-else)
+        .columns
+          .column.is-6
+            .my-backdrop
+              .my-pipeline-header {{pipelineName}}
+              draggable(v-model="steps", :group="{ name: 'myList' }")
+                transition-group
+                  div(v-for="step in steps", :key="step.id")
+                    StepBox(:step="step", @changed="onStepDefinitionChange", @deleted="onStepDelete")
+          .column.is-1
+          .column.is-5
+            .my-backdrop
+              .my-pipeline-header-2 Available step types (drag)
+              draggable(v-model="filterdStepTypes", :sort="false", :group="{ name: 'myList', put: false, pull: 'clone' }", :clone="stepFromStepType")
+                transition-group
+                  div(v-for="st in filterdStepTypes", :key="st.id")
+                    StepTypeBox(:stepType="st", :editing="true")
 </template>
 
 <script>
@@ -67,6 +47,9 @@ export default {
   },
   data: function () {
     return {
+      loading: true,
+      loadError: null,
+
       pipelineName: '',
       description: '',
       // definition: { },
@@ -85,60 +68,70 @@ export default {
       dirty: false, // needs to be updated
     }
   },
-  async asyncData({ $axios, $daptEndpoint, params }) {
-    // console.log(`asyncData()`, params)
-    // console.log(params.pipelineName);
+
+  async asyncData({ $axios, $monitorEndpoint, params }) {
     const pipelineName = params.pipelineName
-
-
     // A bit lazy here, we'll select all nodes...
-    const url1 = `${$daptEndpoint}/nodes`
-    const nodes = await $axios.$get(url1)
+    const url1 = `${$monitorEndpoint}/nodes`
+    const url = `${$monitorEndpoint}/pipeline/${pipelineName}/definition`
+    try {
+      const nodes = await $axios.$get(url1)
 
-    // Now find our node
-    // const nodeId = params.nodeId
-    const nodeName = 'master'
-    let node = null
-    // console.log(`nodeName=`, nodeName)
-    for (const n of nodes) {
-      // console.log(`n=`, n)
-      if (n.name === nodeName) {
-        // return { nodeId, node }
-        node = n
-        break
+      // Now find our node
+      // const nodeId = params.nodeId
+      const nodeName = 'master'
+      let node = null
+      // console.log(`nodeName=`, nodeName)
+      for (const n of nodes) {
+        // console.log(`n=`, n)
+        if (n.name === nodeName) {
+          // return { nodeId, node }
+          node = n
+          break
+        }
       }
+      // console.log(`node=`, node)
+      const stepTypes = node.stepTypes.sort(compareStepTypes)
+
+      // Get details of the specific pipeline
+      // console.log(`url=`, url)
+      const definition = await $axios.$get(url)
+
+      // Add IDs so it can be draggable
+      const description = definition.description
+      const steps = definition.steps
+      let nextId = resequence(steps)
+      // console.log(`HMMO steps=`, definition.steps)
+      let typeId = 100000
+      for (const st of stepTypes) {
+        st.id = typeId++
+      }
+      return { pipelineName, description, node, steps, stepTypes, nextId, loading: false }
+    } catch (e) {
+      console.log(`url1=`, url1)
+      console.log(`url=`, url)
+      console.log(`e.response=`, e.response)
+      return { transactions: [ ], loading: false, loadError: e.toString() }
     }
-    // console.log(`node=`, node)
-    const stepTypes = node.stepTypes
-
-
-
-    // Get details of the specific pipeline
-    const url = `${$daptEndpoint}/pipeline/${pipelineName}/definition`
-    // console.log(`url=`, url)
-    const definition = await $axios.$get(url)
-    // const definition = await $axios.$get(`http://localhost:8080/pipeline/${pipelineName}/description`)
-    // console.log(`definition=`, definition)
-
-    // const url2 = `${$daptEndpoint}/pipeline/${pipelineName}/stepTypes`
-    // console.log(`url2=`, url2)
-    // const stepTypes = await $axios.$get(url2)
-
-    // Add IDs so it can be draggable
-    const description = definition.description
-    const steps = definition.steps
-    let nextId = resequence(steps)
-    // console.log(`HMMO steps=`, definition.steps)
-    let typeId = 100000
-    for (const st of stepTypes) {
-      st.id = typeId++
-    }
-
-    return { pipelineName, description, node, steps, stepTypes, nextId }
   },
+
+  computed: {
+    filterdStepTypes: function() {
+      console.log(`filteredStepTypes()`)
+      const list = this.stepTypes
+      // console.log(`this.stepTypes=`, this.stepTypes)
+      // list.sort((a, b) => {
+      //   console.log(`${a.description} vs ${b.description}`)
+      //   return a.description - b.description
+      // })
+      return list
+    }
+  },
+
   methods: {
+
     backToPipelines: function() {
-      this.$router.push({ path: `/pipelines` })
+      this.$router.push({ path: `/mondat/pipelines` })
     },
 
     savePipeline: async function () {
@@ -152,7 +145,7 @@ export default {
         steps: this.steps,
       }
 
-      const url = `${this.$daptEndpoint}/pipeline/draft`
+      const url = `${this.$monitorEndpoint}/pipeline/draft`
       // console.log(`url=`, url)
       const reply = await this.$axios.$post(url, definition)
       // console.log(`reply=`, reply)
@@ -212,6 +205,13 @@ export default {
   }
 }
 
+function compareStepTypes(stepType1, stepType2) {
+  const a = stepType1.description.toUpperCase()
+  const b = stepType2.description.toUpperCase()
+  if (a < b) return -1
+  if (a > b) return +1
+  return 0
+}
 
 function resequence(steps) {
   let nextId = 0

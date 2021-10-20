@@ -129,8 +129,7 @@ export default {
       }
 
       // See https://www.npmjs.com/package/ava-http
-      const endpoint = `${this.$datpEndpoint}//gateway`
-      const url = `${endpoint}/${OPERATION}/${this.providerCode}`
+      const url = `${this.$monitorEndpoint}/getFees/${this.providerCode}`
       // console.log(`url=`, url)
       const body = {
         amount,
@@ -153,14 +152,14 @@ export default {
       this.providerName = provider.name
 
       // Load countries
-      const url = `${this.$datpEndpoint}//gateway/countries/${provider.code}`;
+      const url = `${this.$monitorEndpoint}/countries/${provider.code}`;
       const reply = await axios.get(url);
       // console.log(`currencies=`, reply)
       this.countries = reply.data;
       // console.log(`this.countries=`, this.countries)
 
       // Load currencies
-      const url2 = `${this.$datpEndpoint}//gateway/currencies/${provider.code}`;
+      const url2 = `${this.$monitorEndpoint}/currencies/${provider.code}`;
       const reply2 = await axios.get(url2);
       // console.log(`currencies=`, reply2)
       this.currencies = reply2.data;
@@ -173,14 +172,14 @@ export default {
     // this.loadLatestMessages();
 
     // Get the providers
-    const url = `${this.$datpEndpoint}//gateway/metadata/domains`;
+    const url = `${this.$monitorEndpoint}/metadata/domains`;
     const reply = await axios.get(url);
     // console.log(`reply=`, reply)
     this.providers = reply.data;
     // console.log(`this.providers=`, this.providers)
 
     // // Load currencies
-    // const url2 = `${this.$datpEndpoint}//gateway/currencies`;
+    // const url2 = `${this.$monitorEndpoint}/currencies`;
     // const reply2 = await axios.get(url2);
     // console.log(`currencies=`, reply2)
     // this.currencies = reply2.data;

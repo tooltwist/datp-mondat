@@ -3,7 +3,14 @@ import config from "../protected-config/websiteConfig";
 
 export default ({ app }, inject) => {
   const api = config.api
-  const endpoint = `${api.protocol}://${api.host}:${api.port}/${api.prefix}/${api.version}`;
-  inject('daptConfig', config)
-  inject('daptEndpoint', endpoint)
+  inject('datpConfig', config)
+
+  inject('datpEndpoint', `${api.protocol}://${api.host}:${api.port}/${config.prefix.datp}/${api.version}`)
+  inject('monitorEndpoint', `${api.protocol}://${api.host}:${api.port}/${config.prefix.monitor}/${api.version}`)
+  inject('formserviceEndpoint', `${api.protocol}://${api.host}:${api.port}/${config.prefix.formservice}/${api.version}`)
+
+  console.log(`\n\nSet endpoints:`)
+  console.log(`config.prefix.formService=`, config.prefix.formservice)
+  console.log(`config.prefix.datp=`, config.prefix.datp)
+  console.log(`config.prefix.monitor=`, config.prefix.monitor)
 }

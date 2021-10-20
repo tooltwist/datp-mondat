@@ -75,8 +75,8 @@
 <script>
 import LinearGauge from '~/components/LinearGauge.vue'
 import RadialGauge from '~/components/RadialGauge.vue'
-import DatemonNotification from "../components/DatmonNotification.vue"
-import DatemonTable from "../components/DatmonTable.vue"
+import DatemonNotification from "~/components/DatmonNotification.vue"
+import DatemonTable from "~/components/DatmonTable.vue"
 
 const POLLING_INTERVAL = 5000
 
@@ -216,12 +216,12 @@ export default {
   },//- data
 
 
-  async asyncData({ $axios, $daptEndpoint }) {
+  async asyncData({ $axios, $monitorEndpoint }) {
     const nodeId = 'master'
-    const performance15 = await $axios.$get(`${$daptEndpoint}/${nodeId}/recentPerformance?duration=15`)
-    const performance300 = await $axios.$get(`${$daptEndpoint}/${nodeId}/recentPerformance?duration=300`)
-    const performance1800 = await $axios.$get(`${$daptEndpoint}/${nodeId}/recentPerformance?duration=1800`)
-    const performance7200 = await $axios.$get(`${$daptEndpoint}/${nodeId}/recentPerformance?duration=7200`)
+    const performance15 = await $axios.$get(`${$monitorEndpoint}/${nodeId}/recentPerformance?duration=15`)
+    const performance300 = await $axios.$get(`${$monitorEndpoint}/${nodeId}/recentPerformance?duration=300`)
+    const performance1800 = await $axios.$get(`${$monitorEndpoint}/${nodeId}/recentPerformance?duration=1800`)
+    const performance7200 = await $axios.$get(`${$monitorEndpoint}/${nodeId}/recentPerformance?duration=7200`)
     return { performance15, performance300, performance1800, performance7200 }
   },//- asyncData
 
@@ -230,10 +230,10 @@ export default {
       if (this.autoUpdate) {
         // console.log(`update`)
         const nodeId = 'master'
-        this.performance15 = await this.$axios.$get(`${this.$daptEndpoint}/${nodeId}/recentPerformance?duration=15`)
-        this.performance300 = await this.$axios.$get(`${this.$daptEndpoint}/${nodeId}/recentPerformance?duration=300`)
-        this.performance1800 = await this.$axios.$get(`${this.$daptEndpoint}/${nodeId}/recentPerformance?duration=1800`)
-        this.performance7200 = await this.$axios.$get(`${this.$daptEndpoint}/${nodeId}/recentPerformance?duration=7200`)
+        this.performance15 = await this.$axios.$get(`${this.$monitorEndpoint}/${nodeId}/recentPerformance?duration=15`)
+        this.performance300 = await this.$axios.$get(`${this.$monitorEndpoint}/${nodeId}/recentPerformance?duration=300`)
+        this.performance1800 = await this.$axios.$get(`${this.$monitorEndpoint}/${nodeId}/recentPerformance?duration=1800`)
+        this.performance7200 = await this.$axios.$get(`${this.$monitorEndpoint}/${nodeId}/recentPerformance?duration=7200`)
       }
     }, POLLING_INTERVAL)
   },//- created

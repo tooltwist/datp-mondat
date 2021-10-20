@@ -11,9 +11,12 @@
     DatemonNotification
       | Each transaction type is mapped to a specific pipeline version.
 
-    DatemonTable(:data="mapping", :columns="columns", :rows="0", @select="selectMapping")
-    //- DatemonTable(:data="mapping", :columns="columns", :rows="0")
-    //- | {{mapping}}
+    span(v-if="loading")
+      | Loading...
+    span(v-else-if="loadError")
+      .notification.is-danger() {{loadError}}
+    template(v-else)
+      DatemonTable(:data="mapping", :columns="columns", :rows="0", @select="selectMapping")
 
 
     //
@@ -54,8 +57,8 @@
 
 
 <script>
-import DatemonNotification from "../components/DatmonNotification.vue"
-import DatemonTable from "../components/DatmonTable.vue"
+import DatemonNotification from "~/components/DatmonNotification.vue"
+import DatemonTable from "~/components/DatmonTable.vue"
 
 export default {
   components: {
@@ -67,6 +70,9 @@ export default {
     return {
       mapping: [ ],
       pipelines: [ ],
+      loading: true,
+      loadError: null,
+
 
       columns: [
         {
@@ -95,14 +101,19 @@ export default {
     }
   },//- data
 
-  async asyncData({ $axios, $daptEndpoint }) {
-    const url = `${$daptEndpoint}/transactionMapping`
-    const mapping = await $axios.$get(url)
-
-    const url2 = `${$daptEndpoint}/pipelines`
-    const pipelines = await $axios.$get(url2)
-
-    return { mapping, pipelines }
+  async asyncData({ $axios, $monitorEndpoint }) {
+    const url = `${$monitorEndpoint}/transactionMapping`
+    const url2 = `${$monitorEndpoint}/pipelines`
+    try {
+      const mapping = await $axios.$get(url)
+      const pipelines = await $axios.$get(url2)
+      return { mapping, pipelines, loading: false }
+    } catch (e) {
+      console.log(`url=`, url)
+      console.log(`url2=`, url2)
+      console.log(`e.response=`, e.response)
+      return { nodes: [ ], loading: false, loadError: e.toString() }
+    }
   },//- asyncData
 
   methods: {
@@ -145,7 +156,7 @@ export default {
       }
 
       // Save the mapping
-      const url = `${this.$daptEndpoint}/transactionMapping`
+      const url = `${this.$monitorEndpoint}/transactionMapping`
       // console.log(`url=`, url)
       const result = await this.$axios.$post(url, this.mappingForModal)
       // console.log(`result=`, result)
@@ -157,14 +168,14 @@ export default {
       this.showModal = false
 
       // Reload all the mappings
-      const url2 = `${this.$daptEndpoint}/transactionMapping`
+      const url2 = `${this.$monitorEndpoint}/transactionMapping`
       this.mapping = await this.$axios.$get(url2)
     },
 
     async deleteMapping() {
       // console.log(`deleteMapping()`, this.mappingForModal)
       try {
-        const url = `${this.$daptEndpoint}/transactionMapping/${this.mappingForModal.transactionType}`
+        const url = `${this.$monitorEndpoint}/transactionMapping/${this.mappingForModal.transactionType}`
         // console.log(`url=`, url)
         const result = await this.$axios.$delete(url)
         // console.log(`result=`, result)
@@ -173,7 +184,7 @@ export default {
         this.showModal = false
 
         // Reload all the mappings
-        const url2 = `${this.$daptEndpoint}/transactionMapping`
+        const url2 = `${this.$monitorEndpoint}/transactionMapping`
         this.mapping = await this.$axios.$get(url2)
 
       } catch (e) {

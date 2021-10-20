@@ -116,11 +116,11 @@ export default {
 
       // // Load the required views.
       this.stdViewname = FormserviceMisc.viewName('std', this.service, 'response')
-      const stdView = await FormserviceMisc.getView(this.stdViewname)
+      const stdView = await FormserviceMisc.getView(this.$formserviceEndpoint, this.stdViewname)
 
       // const authViewname = FormserviceMisc.viewName('auth', this.service, this.messageType)
       // try {
-      //   this.sourceViews.auth = await FormserviceMisc.getView(authViewname)
+      //   this.sourceViews.auth = await FormserviceMisc.getView(this.$formserviceEndpoint, authViewname)
       // } catch (e) {
       //   console.log(`e=`, e)
       //   alert(`Could not load view definition: ${authViewname}`)
@@ -128,7 +128,7 @@ export default {
 
       // const utilViewname = FormserviceMisc.viewName('util', this.service, this.messageType)
       // try {
-      //   this.sourceViews.utilView = await FormserviceMisc.getView(utilViewname)
+      //   this.sourceViews.utilView = await FormserviceMisc.getView(this.$formserviceEndpoint, utilViewname)
       // } catch (e) {
       //   console.log(`e=`, e)
       //   alert(`Could not load view definition: ${utilViewname}`)
@@ -137,7 +137,7 @@ export default {
       const backendViewname = FormserviceMisc.viewName(this.provider, this.service, this.messageType)
       try {
         const createIfNotFound = true
-        this.sourceViews.backendView = await FormserviceMisc.getView(backendViewname, createIfNotFound)
+        this.sourceViews.backendView = await FormserviceMisc.getView(this.$formserviceEndpoint, backendViewname, createIfNotFound)
       } catch (e) {
         console.log(`e=`, e)
         alert(`Could not load view definition: ${backendViewname}`)
@@ -145,7 +145,7 @@ export default {
 
       // Load the mapping
       this.mappingId = FormserviceMisc.mappingId(this.provider, this.service, this.messageType)
-      this.mapping = await FormserviceMisc.getMapping(this.mappingId)
+      this.mapping = await FormserviceMisc.getMapping(this.$formserviceEndpoint, this.mappingId)
 
       // Add the mappings to the view
       for (const map of this.mapping) {

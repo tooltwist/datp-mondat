@@ -20,8 +20,8 @@
 </template>
 
 <script>
-import DatemonNotification from "../components/DatmonNotification.vue"
-// import DatemonTable from "../components/DatemonTable.vue"
+import DatemonNotification from "~/components/DatmonNotification.vue"
+// import DatemonTable from "~/components/DatemonTable.vue"
 
 export default {
   components: {

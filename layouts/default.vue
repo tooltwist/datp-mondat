@@ -28,10 +28,21 @@
               b-icon(:icon="item.icon")
               | &nbsp;{{ item.title }}
         br
+        //div( v-for="route in $router.options.routes")
+          .is-size-6 &nbsp;{{route.name}}
+          br
         br
         p.menu-label.is-hidden-touch
           | Testing
         ul.menu-list
+          //li
+            NuxtLink(to="/junk", Zexact-active-class="is-active")
+              b-icon(icon="cross")
+              | &nbspJUNK1
+          //li
+            NuxtLink(to="mondat-junk", Zexact-active-class="is-active")
+              b-icon(icon="cross")
+              | &nbspJUNK2
           li(v-for="(item, key) of testitems", :key="key")
             NuxtLink(:to="item.to", exact-active-class="is-active")
               b-icon(:icon="item.icon")
@@ -65,37 +76,37 @@ export default {
         {
           title: 'Home',
           icon: 'home',
-          to: { name: 'mondat/index' }
+          to: { name: 'mondat' }
         },
         {
           title: 'Performance',
           icon: 'gauge',
-          to: { name: 'mondat/performance' }
+          to: { name: 'mondat-performance' }
         },
         {
           title: 'Nodes',
           icon: 'state-machine',
-          to: { name: 'mondat/nodes' }
+          to: { name: 'mondat-nodes' }
         },
         {
           title: 'Pipelines',
           icon: 'transit-connection',
-          to: { name: 'mondat/pipelines' }
+          to: { name: 'mondat-pipelines' }
         },
         {
           title: 'Transactions',
           icon: 'bank-transfer',
-          to: { name: 'mondat/transactions' }
+          to: { name: 'mondat-transactions' }
         },
         {
           title: 'Queues',
           icon: 'human-queue',
-          to: { name: 'mondat/queues' }
+          to: { name: 'mondat-queues' }
         },
         {
           title: 'Resolution',
           icon: 'account-alert',
-          to: { name: 'mondat/resolution' }
+          to: { name: 'mondat-resolution' }
         },
         // {
         //   title: 'Alerts',
@@ -106,12 +117,12 @@ export default {
           title: 'Abandoned',
           // icon: 'sync-alert',
           icon: 'head-question-outline',
-          to: { name: 'mondat/abandoned' }
+          to: { name: 'mondat-abandoned' }
         },
         {
           title: 'Blockage',
           icon: 'timer-off-outline',
-          to: { name: 'mondat/blockages' }
+          to: { name: 'mondat-blockages' }
         },
       ],//- items
 
@@ -120,7 +131,7 @@ export default {
         {
           title: 'Testing',
           icon: 'bike-fast',
-          to: { name: 'mondat/testCases' }
+          to: { name: 'mondat-testCases' }
         },
         // {
         //   title: 'Tracing',
@@ -133,18 +144,18 @@ export default {
         {
           title: 'TX Types',
           icon: 'shape',
-          to: { name: 'mondat/transactionTypes' }
+          to: { name: 'mondat-transactionTypes' }
         },
         {
           title: 'Standard API',
           icon: 'api',
-          to: 'mondat/forms/standard'
+          to: { name: 'mondat-forms-standard' }
         },
         {
           title: 'Field mapping',
           icon: 'arrow-left-right-bold',
-          to: 'mondat/forms/providers'
-          // to: { name: '/forms/providers' }
+          //to: '/mondat/forms/providers'
+          to: { name: 'mondat-forms-providers' }
         },
         // {
         //   title: 'UI example',
@@ -166,12 +177,6 @@ export default {
 
 
   methods: {
-    // selectTransaction: function (row) {
-    //   const txId = row.txId
-    //   // console.log(`selectTransaction(${txId})`)
-    //   this.$router.push({ path: `/steps/${txId}` })
-    // },
-
     setDarkMode: function() {
       const htmlClassName = 'is-dark-mode-active'
       document.documentElement.classList.add(htmlClassName)

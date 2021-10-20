@@ -9,55 +9,58 @@
       .datemon-heading-icon
         b-icon(icon="head-question-outline", size="is-medium")
       | Load testing console
-    //- | {{tests}}
-
-  //- | {{testCases}}
-  .my-blink-area.has-text-centered
-    b-tag.rounded.is-danger(v-if="testsRunning && (blinkCounter % 2)") TESTS ARE RUNNING
-    //- | {{blinkCounter}}
 
 
-  .columns(v-for="r in [0, COLUMNS_PER_ROW]")
-    .column.is-3.has-text-centered(v-for="c in [0, 1, 2, 3]")
-      br
-      br
-      template(v-if="(r+c) < 8")
-        div(@mousedown="doMouseDown($event, r+c)")
-          .my-gauge-box
-            // Translucent cover for unused gauges
-            .my-gauge-hiding-overlay(v-show="!(tests[r+c].testCase)")
-            radial-gauge(:options="radialOptions", :value="tests[r+c].value")
-          div
-            .my-cycler(:style="cyclerStyle(r+c)")
-            select.my-select(placeholder="Select one", v-model="tests[r+c].testCase", @input="testCaseChanged(r+c)")
-              option(:value="''", :key="'--none--'")
-                | (none)
-              option(v-for="tc in testCases", :value="tc.name", :key="tc.name")
-                | {{ tc.name }}
+    //- span(v-if="loading")
+    //-   | Loading...
+    //- span(v-else-if="loadError")
+    //-   .notification.is-danger() {{loadError}}
+    //- template(v-else)
 
-
-  section.section
-    .has-text-centered
-      .is-pulled-right
-        | &nbsp;&nbsp;
-        button.button(@click="closeWindow") close
-      .is-pulled-left(v-if="!useMidiValues")
-        | &nbsp;&nbsp;
-        button.button.is-primary(@click="doResetAll") Reset All
-      .is-pulled-left
-        | &nbsp;&nbsp;
-        button.button.is-danger(v-if="testsRunning", @click="doStopTests") Stop Testing
-        button.button.is-danger(v-else, @click="doRunTests") Start Tests
-      | &nbsp;&nbsp;&nbsp;&nbsp;
-      //- b-tag.roounded.is-danger(v-if="testsRunning && (blinkCounter % 2)") TESTS ARE RUNNING
+    //- | {{testCases}}
+    .my-blink-area.has-text-centered
+      b-tag.rounded.is-danger(v-if="testsRunning && (blinkCounter % 2)") TESTS ARE RUNNING
       //- | {{blinkCounter}}
 
 
+    .columns(v-for="r in [0, COLUMNS_PER_ROW]")
+      .column.is-3.has-text-centered(v-for="c in [0, 1, 2, 3]")
+        br
+        br
+        template(v-if="(r+c) < 8")
+          div(@mousedown="doMouseDown($event, r+c)")
+            .my-gauge-box
+              // Translucent cover for unused gauges
+              .my-gauge-hiding-overlay(v-show="!(tests[r+c].testCase)")
+              radial-gauge(:options="radialOptions", :value="tests[r+c].value")
+            div
+              .my-cycler(:style="cyclerStyle(r+c)")
+              select.my-select(placeholder="Select one", v-model="tests[r+c].testCase", @input="testCaseChanged(r+c)")
+                option(:value="''", :key="'--none--'")
+                  | (none)
+                option(v-for="tc in testCases", :value="tc.name", :key="tc.name")
+                  | {{ tc.name }}
+
+    section.section
+      .has-text-centered
+        .is-pulled-right
+          | &nbsp;&nbsp;
+          button.button(@click="closeWindow") close
+        .is-pulled-left(v-if="!useMidiValues")
+          | &nbsp;&nbsp;
+          button.button.is-primary(@click="doResetAll") Reset All
+        .is-pulled-left
+          | &nbsp;&nbsp;
+          button.button.is-danger(v-if="testsRunning", @click="doStopTests") Stop Testing
+          button.button.is-danger(v-else, @click="doRunTests") Start Tests
+        | &nbsp;&nbsp;&nbsp;&nbsp;
+        //- b-tag.roounded.is-danger(v-if="testsRunning && (blinkCounter % 2)") TESTS ARE RUNNING
+        //- | {{blinkCounter}}
 </template>
 
 <script>
-import DatemonNotification from "../components/DatmonNotification.vue"
-import DatemonTable from "../components/DatmonTable.vue"
+import DatemonNotification from "~/components/DatmonNotification.vue"
+import DatemonTable from "~/components/DatmonTable.vue"
 import LinearGauge from '~/components/LinearGauge.vue'
 import RadialGauge from '~/components/RadialGauge.vue'
 
@@ -77,6 +80,9 @@ export default {
 
   data: function () {
     return {
+      loading: true,
+      loadError: null,
+
       COLUMNS_PER_ROW: 4,
 
       MIN_VALUE: 0,
@@ -230,12 +236,18 @@ export default {
     }
   },//- data
 
-  async asyncData({ $axios, $daptEndpoint }) {
+  async asyncData({ $axios, $monitorEndpoint }) {
 
     // Get the scenarios and the test cases.
-    const url2 = `${$daptEndpoint}/testCases`
-    const testCases = await $axios.$get(url2)
-    return { testCases }
+    const url = `${$monitorEndpoint}/testCases`
+    try {
+      const testCases = await $axios.$get(url)
+      return { testCases, loading: false }
+    } catch (e) {
+      console.log(`url=`, url)
+      console.log(`e.response=`, e.response)
+      return { loading: false, loadError: e.toString() }
+    }
   },//- asyncData
 
   mounted() {
@@ -384,7 +396,7 @@ export default {
         if (tc.name === testCaseName) {
           // Run the test
           //ZZZZZ
-          const url = `${this.$datpEndpoint}//datp/1.0/initiate/${tc.transactionType}`
+          const url = `${this.$monitorEndpoint}//datp/1.0/initiate/${tc.transactionType}`
           const data = await JSON.parse(tc.inputData)
           console.log(`url=`, url)
           console.log(`data=`, data)
@@ -406,7 +418,7 @@ export default {
       // console.log(`getMidiValues()`)
 
       try {
-        const url = `${this.$daptEndpoint}/midiValues`
+        const url = `${this.$monitorEndpoint}/midiValues`
         const result = await this.$axios.$get(url)
         // console.log(`result=`, result)
         if (result.status && result.status !== 'ok') {

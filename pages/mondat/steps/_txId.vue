@@ -3,22 +3,10 @@
   section.section
     .is-pulled-right
       b-button(type="is-success", @click="backToTransactions") Back
-    h2.title.is-3.has-text-grey
-      //- | Steps&nbsp;&nbsp;
+    h2.title.is-4.has-text-grey
+      .datemon-heading-icon
+        b-icon(icon="bank-transfer", size="is-medium")
       | Transaction {{txId}}
-      //- b-icon(icon="bank-transfer", size="is-large")
-    //- h3.subtitle.is-5.has-text-grey
-      | {{txId}}
-
-    //- DatemonNotification
-      | The following are the most recently run transactions.
-
-    //- br
-    //- .container
-      .notification.is-primary
-        p The table below shows steps that have actually been run.
-          | Steps that have not been initiated yet wil not be shown. Note that the steps shown here may not match up with the current pipeline definition
-          | for the transaction type, if a new version of the pipeline is in use.
     br
     DatemonNotification
       p
@@ -28,17 +16,17 @@
         | Note that the steps shown here may not match up with the current pipeline definition
         | for the transaction type, if a new version of the pipeline is in use.
 
-    DatemonTable(:data="steps", :columns="columns", :rows="14")
-
-    //- .buttons.has-text-right
-    //- b-table(:data="steps", :columns="columns", :narrowed="true", :row-class="() => 'my-table-row'")
-    //- br
-    //- | {{steps}}
+    span(v-if="loading")
+      | Loading...
+    span(v-else-if="loadError")
+      .notification.is-danger() {{loadError}}
+    template(v-else)
+      DatemonTable(:data="steps", :columns="columns", :rows="14")
 </template>
 
 <script>
-import DatemonNotification from "../../components/DatmonNotification.vue"
-import DatemonTable from "../../components/DatmonTable.vue"
+import DatemonNotification from "~/components/DatmonNotification.vue"
+import DatemonTable from "~/components/DatmonTable.vue"
 
 export default {
   components: {
@@ -48,6 +36,9 @@ export default {
 
   data: function () {
     return {
+      loading: true,
+      loadError: null,
+
       txId: '',
       steps: [ ],
       columns: [
@@ -87,20 +78,23 @@ export default {
     }
   },//- data
 
-  async asyncData({ $axios, $daptEndpoint, params }) {
-    console.log(`asyncData()`)
+  async asyncData({ $axios, $monitorEndpoint, params }) {
     console.log(params.txId);
     const txId = params.txId
-    const url = `${$daptEndpoint}/transaction/${txId}`
-    // console.log(`url=`, url)
-    const steps = await $axios.$get(url)
-    // const steps = await $axios.$get(`http://localhost:8080/transaction/${txId}`)
-    return { txId, steps }
+    const url = `${$monitorEndpoint}/transaction/${txId}`
+    try {
+      const steps = await $axios.$get(url)
+      return { txId, steps, loading: false }
+    } catch (e) {
+      console.log(`url=`, url)
+      console.log(`e.response=`, e.response)
+      return { loading: false, loadError: e.toString() }
+    }
   },//- asyncData
 
   methods: {
     backToTransactions: function() {
-      this.$router.push({ path: `/transactions` })
+      this.$router.push({ path: `/mondat/transactions` })
     }
   }//- methods
 }

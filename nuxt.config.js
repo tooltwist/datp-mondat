@@ -20,6 +20,10 @@ export default {
     host: '0.0.0.0'
   },
 
+  vite: {
+    ssr: false
+  },
+
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
     // See https://github.com/buefy/nuxt-buefy/issues/43

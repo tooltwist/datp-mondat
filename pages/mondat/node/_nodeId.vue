@@ -3,11 +3,18 @@
   section.section
     .is-pulled-right
       b-button(type="is-success", @click="backToNodes") Back
-    h2.title.is-3.has-text-grey
+    h2.title.is-4.has-text-grey
+      .datemon-heading-icon
+        b-icon(icon="state-machine", size="is-small")
       | Node {{nodeId}}
 
+    span(v-if="loading")
+      | Loading...
+    span(v-else-if="loadError")
+      .notification.is-danger() {{loadError}}
+
     // If the node was not found
-    template(v-if="node === null")
+    template(v-else-if="node === null")
       DatemonNotification
         p
           | Unknown node.
@@ -24,8 +31,8 @@
 </template>
 
 <script>
-import DatemonNotification from "../../components/DatmonNotification.vue"
-import DatemonTable from "../../components/DatmonTable.vue"
+import DatemonNotification from "~/components/DatmonNotification.vue"
+import DatemonTable from "~/components/DatmonTable.vue"
 
 export default {
   components: {
@@ -35,6 +42,9 @@ export default {
 
   data: function () {
     return {
+      loading: true,
+      loadError: null,
+
       nodeId: '',
       node: null,
 
@@ -72,35 +82,30 @@ export default {
     }
   },//- data
 
-  async asyncData({ $axios, $daptEndpoint, params }) {
-    // console.log(`asyncData()`)
-    // return { node: {} }
+  async asyncData({ $axios, $monitorEndpoint, params }) {
 
     // A bit lazy here, we'll select all nodes...
-    const url = `${$daptEndpoint}/nodes`
-    const nodes = await $axios.$get(url)
-
-    // Now find our node
-    const nodeId = params.nodeId
-    // console.log(`nodeId=`, nodeId)
-    for (const node of nodes) {
-      if (node.nodeId === nodeId) {
-        return { nodeId, node }
+    const url = `${$monitorEndpoint}/nodes`
+    try {
+      const nodes = await $axios.$get(url)
+      const nodeId = params.nodeId
+      // console.log(`nodeId=`, nodeId)
+      for (const node of nodes) {
+        if (node.nodeId === nodeId) {
+          return { nodeId, node, loading: false }
+        }
       }
+      return { nodeId, node: null, loading: false }
+    } catch (e) {
+      console.log(`url=`, url)
+      console.log(`e.response=`, e.response)
+      return { loading: false, loadError: e.toString() }
     }
-    return { nodeId, node: null }
-
-    // const nodeId = params.nodeId
-    // const url = `${$daptEndpoint}/node/${nodeId}`
-    // console.log(`url=`, url)
-    // const node = await $axios.$get(url)
-    // // const steps = await $axios.$get(`http://localhost:8080/transaction/${txId}`)
-    // return { node }
   },//- asyncData
 
   methods: {
     backToNodes: function() {
-      this.$router.push({ path: `/nodes` })
+      this.$router.push({ path: `/mondat/nodes` })
     }
   }//- methods
 }

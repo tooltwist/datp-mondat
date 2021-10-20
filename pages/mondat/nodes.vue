@@ -28,7 +28,11 @@
     br
     br
 
-    .columns.is-mobile
+    span(v-if="loading")
+      | Loading...
+    .notification.is-danger(v-else-if="loadError")
+      | {{loadError}}
+    .columns.is-mobile(v-else)
       .column.is-3(v-for="node in nodes")
         .card.my-node-card(@click="selectNode(node.nodeId)")
           header.card-header
@@ -100,8 +104,8 @@
 
 
 <script>
-import DatemonNotification from "../components/DatmonNotification.vue"
-import DatemonTable from "../components/DatmonTable.vue"
+import DatemonNotification from "~/components/DatmonNotification.vue"
+import DatemonTable from "~/components/DatmonTable.vue"
 import Card from '~/components/Card'
 
 export default {
@@ -114,6 +118,9 @@ export default {
   data: function () {
     return {
       nodes: [ ],
+      loading: true,
+      loadError: null,
+
       columns: [
         {
             field: 'name',
@@ -144,16 +151,22 @@ export default {
     }
   },//- data
 
-  async asyncData({ $axios, $daptEndpoint }) {
-    const url = `${$daptEndpoint}/nodes`
-    const nodes = await $axios.$get(url)
-    return { nodes }
+  async asyncData({ $axios, $monitorEndpoint }) {
+    const url = `${$monitorEndpoint}/nodes`
+    try {
+      const nodes = await $axios.$get(url)
+      return { nodes, loading: false, loadError: null }
+    } catch (e) {
+      console.log(`url=`, url)
+      console.log(`e.response=`, e.response)
+      return { loading: false, loadError: e.toString() }
+    }
   },//- asyncData
 
   created() {
     this.polling = setInterval(async () => {
       if (this.autoUpdate) {
-        const url = `${this.$daptEndpoint}/nodes`
+        const url = `${this.$monitorEndpoint}/nodes`
         this.nodes = await this.$axios.$get(url)
       }
     }, 2000)
@@ -168,7 +181,7 @@ export default {
       // console.log(`selectNode`, nodeId)
       // const pipelineName = row.name
       // console.log(`selectPipeline(${nodeId})`)
-      this.$router.push({ path: `/node/${nodeId}` })
+      this.$router.push({ path: `/mondat/node/${nodeId}` })
     },
   }//- methods
 }

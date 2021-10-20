@@ -11,7 +11,12 @@
     DatemonNotification
       | The following are the most recently run transactions.
 
-    DatemonTable(:data="transactions", :columns="columns2", :rows="16", @select="selectTransaction")
+    span(v-if="loading")
+      | Loading...
+    span(v-else-if="loadError")
+      .notification.is-danger() {{loadError}}
+    template(v-else)
+      DatemonTable(:data="transactions", :columns="columns2", :rows="16", @select="selectTransaction")
 
     //- br
     //- br
@@ -21,8 +26,8 @@
 </template>
 
 <script>
-import DatemonNotification from "../components/DatmonNotification.vue"
-import DatemonTable from "../components/DatmonTable.vue"
+import DatemonNotification from "~/components/DatmonNotification.vue"
+import DatemonTable from "~/components/DatmonTable.vue"
 
 export default {
   components: {
@@ -32,7 +37,11 @@ export default {
 
   data: function () {
     return {
+      loading: true,
+      loadError: null,
+
       transactions: [ ],
+
       columns: [
         {
             field: 'txId',
@@ -95,16 +104,22 @@ export default {
     }
   },//- data
 
-  async asyncData({ $axios, $daptEndpoint }) {
-    const url = `${$daptEndpoint}/transactions`
-    const transactions = await $axios.$get(url)
-    return { transactions }
+  async asyncData({ $axios, $monitorEndpoint }) {
+    const url = `${$monitorEndpoint}/transactions`
+    try {
+      const transactions = await $axios.$get(url)
+      return { transactions, loading: false }
+    } catch (e) {
+      console.log(`url=`, url)
+      console.log(`e.response=`, e.response)
+      return { loading: false, loadError: e.toString() }
+    }
   },//- asyncData
 
   created() {
     this.polling = setInterval(async () => {
       if (this.autoUpdate) {
-        const url = `${this.$daptEndpoint}/transactions`
+        const url = `${this.$monitorEndpoint}/transactions`
         this.transactions = await this.$axios.$get(url)
       }
     }, 2000)
@@ -119,7 +134,7 @@ export default {
       // console.log(`selectTRansaction!!!`, row)
       const txId = row.txId
       // console.log(`selectTransaction(${txId})`)
-      this.$router.push({ path: `/steps/${txId}` })
+      this.$router.push({ path: `/mondat/steps/${txId}` })
     },
 
     rowClass: function(row) {

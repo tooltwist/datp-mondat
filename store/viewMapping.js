@@ -13,27 +13,27 @@ export const state = () => ({
 })
 
 export const actions = {
-  async prepare({ commit }, { leftViewName, rightViewName, mappingId, provider, service }) {
+  async prepare({ commit, $formserviceMapping, $formserviceEndpoint }, { leftViewName, rightViewName, mappingId, provider, service }) {
     // console.log(`ACTION prepare(${leftViewName}, ${rightViewName}, ${mappingId})`)
     if (leftViewName && rightViewName && mappingId) {
-      const left = await formserviceMisc.getView(leftViewName)
+      const left = await formserviceMisc.getView($formserviceEndpoint, leftViewName)
       commit('setLeftView', { viewName: leftViewName, view: left })
-      const right = await formserviceMisc.getView(rightViewName)
+      const right = await formserviceMisc.getView($formserviceEndpoint, rightViewName)
       commit('setRightView', { viewName: rightViewName, view: right })
-      const mapping = await formserviceMisc.getMapping(mappingId)
+      const mapping = await formserviceMisc.getMapping($formserviceEndpoint, mappingId)
       commit('setMapping', { mappingId, mapping, provider, service })
     }
   },
 
-  async reloadRightView({ commit, state }, { }) {
+  async reloadRightView({ commit, state, $formserviceEndpoint }, { }) {
     // console.log(`ACTION reloadRightView()`)
-    const view = await formserviceMisc.getView(state.rightViewName)
+    const view = await formserviceMisc.getView($formserviceEndpoint, state.rightViewName)
     commit('setRightView', { viewName: state.rightViewName, view })
   },
 
-  async reloadMapping({ commit, state }) {
+  async reloadMapping({ commit, state, $formserviceEndpoint }) {
     // console.log(`ACTION reloadMapping()`)
-    const mapping = await formserviceMisc.getMapping(state.mappingId)
+    const mapping = await formserviceMisc.getMapping($formserviceEndpoint, state.mappingId)
     commit('setMapping', { mappingId: state.mappingId, mapping })
   },
 }

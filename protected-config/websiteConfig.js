@@ -12,7 +12,11 @@ export default {
     protocol: 'http',
     host: 'localhost',
     port: 33370,
-    prefix: 'mondat',
     version: '1.0',
+  },
+  prefix: {
+    monitor: 'mondat',
+    datp: 'datp',
+    formservice: 'formservice'
   }
 }

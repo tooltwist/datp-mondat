@@ -1,8 +1,10 @@
 <template lang="pug">
 .formservice-fields
-  div(v-if="loadError")
-    .notification.is-danger Error: {{loadError}}
-  div(v-else)
+  span(v-if="loading")
+    | Loading...
+  .notification.is-danger(v-else-if="loadError")
+    | {{loadError}}
+  template(v-else)
     //- h1.title.is-size-3 formservice-fields - {{ view }}
     //- | {{ viewDef.fields }}
     b-table.my-table.is-size-7(
@@ -96,6 +98,9 @@ export default {
   },
   data: () => {
     return {
+      loading: false,
+      loadError: '',
+
       viewFieldsColumns: [
         // {
         //   field: "_id",
@@ -143,9 +148,6 @@ export default {
         //   label: "ReadOnly",
         // },
       ],
-
-      loadError: '',
-
 
       viewDef: {},
 
@@ -218,39 +220,16 @@ export default {
       }
 
       try {
+        this.loading = true
         const createIfNotFound = true
-        this.viewDef = await formserviceMisc.getView(viewName, createIfNotFound)
-        // console.log(`this.viewDef=`, this.viewDef)
-
-
-        // const url = `${this.$datpEndpoint}//formservice/view/${viewName}`;
-        // console.log(`url=`, url);
-        // const reply = await axios.get(url);
-        // console.log(`viewsX=`, reply.data);
-        // const viewDef = reply.data;
-
-        // // Patch in reference descriptions
-        // for (const field of viewDef.fields) {
-        //   if (field.reference) {
-        //     field._reference = field.reference.view;
-        //   }
-        //   // field._sequence = 0 // We can increment this to force display update
-        // }
+        this.viewDef = await formserviceMisc.getView(this.$formserviceEndpoint, viewName, createIfNotFound)
         for (const field of this.viewDef.fields) {
           field._id = this.fieldId++;
-        //   // Check all properties are defined, even if not return by the API (so they are reactive)
-        //   if (!field.properties) field.properties = {};
-        //   if (!field.properties.isPrimaryKey){
-        //     field.properties.isPrimaryKey = false;}
-        //   if (!field.properties.isDescription){
-        //     field.properties.isDescription = false;}
-        //   if (!field.properties.isMandatory) {field.properties.isMandatory = false;}
-        //   if (!field.properties.readonly) {field.properties.readonly = false;}
-        //   if (!field.properties.dollars2) {field.properties.dollars2 = false;}
         }
-        // this.viewDef = viewDef;
+        this.loading = false
       } catch (e) {
         console.log(`e=`, e)
+        this.loading = false
         this.loadError = 'Could not load view definition'
       }
 
@@ -300,7 +279,7 @@ export default {
         this.viewDef.fields.push(field);
 
         // Now insert into the database
-        const url = `${this.$datpEndpoint}//formservice/field/${this.view}`;
+        const url = `${this.$monitorEndpoint}//formservice/field/${this.view}`;
         // console.log(`url=`, url)
         const reply = await axios.post(url, field);
         // console.log(`reply=`, reply.data);
@@ -326,7 +305,7 @@ export default {
         // console.log(`after=`, JSON.stringify(field, '', 2))
 
         // Now update the database
-        const url = `${this.$datpEndpoint}//formservice/field/${this.view}/${originalFieldName}`;
+        const url = `${this.$monitorEndpoint}//formservice/field/${this.view}/${originalFieldName}`;
         // console.log(`url=`, url)
         const reply = await axios.put(url, field);
         // console.log(`reply=`, reply.data);
@@ -396,7 +375,7 @@ export default {
             vm.viewDef.fields.splice(fieldIndex, 1);
 
             // Delete it from the database
-            const url = `${this.$datpEndpoint}//formservice/field/${this.view}/${name}`;
+            const url = `${this.$monitorEndpoint}//formservice/field/${this.view}/${name}`;
             // console.log(`url=`, url);
             const reply = await axios.delete(url);
             // console.log(`reply=`, reply.data);
@@ -466,7 +445,7 @@ export default {
         if (field.sequence !== i) {
           // console.log(`Update ${i} ${field.name}`)
           field.sequence = i
-          const url = `${this.$datpEndpoint}//formservice/field/${this.view}/${field.name}`;
+          const url = `${this.$monitorEndpoint}//formservice/field/${this.view}/${field.name}`;
           const promise = await axios.put(url, field)
           promises.push(promise)
           // const reply = await axios.put(url, field);
@@ -570,7 +549,7 @@ export default {
         this.viewDef.fields.push(field);
 
         // Now insert into the database
-        const url = `${this.$datpEndpoint}//formservice/field/${this.view}`;
+        const url = `${this.$monitorEndpoint}//formservice/field/${this.view}`;
         // console.log(`url=`, url)
         const reply = await axios.post(url, field);
         // console.log(`reply=`, reply.data);

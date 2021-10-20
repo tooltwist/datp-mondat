@@ -11,19 +11,17 @@
         | Each transaction type maps onto a specific pipeline, however the steps in a pipeline may delegate their funcrtionality
         | by invoking further pipelines.
 
-      DatemonTable(:data="pipelines", :columns="columns", @select="selectPipeline")
-
-
-      //- br
-      //- br
-      //- b-table(:data="pipelines", :columns="columns", :hoverable="true", :bordered="false", :narrowed="true", @select="selectPipeline", :row-class="() => 'my-table-row'")
-      //- br
-      //- | {{pipelines}}
+      span(v-if="loading")
+        | Loading...
+      span(v-else-if="loadError")
+        .notification.is-danger() {{loadError}}
+      template(v-else)
+        DatemonTable(:data="pipelines", :columns="columns", @select="selectPipeline")
 </template>
 
 <script>
-import DatemonNotification from "../components/DatmonNotification.vue"
-import DatemonTable from "../components/DatmonTable.vue"
+import DatemonNotification from "~/components/DatmonNotification.vue"
+import DatemonTable from "~/components/DatmonTable.vue"
 
 export default {
   components: {
@@ -33,7 +31,11 @@ export default {
 
   data: function () {
     return {
+      loading: true,
+      loadError: null,
+
       pipelines: [ ],
+
       columns: [
         {
             field: 'name',
@@ -52,35 +54,27 @@ export default {
       ]
     }
   },
-  async asyncData({ $axios, $daptEndpoint }) {
-    // console.log(`asyncData()`)
-    const url = `${$daptEndpoint}/pipelines`
-    // console.log(`url=`, url)
-    const pipelines = await $axios.$get(url)
 
-    // const pipelines = await $axios.$get('http://localhost:8080/pipelines')
-    return { pipelines }
+  async asyncData({ $axios, $monitorEndpoint }) {
+    const url = `${$monitorEndpoint}/pipelines`
+    try {
+      const pipelines = await $axios.$get(url)
+      return { pipelines, loading: false }
+    } catch (e) {
+      console.log(`url=`, url)
+      console.log(`e.response=`, e.response)
+      return { nodes: [ ], loading: false, loadError: e.toString() }
+    }
   },
-  // async fetch() {
-  //   console.log(`fetch()`)
-  // },
-  // created() {
-  //   // alert('yarp')
-  //   console.log(`created()`)
-  // },
+
   methods: {
     selectPipeline: function (row) {
       const pipelineName = row.name
-      // console.log(`selectPipeline(${pipelineName})`)
-      this.$router.push({ path: `/pipeline/${pipelineName}` })
+      this.$router.push({ path: `/mondat/pipeline/${pipelineName}` })
     },
 
     toggleDarkMode: function() {
-      // alert(`toggle`)
       const htmlClassName = 'is-dark-mode-active'
-
-      // state.isDarkModeActive = !state.isDarkModeActive
-
       const state = { isDarkModeActive: true }
 
       if (state.isDarkModeActive) {
