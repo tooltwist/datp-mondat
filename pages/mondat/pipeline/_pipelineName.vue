@@ -8,7 +8,7 @@
       h2.title.is-3
         .datemon-heading-icon
           b-icon(icon="bank-transfer", size="is-medium")
-        | Pipeline Assembly
+        | Pipeline '{{pipelineName}}'
 
 
       span(v-if="loading")
@@ -17,17 +17,20 @@
         .notification.is-danger() {{loadError}}
       template(v-else)
         .columns
-          .column.is-6
+          .column.is-one-third
             .my-backdrop
               .my-pipeline-header {{pipelineName}}
               draggable(v-model="steps", :group="{ name: 'myList' }")
                 transition-group
                   div(v-for="step in steps", :key="step.id")
                     StepBox(:step="step", @changed="onStepDefinitionChange", @deleted="onStepDelete")
-          .column.is-1
-          .column.is-5
+          .column.is-one-quarter
+          .column.is-one-third
             .my-backdrop
-              .my-pipeline-header-2 Available step types (drag)
+              .my-pipeline-header-2 Drag &amp; drop steps
+              br
+              b-field(horizontal, label="Filter", custom-class="is-small")
+                b-input(name="subject", expanded, rounded, size="is-small", placeholder="search...", v-model="filter")
               draggable(v-model="filterdStepTypes", :sort="false", :group="{ name: 'myList', put: false, pull: 'clone' }", :clone="stepFromStepType")
                 transition-group
                   div(v-for="st in filterdStepTypes", :key="st.id")
@@ -35,16 +38,17 @@
 </template>
 
 <script>
+import draggable from "vuedraggable"
 import StepBox from '~/components/StepBox.vue'
 import StepTypeBox from '~/components/StepTypeBox.vue'
-import draggable from "vuedraggable";
 
 export default {
   components: {
     StepBox,
     StepTypeBox,
-    draggable,
+    draggable
   },
+
   data: function () {
     return {
       loading: true,
@@ -55,13 +59,14 @@ export default {
       // definition: { },
       steps: [ ],
       stepTypes: [ ],
+      filter: '',
 
-      myArray: [
-        { id: 0, name: 'this' },
-        { id: 1, name: 'is' },
-        { id: 2, name: 'pretty' },
-        { id: 3, name: 'cool' },
-      ],
+      // myArray: [
+      //   { id: 0, name: 'this' },
+      //   { id: 1, name: 'is' },
+      //   { id: 2, name: 'pretty' },
+      //   { id: 3, name: 'cool' },
+      // ],
 
       node: { },
       nextId: 0,
@@ -117,8 +122,20 @@ export default {
 
   computed: {
     filterdStepTypes: function() {
-      console.log(`filteredStepTypes()`)
-      const list = this.stepTypes
+      //console.log(`filteredStepTypes()`)
+      const words = this.filter.split(' ')
+      const list = this.stepTypes.filter((stepType) => {
+        const description = stepType.description.toUpperCase()
+        //console.log(`description=${description}`)
+        for (let word of words) {
+          const w2 = word.trim().toUpperCase()
+          //console.log(`  -> ${w2}`)
+          if (w2 && description.indexOf(w2) < 0) {
+            return false // no match
+          }
+        }
+        return true
+      })
       // console.log(`this.stepTypes=`, this.stepTypes)
       // list.sort((a, b) => {
       //   console.log(`${a.description} vs ${b.description}`)

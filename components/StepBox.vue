@@ -237,7 +237,7 @@ export default {
 <style lang="scss" scoped>
 .my-stepbox {
 
-  $box-width: 505px;
+  $box-width: 305px;
   $line-position: 230px;
 
   min-width: $box-width;
