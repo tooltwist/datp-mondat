@@ -126,11 +126,11 @@ export default {
       const words = this.filter.split(' ')
       const list = this.stepTypes.filter((stepType) => {
         const description = stepType.description.toUpperCase()
-        //console.log(`description=${description}`)
+        const name = stepType.name.toUpperCase()
         for (let word of words) {
           const w2 = word.trim().toUpperCase()
           //console.log(`  -> ${w2}`)
-          if (w2 && description.indexOf(w2) < 0) {
+          if (w2 && description.indexOf(w2) < 0 && name.indexOf(w2) < 0) {
             return false // no match
           }
         }
