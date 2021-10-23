@@ -98,16 +98,18 @@ export default {
           icon: 'bank-transfer',
           to: { name: 'mondat-transactions' }
         },
-        {
-          title: 'Queues',
-          icon: 'human-queue',
-          to: { name: 'mondat-queues' }
-        },
-        {
-          title: 'Resolution',
-          icon: 'account-alert',
-          to: { name: 'mondat-resolution' }
-        },
+
+        // {
+        //   title: 'Queues',
+        //   icon: 'human-queue',
+        //   to: { name: 'mondat-queues' }
+        // },
+        // {
+        //   title: 'Resolution',
+        //   icon: 'account-alert',
+        //   to: { name: 'mondat-resolution' }
+        // },
+
         // {
         //   title: 'Alerts',
         //   icon: 'alert',

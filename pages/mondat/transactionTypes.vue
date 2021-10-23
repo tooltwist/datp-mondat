@@ -3,9 +3,9 @@
     //- b-field.is-pulled-right
       b-checkbox(v-model="autoUpdate") Auto-update
     button.button.is-primary.is-pulled-right(@click="newMapping") Add Mapping
-    h2.title.is-3
+    h2.title.is-4
       .datemon-heading-icon
-        b-icon(icon="shape", size="is-medium")
+        b-icon(icon="shape", size="is-small")
       | Transaction types
 
     DatemonNotification

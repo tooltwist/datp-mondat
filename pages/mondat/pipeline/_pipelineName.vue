@@ -5,9 +5,9 @@
         b-button(type="is-warning", @click="savePipeline") Save
         | &nbsp;&nbsp;&nbsp;
         b-button(type="is-gray", @click="backToPipelines") Back
-      h2.title.is-3
+      h2.title.is-4
         .datemon-heading-icon
-          b-icon(icon="bank-transfer", size="is-medium")
+          b-icon(icon="bank-transfer", size="is-small")
         | Pipeline '{{pipelineName}}'
 
 

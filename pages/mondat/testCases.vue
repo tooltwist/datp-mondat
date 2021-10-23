@@ -11,9 +11,9 @@
     //- h2.title.is-3.has-text-grey
       | Test Client&nbsp;&nbsp;&nbsp;
       b-icon(icon="ab-testing", size="is-large")
-    h2.title.is-3
+    h2.title.is-4
       .datemon-heading-icon
-        b-icon(icon="bike-fast", size="is-medium")
+        b-icon(icon="bike-fast", size="is-small")
       | Testing
 
     span(v-if="loading")

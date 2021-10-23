@@ -2,9 +2,9 @@
   section.section
     b-field.is-pulled-right
       b-checkbox(v-model="autoUpdate") Auto-update
-    h2.title.is-3
+    h2.title.is-4
       .datemon-heading-icon
-        b-icon(icon="gauge", size="is-medium")
+        b-icon(icon="gauge", size="is-small")
       | Recent Performance
 
     //- h2.title.is-3.has-text-grey

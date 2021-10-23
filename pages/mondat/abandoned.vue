@@ -1,22 +1,27 @@
 <template lang="pug">
 .my-abandoned-page
   section.section
-    h2.title.is-3
+    h2.title.is-4
       .datemon-heading-icon
-        b-icon(icon="head-question-outline", size="is-medium")
+        b-icon(icon="head-question-outline", size="is-small")
       | Abandoned Transactions&nbsp;&nbsp;
 
     DatemonNotification
-      | An abandoned transaction is a transaction that has completed, but
-      | the system that initiated the transaction has not come back to get the result,
-      | and we are not able to notify that system. Abandoned transactions have the potential
+      | An "abandoned" transaction is one that has completed, but
+      | nobody has received or collected the reply.
+      br
+      br
+      | Abandoned transactions have the potential
       | to jam up our processing, because they cannot be archived in a timely manner.
-      | It is a condition of use that transactions must not be abandoned, so this screen
-      | might require reminding users of this service of that requirement.
+      | Clients of the system that regularly abandon transactions&nbsp;
+      b should  be notified
+      | &nbsp;and requested to correct their software.
     br
-    h3.subtitle.is-6.has-text-grey
-      | YARP
-    | etc etc
+    template(v-if="transactions.length < 1")
+      br
+      | No transactions
+    template(v-else)
+      | List goes here...
 </template>
 
 <script>
@@ -27,6 +32,15 @@ export default {
   components: {
     DatemonNotification,
   },
+
+  data: function () {
+    return {
+      loading: true,
+      loadError: null,
+
+      transactions: [ ],
+    }
+  }
 }
 </script>
 

@@ -1,9 +1,9 @@
 <template lang="pug">
   .my-pipelines-page
     section.section
-      h2.title.is-3
+      h2.title.is-4
         .datemon-heading-icon
-          b-icon(icon="transit-connection", size="is-medium")
+          b-icon(icon="transit-connection", size="is-small")
         | Pipelines
 
       DatemonNotification

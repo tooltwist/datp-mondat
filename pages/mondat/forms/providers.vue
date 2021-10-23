@@ -2,9 +2,9 @@
 .my-providers
   section.section
     //- h1.title Providers / Messages
-    h2.title.is-3
+    h2.title.is-4
       .datemon-heading-icon
-        b-icon(icon="arrow-left-right-bold", size="is-medium")
+        b-icon(icon="arrow-left-right-bold", size="is-small")
       | Field mapping
 
     DatemonNotification

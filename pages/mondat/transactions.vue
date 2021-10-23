@@ -3,9 +3,9 @@
   section.section
     b-field.is-pulled-right
       b-checkbox(v-model="autoUpdate") Auto-update
-    h2.title.is-3
+    h2.title.is-4
       .datemon-heading-icon
-        b-icon(icon="bank-transfer", size="is-medium")
+        b-icon(icon="bank-transfer", size="is-small")
       | Recent Transactions
 
     DatemonNotification
