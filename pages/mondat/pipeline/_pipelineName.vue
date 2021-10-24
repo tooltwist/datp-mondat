@@ -25,11 +25,11 @@
         .columns
           .column.is-one-third
             .my-backdrop
-              .my-pipeline-header {{pipelineName}}
+              //- .my-pipeline-header {{pipelineName}}
               draggable(v-model="steps", :group="{ name: 'myList' }")
                 transition-group
-                  div(v-for="step in steps", :key="step.id")
-                    StepBox(:step="step", @changed="onStepDefinitionChange", @deleted="onStepDelete")
+                  div(v-for="(step, index) in steps", :key="step.id")
+                    StepBox(:step="step", :stepNo="index", @changed="onStepDefinitionChange", @deleted="onStepDelete", :open="stepOpen===index", @open="stepOpen = index")
           .column.is-one-quarter
           .column.is-one-third
             .my-backdrop
@@ -37,10 +37,24 @@
               br
               b-field(horizontal, label="Filter", custom-class="is-small")
                 b-input(name="subject", expanded, rounded, size="is-small", placeholder="search...", v-model="filter")
-              draggable(v-model="filterdStepTypes", :sort="false", :group="{ name: 'myList', put: false, pull: 'clone' }", :clone="stepFromStepType")
+              //draggable(v-model="filterdStepTypes", :sort="false", :group="{ name: 'myList', put: false, pull: 'clone' }", :clone="stepFromStepType")
                 transition-group
                   div(v-for="st in filterdStepTypes", :key="st.id")
                     StepTypeBox(:stepType="st", :editing="true")
+              //- div(v-for="group in filteredStepTypeGroups")
+                | {{group.group}}
+                draggable(v-model="group.types", :sort="false", :group="{ name: 'myList', put: false, pull: 'clone' }", :clone="stepFromStepType")
+                  transition-group
+                    div(v-for="st in group.types", :key="st.id")
+                      StepTypeBox(:stepType="st", :editing="true")
+              b-collapse(animation="slide", v-for="(group, index) in filteredStepTypeGroups", :key="index", :open="stepTypeGroupOpen===index", @open="stepTypeGroupOpen = index")
+                template(#trigger="props")
+                  .my-group-name {{group.group}}
+                draggable(v-model="group.types", :sort="false", :group="{ name: 'myList', put: false, pull: 'clone' }", :clone="stepFromStepType")
+                  transition-group
+                    div(v-for="st in group.types", :key="st.id")
+                      StepTypeBox(:stepType="st", :editing="true")
+            //- | {{filteredSteps}}
 </template>
 
 <script>
@@ -53,31 +67,6 @@ export default {
     StepBox,
     StepTypeBox,
     draggable
-  },
-
-  data: function () {
-    return {
-      loading: true,
-      loadError: null,
-
-      pipelineName: '',
-      description: '',
-      // definition: { },
-      steps: [ ],
-      stepTypes: [ ],
-      filter: '',
-
-      // myArray: [
-      //   { id: 0, name: 'this' },
-      //   { id: 1, name: 'is' },
-      //   { id: 2, name: 'pretty' },
-      //   { id: 3, name: 'cool' },
-      // ],
-
-      node: { },
-      nextId: 0,
-      dirty: false, // needs to be updated
-    }
   },
 
   async asyncData({ $axios, $monitorEndpoint, params }) {
@@ -102,6 +91,15 @@ export default {
         }
       }
       // console.log(`node=`, node)
+      for (const type of node.stepTypes) {
+        type._group = 'miscellaneous'
+        type._name = type.name
+        const pos = type.name.indexOf('/')
+        if (pos >= 0) {
+          type._group = type.name.substring(0, pos)
+          type._name = type.name.substring(pos + 1)
+        }
+      }
       const stepTypes = node.stepTypes.sort(compareStepTypes)
 
       // Get details of the specific pipeline
@@ -111,7 +109,7 @@ export default {
       // Add IDs so it can be draggable
       const description = definition.description
       const steps = definition.steps
-      let nextId = resequence(steps)
+      const nextId = resequence(steps)
       // console.log(`HMMO steps=`, definition.steps)
       let typeId = 100000
       for (const st of stepTypes) {
@@ -122,42 +120,78 @@ export default {
       console.log(`url1=`, url1)
       console.log(`url=`, url)
       console.log(`e.response=`, e.response)
-      return { transactions: [ ], loading: false, loadError: e.toString() }
+      return { loading: false, loadError: e.toString() }
+    }
+  },
+
+  data: function () {
+    return {
+      loading: true,
+      loadError: null,
+
+      stepOpen: -1,
+      stepTypeGroupOpen: 0, // expanded step type group
+
+      pipelineName: '',
+      description: '',
+      steps: [ ],
+      stepTypes: [ ],
+      groups: [ ],
+      filter: '',
+
+      node: { },
+      nextId: 0,
+      dirty: false, // needs to be updated
     }
   },
 
   computed: {
-    filterdStepTypes: function() {
-      //console.log(`filteredStepTypes()`)
+    filteredSteps: function () {
+      //console.log(`filteredStepTypeGroups()`)
       const words = this.filter.split(' ')
       const list = this.stepTypes.filter((stepType) => {
         const description = stepType.description.toUpperCase()
         const name = stepType.name.toUpperCase()
-        for (let word of words) {
+        for (const word of words) {
           const w2 = word.trim().toUpperCase()
           //console.log(`  -> ${w2}`)
-          if (w2 && description.indexOf(w2) < 0 && name.indexOf(w2) < 0) {
+          if (w2 && !description.includes(w2) && !name.includes(w2)) {
             return false // no match
           }
         }
         return true
       })
-      // console.log(`this.stepTypes=`, this.stepTypes)
-      // list.sort((a, b) => {
-      //   console.log(`${a.description} vs ${b.description}`)
-      //   return a.description - b.description
-      // })
       return list
+    },
+
+    filteredStepTypeGroups: function () {
+      // Organise the step types into groups
+      const list = this.filteredSteps
+      const groups = [ ]
+      let currentGroup = null
+      for (const type of list) {
+        // Do not display the hidden group
+        if (type._group === 'hidden') {
+          continue
+        }
+        if (currentGroup === null || currentGroup.group !== type._group) {
+          currentGroup = { group: type._group, types: [ ] }
+          groups.push(currentGroup)
+        }
+        currentGroup.types.push(type)
+      }
+      // console.log(`groups=`, groups)
+      return groups
     }
   },
 
   methods: {
 
-    backToPipelines: function() {
+    backToPipelines () {
       this.$router.push({ path: `/mondat/pipelines` })
     },
 
-    savePipeline: async function () {
+    async savePipeline () {
       // console.log(`savePipeline()`)
 
       this.nextId = resequence(this.steps)
@@ -170,12 +204,11 @@ export default {
 
       const url = `${this.$monitorEndpoint}/pipeline/draft`
       // console.log(`url=`, url)
-      const reply = await this.$axios.$post(url, definition)
-      // console.log(`reply=`, reply)
+      await this.$axios.$post(url, definition)
     },
 
     // When dragging from the step type list to the steps list, we need to create a new step.
-    stepFromStepType: function(stepType, arg2, arg3, arg4) {
+    stepFromStepType (stepType, arg2, arg3, arg4) {
       // console.log(`stepFromStepType(): stepType=`, stepType)
 
       // Return a step
@@ -185,7 +218,7 @@ export default {
       }
       rec.definition.stepType = stepType.name
       return rec
-    },//- stepFromStepType
+    }, //- stepFromStepType
 
     onStepDefinitionChange({ id, definition }) {
       // console.log(`onStepDefinitionChange()`)
@@ -201,18 +234,16 @@ export default {
         }
       }
       console.log(`Internal error 2726551 - upknown step has been edited (${id})`)
-
-    },//- onStepDefinitionChange
+    }, //- onStepDefinitionChange
 
     onStepDelete({ id }) {
       // console.log(`onStepDelete(${id})`)
 
-      const before = JSON.stringify(this.steps, '', 2)
+      // const before = JSON.stringify(this.steps, '', 2)
       // console.log(`before = ${before}`)
 
       for (let i = 0; i < this.steps.length; i++) {
         const step = this.steps[i]
-      // for (const step of this.definition.steps) {
         if (step.id === id) {
           // console.log(`found step at ${i}`, step)
           this.$delete(this.steps, i)
@@ -221,18 +252,23 @@ export default {
           break
         }
       }
-      const after = JSON.stringify(this.steps, '', 2)
+      // const after = JSON.stringify(this.steps, '', 2)
       // console.log(`after = ${after}`)
       // this.nextId = resequence(this.steps)
-    },//- onStepDelete
+    }, //- onStepDelete
   }
 }
 
 function compareStepTypes(stepType1, stepType2) {
+  // Sort by group
+  if (stepType1._group < stepType2._group) { return -1 }
+  if (stepType1._group > stepType2._group) { return +1 }
+
+  // Sort by description (yep, not name)
   const a = stepType1.description.toUpperCase()
   const b = stepType2.description.toUpperCase()
-  if (a < b) return -1
-  if (a > b) return +1
+  if (a < b) { return -1 }
+  if (a > b) { return +1 }
   return 0
 }
 
@@ -258,11 +294,10 @@ function resequence(steps) {
     font-weight: 600;
   }
 
-  .my-backdrop {
-    // background-color: white;
-    color: #999;
-    height: 400px;
-    padding: 20px;
+  .my-group-name {
+    margin-top: 5px;
+    color: #16aa58;
+    font-size: 1em;
   }
 
   .my-pipeline-header {

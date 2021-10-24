@@ -8,7 +8,8 @@
   .my-stepType-box
     .my-z-box-cell
       .my-description {{stepType.description}}
-      .my-stepType {{stepType.name}}
+      //- .my-stepType {{stepTypeGroup(stepType)}} / {{stepTypeName(stepType)}}
+      .my-stepType {{stepTypeName(stepType)}}
 </template>
 
 <script>
@@ -19,6 +20,24 @@ export default {
       required: true
     },
   },
+
+  methods: {
+    stepTypeGroup: function (stepType) {
+      const pos = stepType.name.indexOf('/')
+      if (pos >= 0) {
+        return stepType.name.substring(0, pos)
+      }
+      return ''
+    },
+
+    stepTypeName: function(stepType) {
+      const pos = stepType.name.indexOf('/')
+      if (pos >= 0) {
+        return stepType.name.substring(pos + 1)
+      }
+      return stepType.name
+    }
+  }
 }
 </script>
 
@@ -27,34 +46,28 @@ export default {
 
   $box-width: 300px;
   $line-position: 120px;
-  font-size: 13px;
+  font-size: 15px;
 
   min-width: $box-width;
   margin: 0px;
   padding: 0px;
 
-  .my-description {
-    color: black;
-  }
   .my-stepType {
-    color: #333;
-    color: #666;
-    font-size: 10px;
+    font-size: 11px;
     text-align: right;
   }
 
   .my-z-box-cell {
     width: $box-width;
-    background-color: lightblue;
-    margin-top: 8px;
+    background-color: #101010;
+    margin-top: 12px;
+    margin-left: 25px;
     padding: 3px;
     padding-left: 5px;
     padding-right: 5px;
-    border-top: solid 1px white;
-    border-left: solid 1px white;
-    border-bottom: solid 1px black;
-    border-right: solid 1px black;
     cursor: pointer;
+    border: solid 1px rgb(153, 153, 153);;
+    border-radius: 5px;
   }
 }//- .my-stepbox
 </style>

@@ -15,5 +15,14 @@ module.exports = {
   plugins: [
   ],
   // add your custom rules here
-  rules: {}
+  rules: {
+    quotes: "off",
+    "spaced-comment": "off",
+    "space-before-function-paren": "off",
+    "no-console": "off",
+    "object-shorthand": "off",
+    "array-bracket-spacing": "off",
+    "no-multiple-empty-lines": "off",
+    "comma-dangle": "off"
+  }
 }

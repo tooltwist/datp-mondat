@@ -6,120 +6,32 @@
  */
 <template lang="pug">
   .my-stepbox
-    //- b-collapse(:open="false" aria-id="contentIdForA11y1")
-      template(#trigger)
-        b-button(label="Click me!", type="is-primary", aria-controls="contentIdForA11y1")
-      notification
-        .content
-          h3
-            | Subtitle
-          p
-            | Lorem ipsum dolor sit amet, consectetur adipiscing elit. <br/>
-            | Nulla accumsan, metus ultrices eleifend gravida, nulla nunc varius lectus, nec rutrum justo nibh eu lectus. <br/>
-            | Ut vulputate semper dui. Fusce erat odio, sollicitudin vel erat vel, interdum mattis neque.
 
-    //- b-collapse.card(animation="slide" aria-id="contentIdForA11y3")
-      template(#trigger="props")
-          div.card-header(role="button", aria-controls="contentIdForA11y3")
-            .is-pulled-right
-              a.card-header-icon
-                b-icon(:icon="props.open ? 'menu-down' : 'menu-up'")
-            p.card-header-title
-              | {{definition.description}}
-            .has-text-rightZ
-              //- br
-              br
-              .my-stepType {{definition.stepType}}
-
-      .card-content
-        .content
-          | Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus nec iaculis mauris.
-          a #buefy
-          textarea.textarea(rows="8")
-            | {
-            |
-            | }
-
-
-      //- footer.card-footer
-        a.card-footer-item Save
-        a.card-footer-item Edit
-        a.card-footer-item Delete
-
-    //- .with-children(v-if="haveChildren")
-      table
-        tr
-          td
-            .is-size-4.my-description.has-text-centered
-              | {{definition.description}}
-        template(v-for="child in definition.children")
-          tr
-            td
-              .line-box
-          tr
-            td
-              .my-child
-                StepBox(:definition="child")
-                //- | {{child}}
-    //- .without-children(v-else)
-    table.my-z-table
-      tr
+    table
+      tr(v-if="stepNo > 0")
         td
+          // Place a vertical line above the step
           .my-z-line-cell
       tr
         td
-          //- .my-z-box-cell
-            .my-description {{description}}
-            .my-stepType {{definition.stepType}}
-
-          b-collapse.card.my-card(animation="slide" :aria-id="`contentId${id}`", :open="false")
+          b-collapse.card.my-card(animation="slide" :aria-id="`contentId${id}`", :open="open", @open="onExpand")
             template(#trigger="props")
               .card-header(role="button", :aria-controls="`contentId${id}`")
-                .is-pulled-right
-                  a.card-header-icon
-                    b-icon(:icon="props.open ? 'menu-down' : 'menu-right'")
-                p.card-header-title
+                a.card-header-icon.my-card-header-icon
+                  b-icon(:icon="props.open ? 'menu-down' : 'menu-right'")
+                p.card-header-title.my-card-header-title
                   | {{bestDescription}}
-                .has-text-rightZ
-                  //- br
-                  br
-                  .my-stepType {{originalStepType}}
 
-            .card-content
+            .card-content.my-card-content
               .content
+                .has-text-right.is-size-7 {{originalStepType}}
                 a.is-pulled-right.my-trash-can(@click="onDelete")
                   b-icon(icon="trash-can-outline")
                 b-field(label="Description")
-                  //- b-input(v-model="description", :readonly="!editing")
                   b-input(v-model="description", @blur="onBlur", :placeholder="bestDescription")
                 b-field(label="Description")
                   textarea.textarea(rows="8", v-model="json", @input="onInput", @blur="onBlur")
                 .is-danger.is-size-7 {{errorMsg}}
-                //- div
-                  | description={{description}}
-                  br
-                  | json={{json}}
-                  br
-                  | dirty={{needToUpdate}}
-                  hr
-                  | originalId={{originalId}}
-                  br
-                  | originalStepType={{originalStepType}}
-                  br
-                  | originalDescription={{originalDescription}}
-                  br
-                  | originalJson={{originalJson}}
-                  hr
-                  | s:{{step}}
-                  br
-                  | d:{{definition}}
-
-                //- | {{definition}}
-
-
-
-
-
 </template>
 
 <script>
@@ -129,7 +41,11 @@ export default {
       type: Object,
       required: true
     },
-    editing: Boolean,
+    stepNo: {
+      type: Number,
+      required: true
+    },
+    open: Boolean,
   },
   data: function () {
     return {
@@ -139,7 +55,7 @@ export default {
       description: '',
       json: '',
 
-      open: false,
+      // open: false,
       errorMsg: '',
 
       originalId: '',
@@ -148,6 +64,28 @@ export default {
       originalJson: '',
     }
   },
+
+  computed: {
+    bestDescription: function () {
+      if (this.description) {
+        return this.description
+      }
+      if (this.definition.msg) {
+        return this.definition.msg
+      }
+      return `Step #${this.originalId}`
+    },
+
+    needToUpdate: function () {
+      if (this.description !== this.originalDescription) {
+        return true
+      }
+      if (this.json !== this.originalJson) {
+        return true
+      }
+      return false
+    }
+  }, //- computed
 
   created: function () {
     // Set the JSON string version of the definition
@@ -158,7 +96,7 @@ export default {
     this.originalId = this.step.id
     this.originalDescription = this.definition.description
     this.originalStepType = this.definition.stepType
-    const clone = { ... this.definition }
+    const clone = { ...this.definition }
     delete clone.id
     delete clone.description
     delete clone.stepType
@@ -170,11 +108,13 @@ export default {
   },
 
   methods: {
+    onExpand () {
+      this.$emit('open', { })
+    },
+
     onInput () {
-      // console.log(`onInput()`)
-      // console.log(`this.json=`, this.json)
       try {
-        const obj = JSON.parse(this.json)
+        JSON.parse(this.json)
         this.errorMsg = ''
         return
       } catch (e) {
@@ -182,7 +122,7 @@ export default {
         this.errorMsg = e.toString()
         console.log(`this.errorMsg=`, this.errorMsg)
       }
-    },//- definitionChanged
+    }, //- definitionChanged
 
     onBlur () {
       if (this.json !== this.originalJson || this.description !== this.originalDescription) {
@@ -208,34 +148,9 @@ export default {
     },
 
     onDelete () {
-      // alert(`onDelete()`)
-      // console.log(`Deleting step ${this.originalId}`)
       this.$emit('deleted', { id: this.originalId })
     }
-  },//- methods
-
-
-  computed: {
-    bestDescription: function () {
-      if (this.description) {
-        return this.description
-      }
-      if (this.definition.msg) {
-        return this.definition.msg
-      }
-      return `Step #${this.originalId}`
-    },
-
-    needToUpdate: function () {
-      if (this.description !== this.originalDescription) {
-        return true
-      }
-      if (this.json !== this.originalJson) {
-        return true
-      }
-      return false
-    }
-  },//- computed
+  }, //- methods
 
 }
 </script>
@@ -250,17 +165,11 @@ export default {
   margin: 0px;
   padding: 0px;
 
-  .with-children {
-    position: relative;
-
-  }
-
   .my-description {
     font-size: 14px;
-    // color: black;
-    // color: white;
     color: #000022;
   }
+
   .my-stepType {
     color: #333;
     color: silver;
@@ -269,50 +178,29 @@ export default {
     margin-right: 8px;
   }
 
-  .my-child {
-    position: relative;
-    border: solid 1px #999;
-  }
-
-  .line-box {
-    width: $line-position;
-    height: 30px;
-    border-right: solid 1px #999;
-    color: pink;
-  }
-
-  .line {
-    border: solid 1px red;
-    width: 300px;
-  }
-
-  .my-z-table {
-    // background-color: cyan;
-  }
-
   .my-z-line-cell {
     width: $line-position;
-    height: 20px;
+    height: 40px;
     border-right: solid 1px #999;
     color: pink;
-  }
-
-  .my-z-box-cell {
-    width: $box-width;
-    background-color: silver;
-    padding: 5px;
-    padding-left: 10px;
-    // padding-right: 10px;
-    border-top: solid 2px white;
-    border-left: solid 2px white;
-    border-bottom: solid 2px black;
-    border-right: solid 2px black;
-    cursor: pointer;
-    min-height: 60px;
   }
 
   .my-card {
-    min-width: 505px;
+    min-width: 450px;
+    background-color: #171717;
+
+    .my-card-header-icon {
+      padding-left: 5px;
+      padding-right: 5px;
+    }
+
+    .my-card-header-title {
+      padding-left: 0px;
+    }
+
+    .my-card-content {
+      padding-top: 5px;
+    }
   }
 
   .my-trash-can {
