@@ -25,7 +25,7 @@
       .column.my_column
         //- radial-gauge(:options="radialOptions", :value="txMin")
         template(v-for="p in performance15")
-          template(v-if="p.stepType === 'pipeline'")
+          template(v-if="p.stepType === 'hidden/pipeline'")
             br
             radial-gauge(:options="radialOptions", :value="p.perMinute")
             br
@@ -36,7 +36,7 @@
 
       .column.my_column
         template(v-for="p in performance300")
-          template(v-if="p.stepType === 'pipeline'")
+          template(v-if="p.stepType === 'hidden/pipeline'")
             br
             radial-gauge(:options="radialOptions", :value="p.perMinute")
             br
@@ -47,7 +47,7 @@
 
       .column.my_column
         template(v-for="p in performance1800")
-          template(v-if="p.stepType === 'pipeline'")
+          template(v-if="p.stepType === 'hidden/pipeline'")
             br
             radial-gauge(:options="radialOptions", :value="p.perMinute")
             br
@@ -58,7 +58,7 @@
 
       .column.my_column
         template(v-for="p in performance7200")
-          template(v-if="p.stepType === 'pipeline'")
+          template(v-if="p.stepType === 'hidden/pipeline'")
             br
             radial-gauge(:options="radialOptions", :value="p.perMinute")
             br

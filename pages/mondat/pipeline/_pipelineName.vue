@@ -210,7 +210,7 @@ export default {
 
       this.nextId = resequence(this.steps)
       const definition = {
-        stepType: 'pipeline',
+        stepType: 'hidden/pipeline',
         name: this.pipelineName,
         description: this.description,
         notes: this.notes,
