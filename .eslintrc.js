@@ -23,6 +23,8 @@ module.exports = {
     "object-shorthand": "off",
     "array-bracket-spacing": "off",
     "no-multiple-empty-lines": "off",
-    "comma-dangle": "off"
+    "comma-dangle": "off",
+    "require-await": "off",
+    "no-empty-pattern": "off"
   }
 }

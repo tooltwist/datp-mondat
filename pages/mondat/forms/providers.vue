@@ -88,18 +88,24 @@
             v-if="messageType.toLowerCase().indexOf('request') >= 0",
             :messageType="messageType"
           )
-      .notification.is-danger(v-if="error") Invalid amount
+
+        b-tab-item(key="details", label="Details")
+          template(v-if="theRightView")
+            b-field(label="Description")
+              b-input(v-model="description")
+            b-field(label="Notes")
+              textarea.textarea(rows="15", v-model="notes", placeholder="Enter any notes here...")
+      //- .notification.is-danger(v-if="error") Invalid amount
 </template>
 
 <script>
-import axios from "axios";
-import FormserviceMisc from "~/lib/formservice-misc";
+import axios from "axios"
 import FormserviceFields from '~/components/formservice-fields'
 import FormserviceMappingVisual from '~/components/formservice-mapping-visual.vue'
 import FormserviceMappingRequest from '~/components/formservice-mapping-request.vue'
 import FormserviceMappingResponse from '~/components/formservice-mapping-response.vue'
 import DatemonNotification from "~/components/DatmonNotification.vue"
-import formserviceMisc from '~/lib/formservice-misc';
+import FormserviceMisc from '~/lib/formservice-misc'
 
 export default {
   name: "Messages",
@@ -110,6 +116,20 @@ export default {
     FormserviceMappingResponse,
     DatemonNotification,
   },
+
+  async asyncData({ params, $http, $monitorEndpoint }) {
+    const url = `${$monitorEndpoint}/metadata/domains`
+    try {
+      const reply = await axios.get(url)
+      const providers = reply.data
+      return { providers, loading: false }
+    } catch (e) {
+      console.log(`url=`, url)
+      console.log(`e.response=`, e.response)
+      return { loading: false, loadError: e.toString() }
+    }
+  },
+
   data() {
     return {
       loading: true,
@@ -158,37 +178,21 @@ export default {
           label: 'Mandatory'
         }
       ],
-
-      // Error message
-      error: ''
-    };
-  },
-
-  async asyncData({ params, $http, $monitorEndpoint }) {
-    const url = `${$monitorEndpoint}/metadata/domains`
-    try {
-      const reply = await axios.get(url);
-      const providers = reply.data;
-      return { providers, loading: false }
-    } catch (e) {
-      console.log(`url=`, url)
-      console.log(`e.response=`, e.response)
-      return { loading: false, loadError: e.toString() }
     }
   },
 
   computed: {
     currentViewName: function () {
-      return formserviceMisc.viewName(this.providerCode, this.serviceCode, this.messageType)
+      return FormserviceMisc.viewName(this.providerCode, this.serviceCode, this.messageType)
     },
 
     stdViewName: function () {
       const provider = 'std'
-      return formserviceMisc.viewName(provider, this.serviceCode, this.messageType)
+      return FormserviceMisc.viewName(provider, this.serviceCode, this.messageType)
     },
 
     activeProviders: function () {
-      return this.providers.filter(p => {
+      return this.providers.filter((p) => {
         return (p.status !== 'inactive') && (p.status !== 'noplugin')
       })
     },
@@ -213,6 +217,33 @@ export default {
       return this.$store.state.viewMapping.rightViewName
     },
 
+    theRightViewNotes: function () {
+      const view = this.theRightView
+      if (view) {
+        return view.notes
+      }
+      return ''
+    },
+
+    description: {
+      get() {
+        return this.$store.state.viewMapping.rightView.description
+      },
+      set(description) {
+        console.log(`description=`, description)
+        this.$store.dispatch('viewMapping/setRightViewDetails', { description })
+      }
+    },
+
+    notes: {
+      get() {
+        return this.$store.state.viewMapping.rightView.notes
+      },
+      set(notes) {
+        console.log(`notes=`, notes)
+        this.$store.dispatch('viewMapping/setRightViewDetails', { notes })
+      }
+    }
   },
 
   methods: {
@@ -224,15 +255,15 @@ export default {
       this.providerName = '???'
       for (const p of this.providers) {
         if (p.code === this.providerCode) {
-          this.providerName =  p.name
+          this.providerName = p.name
           break
         }
       }
 
       // Load services
       // const url3 = `${this.$monitorEndpoint}/metadata/services/${this.providerCode}`;
-      const url3 = `${this.$monitorEndpoint}/metadata/services`;
-      const reply3 = await axios.get(url3);
+      const url3 = `${this.$monitorEndpoint}/metadata/services`
+      const reply3 = await axios.get(url3)
       // console.log(`reply3=`, reply3)
       // this.services = reply3.data;
       // console.log(`this.services=`, this.services)
@@ -297,7 +328,7 @@ export default {
       this.$store.dispatch('viewMapping/reloadRightView', { })
     },
   },
-};
+}
 </script>
 
 <style lang="scss" scoped>

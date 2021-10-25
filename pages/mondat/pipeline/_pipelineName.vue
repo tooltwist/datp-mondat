@@ -16,45 +16,55 @@
           b-icon(icon="bank-transfer", size="is-small")
         | Pipeline '{{pipelineName}}'
 
-
       span(v-if="loading")
         | Loading...
       span(v-else-if="loadError")
         .notification.is-danger() {{loadError}}
       template(v-else)
-        .columns
-          .column.is-one-third
-            .my-backdrop
-              //- .my-pipeline-header {{pipelineName}}
-              draggable(v-model="steps", :group="{ name: 'myList' }")
-                transition-group
-                  div(v-for="(step, index) in steps", :key="step.id")
-                    StepBox(:step="step", :stepNo="index", @changed="onStepDefinitionChange", @deleted="onStepDelete", :open="stepOpen===index", @open="stepOpen = index")
-          .column.is-one-quarter
-          .column.is-one-third
-            .my-backdrop
-              .my-pipeline-header-2 Drag &amp; drop steps
-              br
-              b-field(horizontal, label="Filter", custom-class="is-small")
-                b-input(name="subject", expanded, rounded, size="is-small", placeholder="search...", v-model="filter")
-              //draggable(v-model="filterdStepTypes", :sort="false", :group="{ name: 'myList', put: false, pull: 'clone' }", :clone="stepFromStepType")
-                transition-group
-                  div(v-for="st in filterdStepTypes", :key="st.id")
-                    StepTypeBox(:stepType="st", :editing="true")
-              //- div(v-for="group in filteredStepTypeGroups")
-                | {{group.group}}
-                draggable(v-model="group.types", :sort="false", :group="{ name: 'myList', put: false, pull: 'clone' }", :clone="stepFromStepType")
-                  transition-group
-                    div(v-for="st in group.types", :key="st.id")
-                      StepTypeBox(:stepType="st", :editing="true")
-              b-collapse(animation="slide", v-for="(group, index) in filteredStepTypeGroups", :key="index", :open="stepTypeGroupOpen===index", @open="stepTypeGroupOpen = index")
-                template(#trigger="props")
-                  .my-group-name {{group.group}}
-                draggable(v-model="group.types", :sort="false", :group="{ name: 'myList', put: false, pull: 'clone' }", :clone="stepFromStepType")
-                  transition-group
-                    div(v-for="st in group.types", :key="st.id")
-                      StepTypeBox(:stepType="st", :editing="true")
-            //- | {{filteredSteps}}
+        b-tabs()
+          b-tab-item(key="definition", label="Definition")
+            br
+            .columns
+              .column.is-one-third
+                .my-backdrop
+                  //- .my-pipeline-header {{pipelineName}}
+                  draggable(v-model="steps", :group="{ name: 'myList' }")
+                    transition-group
+                      div(v-for="(step, index) in steps", :key="step.id")
+                        StepBox(:step="step", :stepNo="index", @changed="onStepDefinitionChange", @deleted="onStepDelete", :open="stepOpen===index", @open="stepOpen = index")
+              .column.is-one-quarter
+              .column.is-one-third
+                .my-backdrop
+                  span.my-pipeline-header-2 Available Steps &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  span.is-size-6 (to drag &amp; drop)
+                  .is-size-6
+                    br
+                  b-field(horizontal, label="Filter", custom-class="is-small")
+                    b-input(name="filter", expanded, rounded, size="is-small", placeholder="search...", v-model="filter")
+                  //draggable(v-model="filterdStepTypes", :sort="false", :group="{ name: 'myList', put: false, pull: 'clone' }", :clone="stepFromStepType")
+                    transition-group
+                      div(v-for="st in filterdStepTypes", :key="st.id")
+                        StepTypeBox(:stepType="st", :editing="true")
+                  //- div(v-for="group in filteredStepTypeGroups")
+                    | {{group.group}}
+                    draggable(v-model="group.types", :sort="false", :group="{ name: 'myList', put: false, pull: 'clone' }", :clone="stepFromStepType")
+                      transition-group
+                        div(v-for="st in group.types", :key="st.id")
+                          StepTypeBox(:stepType="st", :editing="true")
+                  b-collapse(animation="slide", v-for="(group, index) in filteredStepTypeGroups", :key="index", :open="stepTypeGroupOpen===index", @open="stepTypeGroupOpen = index")
+                    template(#trigger="props")
+                      .my-group-name {{group.group}}
+                    draggable(v-model="group.types", :sort="false", :group="{ name: 'myList', put: false, pull: 'clone' }", :clone="stepFromStepType")
+                      transition-group
+                        div(v-for="st in group.types", :key="st.id")
+                          StepTypeBox(:stepType="st", :editing="true")
+                //- | {{filteredSteps}}
+
+          b-tab-item(key="notes", label="Details")
+            b-field(label="Description")
+              b-input(v-model="description")
+            b-field(label="Notes")
+              textarea.textarea(rows="15", v-model="notes", placeholder="Enter any notes here...")
 </template>
 
 <script>
@@ -105,9 +115,11 @@ export default {
       // Get details of the specific pipeline
       // console.log(`url=`, url)
       const definition = await $axios.$get(url)
+      console.log(`definition=`, definition)
 
       // Add IDs so it can be draggable
       const description = definition.description
+      const notes = definition.notes
       const steps = definition.steps
       const nextId = resequence(steps)
       // console.log(`HMMO steps=`, definition.steps)
@@ -115,7 +127,7 @@ export default {
       for (const st of stepTypes) {
         st.id = typeId++
       }
-      return { pipelineName, description, node, steps, stepTypes, nextId, loading: false }
+      return { pipelineName, description, notes, node, steps, stepTypes, nextId, loading: false }
     } catch (e) {
       console.log(`url1=`, url1)
       console.log(`url=`, url)
@@ -134,6 +146,8 @@ export default {
 
       pipelineName: '',
       description: '',
+      notes: '',
+
       steps: [ ],
       stepTypes: [ ],
       groups: [ ],
@@ -199,6 +213,7 @@ export default {
         stepType: 'pipeline',
         name: this.pipelineName,
         description: this.description,
+        notes: this.notes,
         steps: this.steps,
       }
 
@@ -256,7 +271,7 @@ export default {
       // console.log(`after = ${after}`)
       // this.nextId = resequence(this.steps)
     }, //- onStepDelete
-  }
+  }//- methods
 }
 
 function compareStepTypes(stepType1, stepType2) {
