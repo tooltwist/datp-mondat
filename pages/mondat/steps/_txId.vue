@@ -90,7 +90,7 @@ export default {
   },
 
   async asyncData({ $axios, $monitorEndpoint, params }) {
-    console.log(params.txId);
+    console.log(params.txId)
     const txId = params.txId
     const url = `${$monitorEndpoint}/transaction/${txId}`
     try {
@@ -177,19 +177,9 @@ export default {
 
 function formHierarchy(steps) {
   // console.log(`formHierarchy()`)
-  // const level0 = {
-  //   record: null,
-  //   arr: [ ], // record
-  //   index: { } //
-  // }
-
-  // const level0 = [ ]
   const index = { } // fullSequence => entry
   const level0 = [ ]
   for (const step of steps) {
-    // console.log(`step.fullSequence=`, step.fullSequence)
-    // console.log(`   ${levels(step.fullSequence)} - ${endbit(step.fullSequence)}`)
-
     // If fullSequence is a.b.c, assumes a.b is already in the index
     const fs = step.fullSequence
     const pos = fs.lastIndexOf('.')
@@ -217,48 +207,10 @@ function formHierarchy(steps) {
       parent.children.push(item)
       index[fs] = item
     }
-  }//- for
-
-  // console.log(`level0=`, level0)
+  } //- for
   return level0
-}
+} //- formHierarchy
 
-// class Item {
-//   #id
-//   #record
-//   #children
-//   constructor(id, record) {
-//     this.#id = id
-//     this.#record = record
-//     this.#children = [ ]
-//   }
-
-//   find(id) {
-//     for (const child of this.#children) {
-//       if (child.id === id) {
-//         return child
-//       }
-//     }
-//     return null
-//   }
-
-//   add(item) {
-
-//   }
-// }
-
-function endbit(sequence) {
-  const pos = sequence.lastIndexOf('.')
-  if (pos < 0) {
-    return sequence
-  }
-  return sequence.substring(pos + 1)
-}
-
-function levels(sequence) {
-  const arr = sequence.split('.')
-  return arr.length
-}
 </script>
 
 <style lang="scss">

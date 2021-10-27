@@ -61,6 +61,8 @@ export default {
     'nuxt-buefy',
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
+    // https://github.com/webcore-it/nuxt-clipboard2
+    'nuxt-clipboard2',
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios

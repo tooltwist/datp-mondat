@@ -34,6 +34,9 @@
       button.button.is-small.is-pulled-right(@click="viewExample") View an example
     .is-pulled-right
       | &nbsp;&nbsp;&nbsp;
+      button.button.is-small.is-pulled-right(@click="exportOpenAPI") View OpenAPI Specification
+    .is-pulled-right
+      | &nbsp;&nbsp;&nbsp;
       button.button.is-small.is-pulled-right(@click="viewLearnByExample") Define using an example
     i.is-size-7 Click on a row to edit or delete
 
@@ -51,11 +54,16 @@
     b-modal(v-model="showViewExampleModal", :width="640", scroll="keep")
       .card
         header.card-header
-          p.card-header-title Example for {{ view }}
-        .card-content
+          p.card-header-title {{exampleHeading}}
+          // See https://materialdesignicons.com
+          button.card-header-icon(aria-label="download", @click="downloadExample")
+            b-icon(icon="download", size="is-small")
+          button.card-header-icon(aria-label="copy to clipboard", @click="copyExample")
+            b-icon(icon="content-copy", size="is-small")
+        .card-content.my-example-card-content
           .content
             pre.is-size-7
-              | {{ exampleObject }}
+              | {{exampleText}}
 
     // Modal for entering example message
     b-modal(v-model="showLearnByExampleModal", :width="640", scroll="keep")
@@ -91,6 +99,7 @@
 <script>
 import axios from "axios"
 import FormserviceMisc from "../lib/formservice-misc"
+import { generateOpenApiSpec } from '../lib/generate-openAPI'
 import FormserviceFieldEdit from "./formservice-field-edit"
 
 export default {
@@ -158,7 +167,8 @@ export default {
 
       viewDef: {},
 
-      exampleObject: {},
+      exampleHeading: '',
+      exampleText: '',
 
       isModalActive: false,
       fieldDef: null, // Field being edited.
@@ -246,9 +256,41 @@ export default {
       // console.log(`this.viewDef=`, this.viewDef)
 
       // Create an object version of this field definition
-      this.exampleObject = FormserviceMisc.fieldsToObject(this.viewDef.fields)
-      // console.log(`exampleObject=`, this.exampleObject);
+      const exampleObject = FormserviceMisc.fieldsToObject(this.viewDef.fields)
+      this.exampleHeading = `Example for ${this.view}`
+      this.exampleText = JSON.stringify(exampleObject, '', 2)
+      this.exampleFilename = `${this.viewDef}-example.json`
       this.showViewExampleModal = true
+    },
+
+    exportOpenAPI: function () {
+      // Create an object version of this field definition
+      this.exampleHeading = `OpenAPI specification template`
+      this.exampleText = generateOpenApiSpec(this.viewDef)
+      this.exampleFilename = `${this.view}-swagger.yaml`
+      this.showViewExampleModal = true
+    },
+
+    copyExample: async function () {
+      alert('copied')
+      try {
+        await this.$copyText(this.exampleText)
+      } catch (e) {
+        console.error(e)
+      }
+      this.showViewExampleModal = false
+    },
+
+    downloadExample: async function () {
+      // Download as a file
+      // See https://morioh.com/p/f4d331b62cda
+      const fileURL = window.URL.createObjectURL(new Blob([this.exampleText]))
+      const fileLink = document.createElement('a')
+      fileLink.href = fileURL
+      fileLink.setAttribute('download', this.exampleFilename)
+      document.body.appendChild(fileLink)
+      fileLink.click()
+      this.showViewExampleModal = false
     },
 
     newField: function () {
@@ -630,6 +672,11 @@ export default {
 .formservice-fields {
   .my-table table {
     cursor: pointer;
+  }
+
+  .my-example-card-content {
+    padding: 0px;
+    // background-color: #e0e0e0;
   }
 }
 </style>
