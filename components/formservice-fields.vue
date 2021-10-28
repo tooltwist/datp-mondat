@@ -263,11 +263,36 @@ export default {
       this.showViewExampleModal = true
     },
 
-    exportOpenAPI: function () {
+    exportOpenAPI: async function () {
       // Create an object version of this field definition
       this.exampleHeading = `OpenAPI specification template`
-      this.exampleText = generateOpenApiSpec(this.viewDef)
-      this.exampleFilename = `${this.view}-swagger.yaml`
+
+      const REQUEST_SUFFIX = '-request'
+      const RESPONSE_SUFFIX = '-response'
+
+      if (this.view.endsWith(REQUEST_SUFFIX)) {
+        // We already have the request view. Now get the response view.
+        const requestViewDef = this.viewDef
+        const domainService = this.view.substring(0, this.view.length - REQUEST_SUFFIX.length)
+        const responseViewName = `${domainService}-response`
+        const createIfNotFound = true
+        const responseViewDef = await FormserviceMisc.getView(this.$formserviceEndpoint, responseViewName, createIfNotFound)
+        const service = domainService.startsWith('std-') ? domainService.substring(4) : domainService
+        this.exampleText = generateOpenApiSpec(service, requestViewDef, responseViewDef)
+        this.exampleFilename = `${service}-swagger.yaml`
+        /*
+        */
+      } else if (this.view.endsWith(RESPONSE_SUFFIX)) {
+        // We have the response view. Now get the request view.
+        const responseViewDef = this.viewDef
+        const domainService = this.view.substring(0, this.view.length - RESPONSE_SUFFIX.length)
+        const createIfNotFound = true
+        const requestViewName = `${domainService}-request`
+        const requestViewDef = await FormserviceMisc.getView(this.$formserviceEndpoint, requestViewName, createIfNotFound)
+        const service = domainService.startsWith('std-') ? domainService.substring(4) : domainService
+        this.exampleText = generateOpenApiSpec(service, requestViewDef, responseViewDef)
+        this.exampleFilename = `${service}-swagger.yaml`
+      }
       this.showViewExampleModal = true
     },
 
