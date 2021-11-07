@@ -28,6 +28,7 @@
           template(v-if="p.stepType === 'hidden/pipeline'")
             br
             radial-gauge(:options="radialOptions", :value="p.perMinute")
+              radial-gauge(:options="radialOptions", :value="p.perMinute")
             br
             | Past 15 seconds
             br
@@ -38,7 +39,8 @@
         template(v-for="p in performance300")
           template(v-if="p.stepType === 'hidden/pipeline'")
             br
-            radial-gauge(:options="radialOptions", :value="p.perMinute")
+            no-ssr
+              radial-gauge(:options="radialOptions", :value="p.perMinute")
             br
             | Past five minutes
             br
@@ -49,7 +51,8 @@
         template(v-for="p in performance1800")
           template(v-if="p.stepType === 'hidden/pipeline'")
             br
-            radial-gauge(:options="radialOptions", :value="p.perMinute")
+            no-ssr
+              radial-gauge(:options="radialOptions", :value="p.perMinute")
             br
             | Past half hour
             br
@@ -60,7 +63,8 @@
         template(v-for="p in performance7200")
           template(v-if="p.stepType === 'hidden/pipeline'")
             br
-            radial-gauge(:options="radialOptions", :value="p.perMinute")
+            no-ssr
+              radial-gauge(:options="radialOptions", :value="p.perMinute")
             br
             | Past two hours
             br
@@ -75,7 +79,8 @@
     br
     h3.subtitle.is-6.has-text-grey
       | All Steps
-    linear-gauge(:value="77", :options="linearOptions")
+    no-ssr
+      linear-gauge(:value="77", :options="linearOptions")
 </template>
 
 <script>

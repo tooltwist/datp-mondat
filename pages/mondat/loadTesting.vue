@@ -38,7 +38,8 @@
             .my-gauge-box
               // Translucent cover for unused gauges
               .my-gauge-hiding-overlay(v-show="!(tests[r+c].testCase)")
-              radial-gauge(:options="radialOptions", :value="tests[r+c].value")
+              no-ssr
+                radial-gauge(:options="radialOptions", :value="tests[r+c].value")
             div
               .my-cycler(:style="cyclerStyle(r+c)")
               select.my-select(placeholder="Select one", v-model="tests[r+c].testCase", @input="testCaseChanged(r+c)")
@@ -97,7 +98,6 @@ export default {
       scenarios: [ ],
       testCases: [ ],
       testsRunning: false,
-
 
       tests: [
         {

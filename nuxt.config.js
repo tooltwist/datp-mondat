@@ -5,9 +5,10 @@
  * the author or owner be liable for any claim or damages.
  */
 export default {
+  target: 'static',
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    title: 'mondate',
+    title: 'MONDAT',
     htmlAttrs: {
       lang: 'en'
     },
@@ -25,6 +26,16 @@ export default {
   server: {
     host: '0.0.0.0'
   },
+
+  // https://nuxtjs.org/docs/configuration-glossary/configuration-router
+  // router: {
+  //   base: '/mondat/'
+  // },
+
+  // generate: {
+  //   // https://nuxtjs.org/docs/configuration-glossary/configuration-generate#dir
+  //   dir: 'dist/mondat'
+  // },
 
   vite: {
     ssr: false

@@ -8,7 +8,7 @@
   .my-default-layout.is-dark-mode-active
     nav.navbar.header.has-shadow.is-primary(role="navigation", aria-label="main navigation")
       .navbar-brand
-        a.navbar-item(href="/")
+        NuxtLink.navbar-item(to="/mondat")
           //- img(src="~assets/TooltwistLogo.png", alt="Buefy", height="28")
           img(src="~assets/tooltwist-logo-white.png", alt="Buefy", height="28")
           | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
