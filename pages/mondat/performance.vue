@@ -27,7 +27,7 @@
         template(v-for="p in performance15")
           template(v-if="p.stepType === 'hidden/pipeline'")
             br
-            radial-gauge(:options="radialOptions", :value="p.perMinute")
+            no-ssr
               radial-gauge(:options="radialOptions", :value="p.perMinute")
             br
             | Past 15 seconds
