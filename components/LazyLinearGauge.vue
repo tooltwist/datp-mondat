@@ -5,11 +5,12 @@
  * the author or owner be liable for any claim or damages.
  */
 <template>
-  <canvas class="canvas-gauges"></canvas>
+  <client-only>
+    <canvas class="canvas-gauges"></canvas>
+  </client-only>
 </template>
 
 <script>
-import { LinearGauge } from 'canvas-gauges'
 
 export default {
 
@@ -27,13 +28,17 @@ export default {
     }
   },
 
-  mounted () {
-    this.chart = new LinearGauge(Object.assign(this.options, { renderTo: this.$el, value: this.value}))
-      .draw()
+  async mounted () {
+    if (process.client) {
+      const cg = await import('canvas-gauges')
+      this.chart = new cg.LinearGauge(Object.assign(this.options, { renderTo: this.$el, value: this.value})).draw()
+    }
   },
 
   beforeDestroy() {
-    this.chart.destroy()
+    if (process.client) {
+      this.chart.destroy()
+    }
   },
 
   watch: {

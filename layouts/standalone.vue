@@ -43,8 +43,10 @@ export default {
   methods: {
 
     setDarkMode: function() {
-      const htmlClassName = 'is-dark-mode-active'
-      document.documentElement.classList.add(htmlClassName)
+      if (process.client) {
+        const htmlClassName = 'is-dark-mode-active'
+        document.documentElement.classList.add(htmlClassName)
+      }
     },
 
     toggleDarkMode: function() {

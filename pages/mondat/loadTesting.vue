@@ -38,8 +38,7 @@
             .my-gauge-box
               // Translucent cover for unused gauges
               .my-gauge-hiding-overlay(v-show="!(tests[r+c].testCase)")
-              no-ssr
-                radial-gauge(:options="radialOptions", :value="tests[r+c].value")
+              lazy-radial-gauge(:options="radialOptions", :value="tests[r+c].value")
             div
               .my-cycler(:style="cyclerStyle(r+c)")
               select.my-select(placeholder="Select one", v-model="tests[r+c].testCase", @input="testCaseChanged(r+c)")
@@ -68,8 +67,8 @@
 <script>
 import DatemonNotification from "~/components/DatmonNotification.vue"
 import DatemonTable from "~/components/DatmonTable.vue"
-import LinearGauge from '~/components/LinearGauge.vue'
-import RadialGauge from '~/components/RadialGauge.vue'
+import LazyLinearGauge from '~/components/LazyLinearGauge.vue'
+import LazyRadialGauge from '~/components/LazyRadialGauge.vue'
 
 const MAX_TESTS = 8
 const MIDI_POLLING_TIME = 250 // ms
@@ -81,8 +80,8 @@ export default {
   components: {
     DatemonNotification,
     DatemonTable,
-    LinearGauge,
-    RadialGauge,
+    LazyLinearGauge,
+    LazyRadialGauge,
   },
 
   data: function () {

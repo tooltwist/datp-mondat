@@ -23,12 +23,11 @@
     br
     .columns
       .column.my_column
-        //- radial-gauge(:options="radialOptions", :value="txMin")
+        //- lazy-radial-gauge(:options="radialOptions", :value="txMin")
         template(v-for="p in performance15")
           template(v-if="p.stepType === 'hidden/pipeline'")
             br
-            no-ssr
-              radial-gauge(:options="radialOptions", :value="p.perMinute")
+            lazy-radial-gauge(:options="radialOptions", :value="p.perMinute")
             br
             | Past 15 seconds
             br
@@ -39,8 +38,7 @@
         template(v-for="p in performance300")
           template(v-if="p.stepType === 'hidden/pipeline'")
             br
-            no-ssr
-              radial-gauge(:options="radialOptions", :value="p.perMinute")
+            lazy-radial-gauge(:options="radialOptions", :value="p.perMinute")
             br
             | Past five minutes
             br
@@ -51,8 +49,7 @@
         template(v-for="p in performance1800")
           template(v-if="p.stepType === 'hidden/pipeline'")
             br
-            no-ssr
-              radial-gauge(:options="radialOptions", :value="p.perMinute")
+            lazy-radial-gauge(:options="radialOptions", :value="p.perMinute")
             br
             | Past half hour
             br
@@ -63,8 +60,7 @@
         template(v-for="p in performance7200")
           template(v-if="p.stepType === 'hidden/pipeline'")
             br
-            no-ssr
-              radial-gauge(:options="radialOptions", :value="p.perMinute")
+            lazy-radial-gauge(:options="radialOptions", :value="p.perMinute")
             br
             | Past two hours
             br
@@ -79,13 +75,12 @@
     br
     h3.subtitle.is-6.has-text-grey
       | All Steps
-    no-ssr
-      linear-gauge(:value="77", :options="linearOptions")
+    lazy-linear-gauge(:value="77", :options="linearOptions")
 </template>
 
 <script>
-import LinearGauge from '~/components/LinearGauge.vue'
-import RadialGauge from '~/components/RadialGauge.vue'
+import LazyLinearGauge from '~/components/LazyLinearGauge.vue'
+import LazyRadialGauge from '~/components/LazyRadialGauge.vue'
 import DatemonNotification from "~/components/DatmonNotification.vue"
 import DatemonTable from "~/components/DatmonTable.vue"
 
@@ -93,8 +88,8 @@ const POLLING_INTERVAL = 5000
 
 export default {
   components: {
-    LinearGauge,
-    RadialGauge,
+    LazyLinearGauge,
+    LazyRadialGauge,
     DatemonNotification,
     DatemonTable,
   },
