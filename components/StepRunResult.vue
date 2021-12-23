@@ -13,7 +13,7 @@
           .is-size-6(v-if="step.step.stepType === 'hidden/pipeline'")
             | pipeline
           h2.title.is-size-6(v-else)
-            | {{step.step.stepType}}
+            | {{step.step.stepDefinition.stepType}}
       tr
         td.my-middle
           StepRunResult(v-for="rec in step.children", :step="rec", :key="rec.path", :level="level + 1", :currentStepId="currentStepId", @showDetails="showDetails")
@@ -75,11 +75,13 @@ export default {
     showMe(step) {
       console.log(`showMe`)
       console.log(`step=`, this.step)
-      this.$emit('showDetails', this.step.step.stepId)
+      const stepId = this.step.step.stepId
+      console.log(`stepId=`, stepId)
+      this.$emit('showDetails', stepId)
     },
 
     showDetails(stepId) {
-      console.log(`showDetails()`)
+      console.log(`showDetails() in child`)
       console.log(`stepId=`, stepId)
       // Pass it back up the component hierarchy
       this.$emit('showDetails', stepId)

@@ -37,40 +37,50 @@
         .column
           template(v-if="stepDetails")
             br
-            h2.title.is-size-6 {{stepDetails.details.stepId}}
+            h2.title.is-size-6 {{stepDetails.stepId}}
+              pre
+                | {{JSON.stringify(stepDetails, '', 2)}}
             b-tabs(:animated="false")
               b-tab-item(key="details", label="Details")
                 table.table
                   tr
                     td Step Type:
                     td
-                      b {{stepDetails.details.stepType}}
+                      b {{stepDetails.stepDefinition.stepType}}
                   tr
                     td End Type:
                     td
-                      b {{stepDetails.details.status}}
+                      b {{stepDetails.status}}
                   tr
                     td Start time:
                     td
-                      | {{stepDetails.details.startTime}}
-                  tr
-                    td Completion time:
-                    td
-                      | {{stepDetails.details.completionTime}} - {{typeof(stepDetails.details.completionTime)}}
-                  tr
-                    td Progress:
-                    td
-                      | {{stepDetails.details.progress}}
-              b-tab-item(key="data", label="Data")
-                b-field(label="Result")
-                  b-input(type="textarea", v-model="stepDetails.details.response", rows="25", zsize="is-small", readonly, disabled)
+                      | {{stepDetails.startTime}}
+                  //- tr
+                  //-   td Completion time:
+                  //-   td
+                  //-     | {{stepDetails.completionTime}}
+                  //-     //-  - {{typeof(stepDetails.completionTime)}}
+                  //- tr
+                  //-   td Progress:
+                  //-   td
+                  //-     | {{stepDetails.progress}}
+              b-tab-item(key="input", label="Input")
+                b-field(label="Input")
+                  b-input(type="textarea", v-model="stepInputJSON", rows="15", size="is-small", readonly, disabled)
+              b-tab-item(key="output", label="output")
+                b-field(label="Output")
+                  b-input(type="textarea", v-model="stepOutputJSON", rows="15", size="is-small", readonly, disabled)
               b-tab-item(key="definition", label="Definition")
                 b-field(label="Step definition")
-                  b-input(type="textarea", v-model="stepDetails.details.definition", rows="25", zsize="is-small", readonly, disabled)
+                  b-input(type="textarea", v-model="stepDefinitionJSON", rows="15", size="is-small", readonly, disabled)
               b-tab-item(key="log", label="Log entries")
                 | Not available at this time
               b-tab-item(key="artifacts", label="Artifacts")
                 | Not available at this time
+              b-tab-item(key="audit", label="Audit trail")
+                | Not available at this time
+              b-tab-item(key="stepData", label="StepData")
+                  b-input(type="textarea", v-model="stepDetailsJSON", rows="15", size="is-small", readonly, disabled)
 
             //- pre.is-size-6(v-if="typeof(stepDetails) === 'object'")
               | {{JSON.stringify(stepDetails, '', 2)}}
@@ -95,6 +105,7 @@ export default {
     const url = `${$monitorEndpoint}/transaction/${txId}`
     try {
       const steps = await $axios.$get(url)
+      console.log(`steps=`, steps)
 
       const hierarchy = formHierarchy(steps)
       return { txId, steps, hierarchy, loading: false }
@@ -153,24 +164,72 @@ export default {
     }
   }, //- data
 
+  computed: {
+    stepInputJSON: function() {
+      try {
+        return JSON.stringify(this.stepDetails.stepInput, '', 2)
+      } catch (e) {
+        return this.stepDetails.stepInput
+      }
+    },
+
+    stepOutputJSON: function() {
+      try {
+        return JSON.stringify(this.stepDetails.stepOutput, '', 2)
+      } catch (e) {
+        return this.stepDetails.stepOutput
+      }
+    },
+
+    stepDefinitionJSON: function() {
+      try {
+        return JSON.stringify(this.stepDetails.stepDefinition, '', 2)
+      } catch (e) {
+        return this.stepDetails.stepDefinition
+      }
+    },
+
+    stepDetailsJSON: function() {
+      try {
+        return JSON.stringify(this.stepDetails, '', 2)
+      } catch (e) {
+        return this.stepDetails
+      }
+    }
+  },
+
+
+
   methods: {
     backToTransactions: function() {
       this.$router.push({ path: `/mondat/transactions` })
     },
 
     showDetails: async function(stepId) {
-      // this.stepDetails = `Loaded details for step ${stepId}`
-      // console.log(params.txId);
-      // const txId = params.txId
-      const url = `${this.$monitorEndpoint}/stepInstance/${stepId}`
-      try {
-        this.stepDetails = await this.$axios.$get(url)
-        this.currentStepId = stepId
-      } catch (e) {
-        console.log(`url=`, url)
-        console.log(`e.response=`, e.response)
-        alert(`Could not load step details:`, e)
+      console.log(`showDetails in parent`, stepId)
+      this.stepDetails = `Loaded details for step ${stepId}`
+      console.log(`stepId=`, stepId)
+
+      // Get the details from the server
+      for (const step of this.steps) {
+        console.log(`step=`, step)
+        if (step.stepId === stepId) {
+          console.log(`found the step`)
+          this.stepDetails = step
+          this.currentStepId = stepId
+          break
+        }
       }
+
+      // const url = `${this.$monitorEndpoint}/stepInstance/${stepId}`
+      // try {
+      //   this.stepDetails = await this.$axios.$get(url)
+      //   this.currentStepId = stepId
+      // } catch (e) {
+      //   console.log(`url=`, url)
+      //   console.log(`e.response=`, e.response)
+      //   alert(`Could not load step details:`, e)
+      // }
     }
   }//- methods
 }
@@ -182,6 +241,7 @@ function formHierarchy(steps) {
   for (const step of steps) {
     // If fullSequence is a.b.c, assumes a.b is already in the index
     const fs = step.fullSequence
+
     const pos = fs.lastIndexOf('.')
     if (pos < 0) {
       // first item
