@@ -10,10 +10,20 @@
     table.my-table(:class="myClass", @click.stop="showMe")
       tr
         td.my-top
-          .is-size-6(v-if="step.step.stepType === 'hidden/pipeline'")
-            | pipeline
+          //- pre
+            | Z {{JSON.stringify(step.step,'',2)}}
+          b-icon.is-pulled-right(v-if="step.step.status==='success'", icon="check-bold", size="is-small", type="is-success")
+          b-icon.is-pulled-right(v-else-if="step.step.status==='sleeping'", icon="timer-sand", size="is-small")
+          b-icon.is-pulled-right(v-else-if="step.step.status==='running'", icon="run", size="is-small")
+          .is-pulled-right(v-else) {{step.step.status}}
+          //- b-icon(v-if="step.step.status==='sleeping'", icon="timer-sand", size="is-small")
+          //- b-icon(v-if="step.step.status==='sleeping'", icon="timer-sand", size="is-small")
+          .is-size-6(v-if="typeof(step.step.stepDefinition) === 'string'")
+            b-icon(icon="animation-play-outline", size="is-small")
+            | &nbsp;&nbsp; {{step.step.stepDefinition}}
           h2.title.is-size-6(v-else)
-            | {{step.step.stepDefinition.stepType}}
+            b-icon(icon="foot-print", size="is-small")
+            | &nbsp; {{step.step.stepDefinition.stepType}}
       tr
         td.my-middle
           StepRunResult(v-for="rec in step.children", :step="rec", :key="rec.path", :level="level + 1", :currentStepId="currentStepId", @showDetails="showDetails")
@@ -111,8 +121,8 @@ export default {
     }
 
     .my-top {
-      padding: 20px;
-      padding-bottom: 5px;
+      padding: 15px;
+      padding-bottom: 0px;
       color: white;
     }
 

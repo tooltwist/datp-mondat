@@ -8,6 +8,8 @@
 .my-steps-page
   section.section
     .is-pulled-right
+      b-button(type="is-successZ", @click="reloadDetails") Reload
+      | &nbsp;&nbsp;
       b-button(type="is-success", @click="backToTransactions") Back
     h2.title.is-4.has-text-grey
       .datemon-heading-icon
@@ -16,10 +18,10 @@
     br
     DatemonNotification
       p
-        | The table below shows steps that have actually been run.
-        | Steps that have not been initiated yet wil not be shown.
-      p
-        | Note that the steps shown here may not match up with the current pipeline definition
+        | This page shows only steps that have been run.
+        | Steps that have not been initiated yet will not be shown.
+        p
+        | Note that the steps reported here may not match up with the current pipeline definition
         | for the transaction type, if a new version of the pipeline is in use.
 
     span(v-if="loading")
@@ -28,7 +30,7 @@
       .notification.is-danger() {{loadError}}
     template(v-else)
       .columns
-        .column.is-5
+        .column.is-4
           StepRunResult(v-for="rec in hierarchy", :step="rec", :key="rec.path", :level="0", :currentStepId="currentStepId", @showDetails="showDetails")
           //- | {{hierarchy}}
           //- pre
@@ -37,18 +39,26 @@
         .column
           template(v-if="stepDetails")
             br
-            h2.title.is-size-6 {{stepDetails.stepId}}
-              pre
-                | {{JSON.stringify(stepDetails, '', 2)}}
+            br
+            //- h2.title.is-size-6 {{stepDetails.stepId}}
+            b.is-size-6 Step {{stepDetails.stepId}}
+            br
+            br
+            //- pre
+              | {{JSON.stringify(stepDetails, '', 2)}}
             b-tabs(:animated="false")
               b-tab-item(key="details", label="Details")
                 table.table
-                  tr
+                  tr(v-if="isPipeline")
+                    td Pipeline:
+                    td
+                      b {{stepDetails.stepDefinition}}
+                  tr(v-else)
                     td Step Type:
                     td
                       b {{stepDetails.stepDefinition.stepType}}
                   tr
-                    td End Type:
+                    td Status:
                     td
                       b {{stepDetails.status}}
                   tr
@@ -66,13 +76,13 @@
                   //-     | {{stepDetails.progress}}
               b-tab-item(key="input", label="Input")
                 b-field(label="Input")
-                  b-input(type="textarea", v-model="stepInputJSON", rows="15", size="is-small", readonly, disabled)
+                  b-input(type="textarea", v-model="stepInputJSON", rows="19", size="is-small", readonly, disabled)
               b-tab-item(key="output", label="output")
                 b-field(label="Output")
-                  b-input(type="textarea", v-model="stepOutputJSON", rows="15", size="is-small", readonly, disabled)
+                  b-input(type="textarea", v-model="stepOutputJSON", rows="19", size="is-small", readonly, disabled)
               b-tab-item(key="definition", label="Definition")
                 b-field(label="Step definition")
-                  b-input(type="textarea", v-model="stepDefinitionJSON", rows="15", size="is-small", readonly, disabled)
+                  b-input(type="textarea", v-model="stepDefinitionJSON", rows="19", size="is-small", readonly, disabled)
               b-tab-item(key="log", label="Log entries")
                 | Not available at this time
               b-tab-item(key="artifacts", label="Artifacts")
@@ -80,7 +90,7 @@
               b-tab-item(key="audit", label="Audit trail")
                 | Not available at this time
               b-tab-item(key="stepData", label="StepData")
-                  b-input(type="textarea", v-model="stepDetailsJSON", rows="15", size="is-small", readonly, disabled)
+                  b-input(type="textarea", v-model="stepDetailsJSON", rows="19", size="is-small", readonly, disabled)
 
             //- pre.is-size-6(v-if="typeof(stepDetails) === 'object'")
               | {{JSON.stringify(stepDetails, '', 2)}}
@@ -165,6 +175,10 @@ export default {
   }, //- data
 
   computed: {
+    isPipeline: function () {
+      return (typeof(this.stepDetails.stepDefinition) === 'string')
+    },
+
     stepInputJSON: function() {
       try {
         return JSON.stringify(this.stepDetails.stepInput, '', 2)
@@ -204,6 +218,21 @@ export default {
     backToTransactions: function() {
       this.$router.push({ path: `/mondat/transactions` })
     },
+
+    reloadDetails: async function() {
+      // Same loading as asyncData
+      this.loading = true
+      const url = `${this.$monitorEndpoint}/transaction/${this.txId}`
+      try {
+        this.steps = await this.$axios.$get(url)
+        this.hierarchy = formHierarchy(this.steps)
+      } catch (e) {
+        console.log(`url=`, url)
+        console.log(`e.response=`, e.response)
+        this.loadError = e.toString()
+      }
+      this.loading = false
+    },//- reloadDetails
 
     showDetails: async function(stepId) {
       console.log(`showDetails in parent`, stepId)

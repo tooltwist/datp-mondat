@@ -344,7 +344,8 @@ export default {
       this.readytToTestAgain = false
       this.testTimer = ``
       this.testTimer2 = ``
-      const url = `${this.$datpEndpoint}/initiate/${this.selectedRecord.transactionType}`
+      const url = `${this.$datpEndpoint}/tx/start/${this.selectedRecord.transactionType}`
+      console.log(`url=`, url)
       let response
       try {
         const data = await JSON.parse(this.selectedRecord.inputData)
@@ -354,7 +355,7 @@ export default {
         response = await this.$axios.$put(url, data)
         const endTime = Date.now()
 
-        // console.log(`response=`, response)
+        console.log(`response=`, response)
         this.testResponse = JSON.stringify(response, '', 2)
         this.testTimer = `${endTime - this.startTime}ms`
         this.readytToTestAgain = true
@@ -368,31 +369,27 @@ export default {
       }
 
       // See if we need to poll for a result
-      const transactionId = response.metadata.transactionId
-      const inquiryToken = response.metadata.inquiryToken
+      const metadata = response.metadata
+      if (metadata) {
+        // this.pollResponse = `polling...`
+        const transactionId = metadata.txId
+        const inquiryToken = metadata.inquiryToken
 
-      this.pollResponse = `polling...`
 
-
-      switch (response.metadata.responseType) {
-
-        case 'synchronous':
-          this.pollResponse = `See result above.`
-          break
-
-        case 'poll-for-result':
-          // console.log(`Will poll for the result`)
-          this.pollResponse = `polling...`
-          this.polling = setInterval(async () => {
+        if (metadata.status === 'running') {
+          // We'll need to poll for a response
+            this.pollResponse = `polling...`
+            this.polling = setInterval(async () => {
             // console.log(`check result`)
             try {
-              const url2 = `${this.$datpEndpoint}/result/${transactionId}`
-              // console.log(`url2=`, url2)
+              const url2 = `${this.$datpEndpoint}/tx/status/${transactionId}`
+
+              console.log(`url2=`, url2)
               const response2 = await this.$axios.$get(url2, {
                 // Put inquiryToken in a header
               })
               // console.log(`response2=`, response2)
-              if (response2.status !== 'running') {
+              if (response2.metadata && response2.metadata.status !== 'running') {
                 this.stopAnyPolling()
                 this.pollResponse = JSON.stringify(response2, '', 2)
                 const endTime2 = Date.now()
@@ -400,14 +397,54 @@ export default {
               }
             } catch (e) {
               console.log(`e=`, e)
+              this.stopAnyPolling()
               alert(`Error polling for result.`)
             }
           }, POLLING_INTERVAL)
-          break
 
-        default:
-          this.pollResponse = `Unknown response!`
-          break
+        } else {
+          this.pollResponse = `See result above.`
+        }
+
+
+        // switch (metadata.responseType) {
+
+        //   case 'synchronous':
+        //     this.pollResponse = `See result above.`
+        //     break
+
+        //   case 'poll-for-result':
+        //     // console.log(`Will poll for the result`)
+        //     this.pollResponse = `polling...`
+        //     this.polling = setInterval(async () => {
+        //       // console.log(`check result`)
+        //       try {
+        //         const url2 = `${this.$datpEndpoint}/result/${transactionId}`
+        //         // console.log(`url2=`, url2)
+        //         const response2 = await this.$axios.$get(url2, {
+        //           // Put inquiryToken in a header
+        //         })
+        //         // console.log(`response2=`, response2)
+        //         if (response2.status !== 'running') {
+        //           this.stopAnyPolling()
+        //           this.pollResponse = JSON.stringify(response2, '', 2)
+        //           const endTime2 = Date.now()
+        //           this.testTimer2 = `, ${endTime2 - this.startTime}ms`
+        //         }
+        //       } catch (e) {
+        //         console.log(`e=`, e)
+        //         alert(`Error polling for result.`)
+        //       }
+        //     }, POLLING_INTERVAL)
+        //     break
+
+        //   default:
+        //     this.pollResponse = `Unknown response!`
+        //     break
+        // }
+      } else {
+        // !metadata
+        this.pollResponse = `No metadata!`
       }
     },
 
