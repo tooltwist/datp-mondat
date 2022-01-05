@@ -77,18 +77,30 @@
               b-tab-item(key="input", label="Input")
                 b-field(label="Input")
                   b-input(type="textarea", v-model="stepInputJSON", rows="19", size="is-small", readonly, disabled)
+
               b-tab-item(key="output", label="output")
                 b-field(label="Output")
                   b-input(type="textarea", v-model="stepOutputJSON", rows="19", size="is-small", readonly, disabled)
+
               b-tab-item(key="definition", label="Definition")
+                // Step definition
                 b-field(label="Step definition")
                   b-input(type="textarea", v-model="stepDefinitionJSON", rows="19", size="is-small", readonly, disabled)
+
               b-tab-item(key="log", label="Log entries")
-                | Not available at this time
+                // Log entries
+                b-table.my-table.is-size-7(
+                  :data="logEntries",
+                  :columns="logEntriesColumns",
+                  hoverable)
+                //- | {{logEntries}}
+
               b-tab-item(key="artifacts", label="Artifacts")
                 | Not available at this time
+
               b-tab-item(key="audit", label="Audit trail")
                 | Not available at this time
+
               b-tab-item(key="stepData", label="StepData")
                   b-input(type="textarea", v-model="stepDetailsJSON", rows="19", size="is-small", readonly, disabled)
 
@@ -137,7 +149,34 @@ export default {
       currentStepId: '',
       stepDetails: null,
 
-      columns: [
+      logEntriesColumns: [
+        // {
+        //   field: 'created',
+        //   label: 'Timestamp',
+        //   // width: '500',
+        //   // numeric: true
+        // },
+        {
+          field: 'level',
+          label: 'Type',
+          // width: '500',
+          // numeric: true
+        },
+        {
+          field: 'source',
+          label: 'Source',
+          // width: '500',
+          // numeric: true
+        },
+        {
+          field: 'message',
+          label: 'Message',
+          // width: '500',
+          // numeric: true
+        },
+      ],
+
+      columns: [//ZZZZZ Is this used?
         {
           field: 'fullSequence',
           label: 'Sequence',
@@ -209,6 +248,10 @@ export default {
       } catch (e) {
         return this.stepDetails
       }
+    },
+
+    logEntries: function() {
+      return this.stepDetails.logs
     }
   },
 
