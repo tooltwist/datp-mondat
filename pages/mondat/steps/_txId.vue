@@ -36,7 +36,7 @@
           //- pre
             | {{JSON.stringify(steps, '', 2)}}
         .column.is-1
-        .column
+        .column.is-7
           template(v-if="stepDetails")
             br
             br
