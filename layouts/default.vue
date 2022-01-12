@@ -39,7 +39,7 @@
           br
         br
         p.menu-label.is-hidden-touch
-          | Testing
+          | Transactions
         ul.menu-list
           //li
             NuxtLink(to="/junk", Zexact-active-class="is-active")
@@ -49,14 +49,14 @@
             NuxtLink(to="mondat-junk", Zexact-active-class="is-active")
               b-icon(icon="cross")
               | &nbspJUNK2
-          li(v-for="(item, key) of testitems", :key="key")
+          li(v-for="(item, key) of txItems", :key="key")
             NuxtLink(:to="item.to", exact-active-class="is-active")
               b-icon(:icon="item.icon")
               | &nbsp;{{ item.title }}
         br
         br
         p.menu-label.is-hidden-touch
-          | Development
+          | Setup / Configuration
         ul.menu-list
           li(v-for="(item, key) of devitems", :key="key")
             NuxtLink(:to="item.to", exact-active-class="is-active")
@@ -94,16 +94,6 @@ export default {
           icon: 'state-machine',
           to: { name: 'mondat-nodes' }
         },
-        {
-          title: 'Pipelines',
-          icon: 'transit-connection',
-          to: { name: 'mondat-pipelines' }
-        },
-        {
-          title: 'Transactions',
-          icon: 'bank-transfer',
-          to: { name: 'mondat-transactions' }
-        },
 
         // {
         //   title: 'Queues',
@@ -121,34 +111,65 @@ export default {
         //   icon: 'alert',
         //   to: { name: 'alerts' }
         // },
-        {
-          title: 'Abandoned',
-          // icon: 'sync-alert',
-          icon: 'head-question-outline',
-          to: { name: 'mondat-abandoned' }
-        },
-        {
-          title: 'Blockage',
-          icon: 'timer-off-outline',
-          to: { name: 'mondat-blockages' }
-        },
       ],//- items
 
 
-      testitems: [
-        {
-          title: 'Testing',
-          icon: 'bike-fast',
-          to: { name: 'mondat-testCases' }
-        },
+      txItems: [
+        // {
+        //   title: 'Testing',
+        //   icon: 'bike-fast',
+        //   to: { name: 'mondat-testCases' }
+        // },
         // {
         //   title: 'Tracing',
         //   icon: 'eye',
         //   to: '/forms/messages'
         // },
+        {
+          title: 'Running',
+          icon: 'run',
+          to: { name: 'mondat-running' }
+        },
+        {
+          title: 'Finished',
+          icon: 'bank-transfer',
+          to: { name: 'mondat-complete' }
+        },
+        {
+          title: 'Sleeping',
+          icon: 'sleep',
+          to: { name: 'mondat-sleeping' }
+        },
+        {
+          title: 'Failures',
+          icon: 'alert-rhombus-outline',
+          to: { name: 'mondat-failures' }
+        },
+
+        // {
+        //   title: 'Broken webhooks',
+        //   // icon: 'sync-alert',
+        //   icon: 'alert-rhombus-outline',
+        //   to: { name: 'mondat-abandoned' }
+        // },
+        // {
+        //   title: 'Blockage',
+        //   icon: 'wall',
+        //   to: { name: 'mondat-blockages' }
+        // },
       ],
 
       devitems: [
+        {
+          title: 'Testing',
+          icon: 'bike-fast',
+          to: { name: 'mondat-testCases' }
+        },
+        {
+          title: 'Pipelines',
+          icon: 'transit-connection',
+          to: { name: 'mondat-pipelines' }
+        },
         {
           title: 'TX Types',
           icon: 'shape',

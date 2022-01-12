@@ -20,7 +20,7 @@
         card(title="Pipelines", icon="transit-connection")
           | Monitor specific pipelines
 
-      NuxtLink(to="/mondat/transactions")
+      NuxtLink(to="/mondat/complete")
         card(title="Transactions", icon="bank-transfer")
           | Investigate transactions
 

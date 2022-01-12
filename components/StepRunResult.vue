@@ -73,7 +73,7 @@ export default {
   computed: {
     myClass() {
       let cls = `colors${this.level % 2}`
-      console.log(`${this.step.step.stepId} VERSUS ${this.currentStepId}`)
+      // console.log(`${this.step.step.stepId} VERSUS ${this.currentStepId}`)
       if (this.step.step.stepId === this.currentStepId) {
         cls += ' selected'
       }

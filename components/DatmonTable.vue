@@ -99,45 +99,18 @@ export default {
   cursor: pointer;
 }
 
-
-
-// .TABLEHEADER {
-//   width: 1206px;
-//   height: 71px;
-//   flex-grow: 0;
-//   display: flex;
-//   flex-direction: row;
-//   justify-content: flex-start;
-//   align-items: flex-start;
-//   margin: 60px 0 0;
-//   // padding: 12px 56px 0;
-//   padding: 12px 0px 0;
-//   border-radius: 5px;
-// }
-
 .my-heading-1 {
   height: 59px;
-  // flex-grow: 0;
-  // padding: 35px 299px 12px 24px;
   padding: 0px;
   background-color: #322f44;
 }
 
 .my-heading-2 {
   height: 59px;
-  // display: flex;
-  // flex-direction: row;
-  // justify-content: flex-start;
-  // align-items: flex-end;
   gap: 10px;
-  // padding: 36px 18px 12px 24px;
   padding: 36px 18px 12px;
-// }
 
-// .my-heading-3 {
-  // height: 12px;
-  // flex-grow: 0;
-  font-family: Work Sans;
+font-family: Work Sans;
   font-size: 12px;
   font-weight: bold;
   font-stretch: normal;
@@ -150,6 +123,7 @@ export default {
 
 
 .my-row-1 {
+  font-family:'Courier New', Courier, monospace;
   height: 44px;
   // flex-grow: 0;
   // padding: 35px 299px 12px 24px;
@@ -159,22 +133,12 @@ export default {
 }
 
 .my-row-2 {
+  font-family:'Courier New', Courier, monospace;
 
-  // width: 430px;
   height: 44px;
-  // display: flex;
-  // flex-direction: row;
-  // justify-content: flex-start;
-  // align-items: flex-end;
   gap: 10px;
-  // padding: 18px;
   padding: 14px 18px;
 
-
-  // width: 375px;
-  // height: 12px;
-  // flex-grow: 0;
-  font-family: Work Sans;
   font-size: 14px;
   font-weight: normal;
   font-stretch: normal;
@@ -193,139 +157,4 @@ export default {
   margin-right: 10px;
   border-radius: 6px;
 }
-
-
-
-
-
-
-// .Property-1TRANSID {
-//   width: 430px;
-//   // height: 59px;
-//   // flex-grow: 0;
-//   // // padding: 35px 299px 12px 24px;
-//   // padding: 0px;
-//   // background-color: #322f44;
-// }
-
-// .TRANS-ID {
-//   width: 430px;
-//   // height: 59px;
-//   // display: flex;
-//   // flex-direction: row;
-//   // justify-content: flex-start;
-//   // align-items: flex-end;
-//   // gap: 10px;
-//   // padding: 36px 18px 12px 24px;
-//   padding-left: 24px;
-//   // background-color: yellow;
-//   margin-top: 0px;
-// }
-
-// .TRANSACTION-ID {
-//   width: 107px;
-//   // height: 12px;
-//   // flex-grow: 0;
-//   // font-family: Work Sans;
-//   // font-size: 12px;
-//   // font-weight: bold;
-//   // font-stretch: normal;
-//   // font-style: normal;
-//   // line-height: normal;
-//   // letter-spacing: 0.36px;
-//   // text-align: left;
-//   // color: rgba(255, 255, 255, 0.4);
-// }
-
-
-
-// .Property-1TYPE {
-//   width: 213px;
-//   // height: 59px;
-//   // flex-grow: 0;
-//   // // padding: 0 26px 0 0;
-//   // padding: 0 0 0 0;
-//   // background-color: #322f44;
-// }
-
-// .TYPE {
-//   width: 187px;
-//   // height: 59px;
-//   // display: flex;
-//   // flex-direction: row;
-//   // justify-content: flex-start;
-//   // align-items: flex-end;
-//   // gap: 10px;
-//   // padding: 36px 18px 12px;
-// }
-
-// .TYPE-Z {
-//   // width: 33px;
-// }
-
-
-// .Property-STATUS {
-//   width: 204px;
-//   // height: 59px;
-//   // flex-grow: 0;
-//   // // padding: 35px 299px 12px 24px;
-//   // padding: 0px;
-//   // background-color: #322f44;
-// }
-
-// .Property-STARTTIME {
-//   width: 247px;
-//   // height: 59px;
-//   // flex-grow: 0;
-//   // // padding: 35px 299px 12px 24px;
-//   // padding: 0px;
-//   // background-color: #322f44;
-// }
-
-
-// General
-
-
-
-
-
-
-
-// // Data part of the table.
-// .TRANSID {
-//   width: 430px;
-//   height: 44px;
-//   margin: 44px 0 0;
-//   padding: 14px 18px 18px;
-//   background-color: #322f44;
-// }
-
-// .TRANS-ID {
-//   width: 430px;
-//   height: 44px;
-//   display: flex;
-//   flex-direction: row;
-//   justify-content: flex-start;
-//   align-items: flex-end;
-//   gap: 10px;
-//   margin: 44px 0 0;
-//   padding: 18px;
-// }
-
-// .tx-9b0b9023b9af43f4c1f939c4fdefe434c4e343d {
-//   width: 375px;
-//   height: 12px;
-//   flex-grow: 0;
-//   font-family: Work Sans;
-//   font-size: 14px;
-//   font-weight: normal;
-//   font-stretch: normal;
-//   font-style: normal;
-//   line-height: normal;
-//   letter-spacing: normal;
-//   text-align: left;
-//   color: rgba(255, 255, 255, 0.8);
-// }
-
-
 </style>
