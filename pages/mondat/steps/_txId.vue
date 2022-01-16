@@ -143,10 +143,10 @@
                   hoverable)
                 //- | {{logEntries}}
 
-              b-tab-item(key="artifacts", label="Artifacts")
+              //- b-tab-item(key="artifacts", label="Artifacts")
                 | Not available at this time
 
-              b-tab-item(key="audit", label="Audit trail")
+              //- b-tab-item(key="audit", label="Audit trail")
                 | Not available at this time
 
               b-tab-item(key="stepData", label="StepData")

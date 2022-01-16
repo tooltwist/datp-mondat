@@ -255,7 +255,13 @@ export default {
         name: '',
         description: '',
         transactionType: '1.0',
-        inputData: "{\n}",
+        inputData: `{
+          "metadata": {
+            "reply": "longpoll"
+          },
+          "data": {
+          }
+        }`,
       }
       this.isNew = true
       this.showModal = true
@@ -336,6 +342,9 @@ export default {
     },
 
     async testRunner() {
+      console.log(`testRunner()`)
+      // alert(`testRunner()`)
+
 
       this.stopAnyPolling()
       this.pollResponse = null
@@ -376,31 +385,47 @@ export default {
         const inquiryToken = metadata.inquiryToken
 
 
-        if (metadata.status === 'running') {
+        if (metadata.status === 'running' || metadata.status === 'queued' || metadata.status === 'sleeping') {
           // We'll need to poll for a response
-            this.pollResponse = `polling...`
-            this.polling = setInterval(async () => {
+          this.pollResponse = `polling...`
+          // alert(`START POLLING`)
+
+          const pollForStatus = async () => {
             // console.log(`check result`)
             try {
-              const url2 = `${this.$datpEndpoint}/tx/status/${transactionId}`
+              const url2 = `${this.$datpEndpoint}/tx/status/${transactionId}?reply=longpoll`
 
               console.log(`url2=`, url2)
               const response2 = await this.$axios.$get(url2, {
                 // Put inquiryToken in a header
               })
               // console.log(`response2=`, response2)
-              if (response2.metadata && response2.metadata.status !== 'running') {
+              if (
+                response2.metadata
+                &&
+                (response2.metadata.status === 'running' || response2.metadata.status === 'queued' || response2.metadata.status === 'sleeping')
+              )
+              {
+                // Still running. Wait a while and try again
+                console.log(`Still running - wait a while and try again.`)
+                this.polling = setTimeout(pollForStatus, POLLING_INTERVAL)
+              } else {
+                // Finish up
                 this.stopAnyPolling()
                 this.pollResponse = JSON.stringify(response2, '', 2)
                 const endTime2 = Date.now()
                 this.testTimer2 = `, ${endTime2 - this.startTime}ms`
               }
+
             } catch (e) {
               console.log(`e=`, e)
               this.stopAnyPolling()
               alert(`Error polling for result.`)
             }
-          }, POLLING_INTERVAL)
+          }//- pollForStatus
+
+          // Start the polling
+          this.polling = setTimeout(pollForStatus, POLLING_INTERVAL)
 
         } else {
           this.pollResponse = `See result above.`
@@ -456,7 +481,8 @@ export default {
 
     stopAnyPolling() {
       if (this.polling !== null) {
-        clearInterval(this.polling)
+        console.log(`STOPPING CURRENT POLLING`)
+        clearTimeout(this.polling)
         this.polling = null
       }
     },

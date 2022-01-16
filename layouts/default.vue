@@ -126,6 +126,11 @@ export default {
         //   to: '/forms/messages'
         // },
         {
+          title: 'Recent',
+          icon: 'eye-outline',
+          to: { name: 'mondat-transactions' }
+        },
+        {
           title: 'Running',
           icon: 'run',
           to: { name: 'mondat-running' }
