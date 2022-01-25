@@ -82,8 +82,8 @@ export default {
   },
 
   methods: {
-    showMe(step) {
-      console.log(`showMe`)
+    showMe() {
+      console.log(`showMe in StepRunResult`)
       console.log(`step=`, this.step)
       const stepId = this.step.step.stepId
       console.log(`stepId=`, stepId)
@@ -91,7 +91,11 @@ export default {
     },
 
     showDetails(stepId) {
-      console.log(`showDetails() in child`)
+      console.log(`showDetails() in child`, stepId)
+      if (!stepId) {
+        alert('Unknown stepId in showDetails() child')
+        return
+      }
       console.log(`stepId=`, stepId)
       // Pass it back up the component hierarchy
       this.$emit('showDetails', stepId)

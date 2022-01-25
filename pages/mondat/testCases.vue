@@ -94,7 +94,7 @@
               .is-pulled-right.is-size-7
                 | Transaction type:&nbsp;
                 b {{selectedRecord.transactionType}}&nbsp;&nbsp;
-              b-field(label="Response")
+              b-field(label="Initial Response")
                 b-input(type="textarea", rows="10", v-model="testResponse", disabled)
               b-field(label="Polling Response")
                 b-input(type="textarea", rows="10", v-model="pollResponse", disabled)
@@ -392,6 +392,10 @@ export default {
 
           const pollForStatus = async () => {
             // console.log(`check result`)
+            if (!this.polling) {
+              alert('We have already stopped polling')
+              return
+            }
             try {
               const url2 = `${this.$datpEndpoint}/tx/status/${transactionId}?reply=longpoll`
 

@@ -89,12 +89,12 @@ export default {
       // ],//- columns
 
       columns2: [
-        {
-          // field: "txId",
-          label: "Owner",
-          // width:
-          type: 'owner'
-        },
+        // {
+        //   // field: "txId",
+        //   label: "Owner",
+        //   // width:
+        //   type: 'owner'
+        // },
         {
           // field: "txId",
           label: "transaction id",

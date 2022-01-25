@@ -6,6 +6,9 @@
  */
 <template lang="pug">
   .my-steps-page
+    //- | {{validStepTypes}}
+    //- br
+
     section.section
       .is-pulled-right
         b-button(type="is-warning", @click="savePipeline") Save
@@ -31,7 +34,7 @@
                   draggable(v-model="steps", :group="{ name: 'myList' }")
                     transition-group
                       div(v-for="(step, index) in steps", :key="step.id")
-                        StepBox(:step="step", :stepNo="index", @changed="onStepDefinitionChange", @deleted="onStepDelete", :open="stepOpen===index", @open="stepOpen = index")
+                        StepBox(:step="step", :stepNo="index", :validStepTypes="validStepTypes", @changed="onStepDefinitionChange", @deleted="onStepDelete", :open="stepOpen===index", @open="stepOpen = index")
               .column.is-one-quarter
               .column.is-one-third
                 .my-backdrop
@@ -112,6 +115,12 @@ export default {
       }
       const stepTypes = node.stepTypes.sort(compareStepTypes)
 
+      // Create an index of valid step types
+      const validStepTypes = { }
+      for (const type of stepTypes) {
+        validStepTypes[type.name] = type
+      }
+
       // Get details of the specific pipeline
       // console.log(`url=`, url)
       const definition = await $axios.$get(url)
@@ -127,7 +136,7 @@ export default {
       for (const st of stepTypes) {
         st.id = typeId++
       }
-      return { pipelineName, description, notes, node, steps, stepTypes, nextId, loading: false }
+      return { pipelineName, description, notes, node, steps, stepTypes, validStepTypes, nextId, loading: false }
     } catch (e) {
       console.log(`url1=`, url1)
       console.log(`url=`, url)
@@ -150,6 +159,7 @@ export default {
 
       steps: [ ],
       stepTypes: [ ],
+      validStepTypes: { },
       groups: [ ],
       filter: '',
 

@@ -16,11 +16,12 @@
         td
           b-collapse.card.my-card(animation="slide" :aria-id="`contentId${id}`", :open="open", @open="onExpand")
             template(#trigger="props")
-              .card-header(role="button", :aria-controls="`contentId${id}`")
+              .card-header(role="button", :aria-controls="`contentId${id}`", :class="{ invalidStep: !isValidStepType(originalStepType) }")
                 a.card-header-icon.my-card-header-icon
                   b-icon(:icon="props.open ? 'menu-down' : 'menu-right'")
                 p.card-header-title.my-card-header-title
                   | {{bestDescription}}
+                p {{isValidStepType(originalStepType) ? '' : 'INVALID STEP TYPE&nbsp;'}}
 
             .card-content.my-card-content
               .content
@@ -29,7 +30,7 @@
                   b-icon(icon="trash-can-outline")
                 b-field(label="Description")
                   b-input(v-model="description", @blur="onBlur", :placeholder="bestDescription")
-                b-field(label="Description")
+                b-field(label="Definition", v-if="stepHasDefinition(originalStepType)")
                   textarea.textarea(rows="8", v-model="json", @input="onInput", @blur="onBlur")
                 .is-danger.is-size-7 {{errorMsg}}
 </template>
@@ -43,6 +44,10 @@ export default {
     },
     stepNo: {
       type: Number,
+      required: true
+    },
+    validStepTypes: {
+      type: Object,
       required: true
     },
     open: Boolean,
@@ -147,6 +152,19 @@ export default {
       }
     },
 
+    isValidStepType(stepType) {
+      return this.validStepTypes[stepType] ? true : false
+    },
+
+    stepHasDefinition(stepType) {
+
+      const type = this.validStepTypes[stepType]
+      if (type && type.defaultDefinition && type.defaultDefinition.noDefinition) {
+        return false
+      }
+      return true
+    },
+
     onDelete () {
       this.$emit('deleted', { id: this.originalId })
     }
@@ -206,6 +224,10 @@ export default {
   .my-trash-can {
     color: silver;
     opacity: 0.6;
+  }
+
+  .invalidStep {
+    background-color: crimson;
   }
 }//- .my-stepbox
 </style>

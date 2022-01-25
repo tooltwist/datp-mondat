@@ -349,7 +349,11 @@ export default {
     },//- reloadDetails
 
     showDetails: async function(stepId) {
-      // console.log(`showDetails in parent`, stepId)
+      if (!stepId) {
+        alert('Unknown stepId in showDetails() parent')
+        return
+      }
+      console.log(`showDetails in parent`, stepId)
       this.stepDetails = `Loaded details for step ${stepId}`
       // console.log(`stepId=`, stepId)
 
