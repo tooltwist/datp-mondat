@@ -242,6 +242,11 @@ export default {
   },//- data
 
   async asyncData({ $axios, $monitorEndpoint }) {
+    // Only run on the client
+    if (process.server) {
+      return { }
+    }
+
 
     // Get the scenarios and the test cases.
     const url = `${$monitorEndpoint}/testCases`

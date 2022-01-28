@@ -62,6 +62,11 @@ export default {
   },
 
   async asyncData({ $axios, $monitorEndpoint }) {
+    // Only run on the client
+    if (process.server) {
+      return { }
+    }
+
     const url = `${$monitorEndpoint}/pipelines`
     try {
       const pipelines = await $axios.$get(url)

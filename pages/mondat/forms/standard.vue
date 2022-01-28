@@ -119,6 +119,11 @@ export default {
   },
 
   async asyncData({ params, $http, $monitorEndpoint }) {
+    // Only run on the client
+    if (process.server) {
+      return { }
+    }
+
     const url = `${$monitorEndpoint}/metadata/services`;
     try {
       const reply = await axios.get(url);

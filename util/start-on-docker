@@ -1,0 +1,24 @@
+#!/bin/bash
+#
+#	Run the DATP Docker container, using the config volume found in this directory.
+#
+dir=$(cd `dirname $0`; pwd)
+echo dir=${dir}
+IMAGE=xpanse/mondat
+NETWORK=datp-xpanse-dev_devcontainer_default
+DBHOST=datp-xpanse-dev_devcontainer_db_1
+CONFIGDIR=$(pwd)/Config
+
+# Leave command blank, to perform default startup
+#CMD=/bin/bash
+CMD=
+
+docker run -ti \
+  -p 3000:3000 \
+	--net ${NETWORK} \
+	--link ${DBHOST}:db \
+	--volume=${CONFIGDIR}:/Config \
+  --rm \
+  -e JUICE_CONFIG=file:::/Config/config-for-juice-$(whoami)-DOCKER.json \
+  ${IMAGE} \
+  ${CMD}

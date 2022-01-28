@@ -31,7 +31,8 @@
           b-field(label="Filter", horizontal)
             b-input(v-model="filter", @ZZinput="reselect", placeholder="(minimum 3 characters)")
       DatemonTable(:data="transactions", :columns="columns2", @select="selectTransaction")
-      InfiniteLoading(@infinite="infiniteHandler", :identifier="infiniteId")
+      client-only
+        InfiniteLoading(@infinite="infiniteHandler", :identifier="infiniteId")
 
     //- br
     //- br
@@ -157,6 +158,11 @@ export default {
   // },//- asyncData
 
   created() {
+    // Only run on the client
+    if (process.server) {
+      return
+    }
+
     this.polling = setInterval(async () => {
       if (this.autoUpdate) {
         const url = `${this.$monitorEndpoint}/transactions`

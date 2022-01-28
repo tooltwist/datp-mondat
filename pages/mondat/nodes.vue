@@ -5,6 +5,7 @@
  * the author or owner be liable for any claim or damages.
  */
 <template lang="pug">
+client-only
   section.section
     b-field.is-pulled-right
       b-checkbox(v-model="autoUpdate") Auto-update
@@ -158,6 +159,11 @@ export default {
   },//- data
 
   async asyncData({ $axios, $monitorEndpoint }) {
+    // Only run on the client
+    if (process.server) {
+      return { loading: true, loadError: null}
+    }
+
     const url = `${$monitorEndpoint}/nodes`
     try {
       const nodes = await $axios.$get(url)
@@ -170,6 +176,11 @@ export default {
   },//- asyncData
 
   created() {
+    // Only run on the client
+    if (process.server) {
+      return
+    }
+
     this.polling = setInterval(async () => {
       if (this.autoUpdate) {
         const url = `${this.$monitorEndpoint}/nodes`

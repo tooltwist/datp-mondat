@@ -1,0 +1,93 @@
+#!/bin/bash
+#
+#	Push the latest docker image to the ECR repository with a specified tag.
+#
+#dir=$(cd `dirname $0`; pwd)
+#echo dir=${dir}
+
+echo "$ export AWS_PROFILE=xpress-nonprod"
+        export AWS_PROFILE=xpress-nonprod
+ACCOUNT_ID=426469575416
+REGION=ap-southeast-1
+#ENVIRONMENT=trsyduat2
+ECR_REPOSITORY=xpanse-stg-datp-api
+IMAGE=xpress/datp_master
+
+
+# Check we have a tag parameter
+numParams="$#"
+if [ "${numParams}" == "0" ] ; then
+
+  # Tag locally and remotely with current date
+  DATE_TAG="$(date '+%Y-%m-%d.%H%M')"
+  echo "$ docker tag ${IMAGE}:latest ${IMAGE}:${DATE_TAG}"
+          docker tag ${IMAGE}:latest ${IMAGE}:${DATE_TAG}
+  [ "$?" != "0" ] && exit 1
+  FROM=${IMAGE}:${DATE_TAG}
+  TO=${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${ECR_REPOSITORY}:${DATE_TAG}
+  echo "$ docker tag ${FROM} ${TO}"
+          docker tag ${FROM} ${TO}
+  [ "$?" != "0" ] && exit 1
+  NEW_TAG=${DATE_TAG}
+
+elif [ "${numParams}" == "1" ] ; then
+
+  # Tag remotely with specified tag, but also tag locally with current time
+  DATE_TAG="$(date '+%Y-%m-%d.%H%M')"
+  NEW_TAG=${1}
+  echo Date tag is ${DATE_TAG}
+  echo "$ docker tag ${IMAGE}:latest ${IMAGE}:${DATE_TAG}"
+          docker tag ${IMAGE}:latest ${IMAGE}:${DATE_TAG}
+  [ "$?" != "0" ] && exit 1
+
+  echo "$ docker tag ${IMAGE}:latest ${IMAGE}:${NEW_TAG}"
+          docker tag ${IMAGE}:latest ${IMAGE}:${NEW_TAG}
+  [ "$?" != "0" ] && exit 1
+
+  FROM=${IMAGE}:${NEW_TAG}
+  TO=${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${ECR_REPOSITORY}:${NEW_TAG}
+  echo "$ docker tag ${FROM} ${TO}"
+          docker tag ${FROM} ${TO}
+  [ "$?" != "0" ] && exit 1
+
+elif [ "${numParams}" == "2" ] ; then
+
+  # Tag remotely with specified tag, using an existing local tag
+  EXISTING_TAG=$1
+  NEW_TAG=$2
+  FROM=${IMAGE}:${EXISTING_TAG}
+  TO=${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${ECR_REPOSITORY}:${NEW_TAG}
+  echo "$ docker tag ${FROM} ${TO}"
+          docker tag ${FROM} ${TO}
+  [ "$?" != "0" ] && exit 1
+else
+	echo ""
+	echo "Error: a tag for the image must be supplied. Image not pushed."
+	echo ""
+	echo "    usage: ${0} [[existing-tag] newtag]"
+	exit 1
+fi
+
+
+# Login to AWS
+# This uses credentials provided in ~/.aws/credentials
+echo "$ aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com"
+        aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com
+[ "$?" != "0" ] && exit 1
+
+# Push the image
+echo "$ docker push ${TO}"
+        docker push ${TO}
+[ "$?" != "0" ] && exit 1
+
+# Write to the log file
+echo -n "Pushed to ${AWS_PROFILE}/${ECR_REPOSITORY}:${TAG} - " >> event.log
+date >> event.log
+echo
+echo Push ${TAG} complete.
+
+echo
+echo
+echo New tag is ${NEW_TAG}
+echo
+exit 0

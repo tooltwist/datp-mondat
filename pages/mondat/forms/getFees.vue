@@ -174,6 +174,10 @@ export default {
   },
 
   async mounted() {
+    // Only run on the client
+    if (process.server) {
+      return
+    }
     // console.log(`mounted`)
     // this.loadLatestMessages();
 

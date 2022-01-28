@@ -76,7 +76,6 @@
 </template>
 
 <script>
-import axios from 'axios'
 import FormserviceMisc from '../lib/formservice-misc'
 
 export default {

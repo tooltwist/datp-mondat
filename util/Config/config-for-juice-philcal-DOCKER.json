@@ -1,0 +1,19 @@
+{
+	"datp": {
+		"name": "master",
+		"description": "Master DATP node",
+
+    "protocol": "http",
+    "host": "localhost",
+    "port": 33370,
+    "midiSupported": false,
+    "serveMondat": true
+	},
+	"db": {
+		"host": "db",
+		"port": 3306,
+		"database": "datp_master",
+		"user": "root",
+		"password": ""
+	}
+}

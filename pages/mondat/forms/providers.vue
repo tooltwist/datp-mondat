@@ -118,6 +118,11 @@ export default {
   },
 
   async asyncData({ params, $http, $monitorEndpoint }) {
+    // Only run on the client
+    if (process.server) {
+      return { }
+    }
+
     const url = `${$monitorEndpoint}/metadata/domains`
     try {
       const reply = await axios.get(url)

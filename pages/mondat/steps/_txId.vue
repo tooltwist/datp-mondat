@@ -170,6 +170,11 @@ export default {
   },
 
   async asyncData({ $axios, $monitorEndpoint, params }) {
+    // Only run on the client
+    if (process.server) {
+      return { }
+    }
+
     console.log(params.txId)
     const txId = params.txId
     const url = `${$monitorEndpoint}/transaction/${txId}`

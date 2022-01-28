@@ -83,6 +83,11 @@ export default {
   },
 
   async asyncData({ $axios, $monitorEndpoint, params }) {
+    // Only run on the client
+    if (process.server) {
+      return { }
+    }
+
     const pipelineName = params.pipelineName
     // A bit lazy here, we'll select all nodes...
     const url1 = `${$monitorEndpoint}/nodes`

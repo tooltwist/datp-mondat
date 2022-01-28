@@ -108,6 +108,11 @@ export default {
   },//- data
 
   async asyncData({ $axios, $monitorEndpoint }) {
+    // Only run on the client
+    if (process.server) {
+      return { }
+    }
+
     const url = `${$monitorEndpoint}/transactionMapping`
     const url2 = `${$monitorEndpoint}/pipelines`
     try {
