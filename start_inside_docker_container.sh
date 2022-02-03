@@ -25,14 +25,13 @@ if [ "${GENERATE_CONFIG}" == "Y" ] ; then
     # Do $JUICE{...} substitution wherever required in the dist directory.
     #
     echo "Checking for website files using JUICE variables..."
-    for filename in $(grep -rl '\$JUICE{' /src/protected-config/) ; do
+    for filename in $(grep -rl '\$JUICE{' /src/dist/) ; do
         echo Converting ${filename}
         newfile=${filename}-replacement-file
         origfile=${filename}-original-file
         node ${CMD} install ${filename} ${newfile}
         mv ${filename} ${origfile}
         mv ${newfile} ${filename}
-        cat ${filename}
     done
 fi
 

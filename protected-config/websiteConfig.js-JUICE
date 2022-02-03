@@ -6,12 +6,12 @@ export default {
   website : {
     protocol: '$JUICE{mondat.protocol}',
     host: '$JUICE{mondat.host}',
-    port: $JUICE{mondat.port}
+    port: '$JUICE{mondat.port}'
   },
   api: {
     protocol: '$JUICE{datp.protocol}',
     host: '$JUICE{datp.host}',
-    port: $JUICE{datp.port},
+    port: '$JUICE{datp.port}',
     version: '1.0',
   },
   prefix: {
