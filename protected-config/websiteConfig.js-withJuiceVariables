@@ -4,19 +4,20 @@
  */
 export default {
   website : {
-    protocol: 'http',
-    host: 'localhost',
-    port: 33380,
+    protocol: '$JUICE{mondat.protocol}',
+    host: '$JUICE{mondat.host}',
+    port: $JUICE{mondat.port}
   },
   api: {
-    protocol: 'http',
-    host: 'localhost',
-    port: 33370,
+    protocol: '$JUICE{datp.protocol}',
+    host: '$JUICE{datp.host}',
+    port: $JUICE{datp.port},
     version: '1.0',
   },
   prefix: {
-    monitor: 'mondat-api',
+    monitor: 'mondat',
     datp: 'datp',
     formservice: 'formservice'
-  }
+  },
+  hadJuiceVariablesInserted: true
 }

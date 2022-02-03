@@ -1,4 +1,9 @@
 {
+  "mondat": {
+    "protocol": "http",
+    "host": "localhost",
+    "port": 33370
+  },
 	"datp": {
 		"name": "master",
 		"description": "Master DATP node",

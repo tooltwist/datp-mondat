@@ -10,8 +10,8 @@ DBHOST=datp-xpanse-dev_devcontainer_db_1
 CONFIGDIR=$(pwd)/Config
 
 # Leave command blank, to perform default startup
-#CMD=/bin/bash
-CMD=
+CMD=/bin/bash
+#CMD=
 
 docker run -ti \
   -p 3000:3000 \
