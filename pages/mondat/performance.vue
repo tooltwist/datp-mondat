@@ -77,6 +77,7 @@ client-only
     h3.subtitle.is-6.has-text-grey
       | All Steps
     lazy-linear-gauge(:value="77", :options="linearOptions")
+
 </template>
 
 <script>
@@ -234,6 +235,7 @@ export default {
     const performance300 = await $axios.$get(`${$monitorEndpoint}/${nodeId}/recentPerformance?duration=300`)
     const performance1800 = await $axios.$get(`${$monitorEndpoint}/${nodeId}/recentPerformance?duration=1800`)
     const performance7200 = await $axios.$get(`${$monitorEndpoint}/${nodeId}/recentPerformance?duration=7200`)
+
     return { performance15, performance300, performance1800, performance7200 }
   },//- asyncData
 
@@ -258,6 +260,16 @@ export default {
   beforeDestroy () {
     clearInterval(this.polling)
   },//- beforeDestroy
+
+  methods: {
+    shortNodeId: function (nodeId) {
+      const pos = nodeId.indexOf('-')
+      if (pos > 0) {
+        nodeId = nodeId.substring(pos + 1)
+      }
+      return nodeId.substring(0, 8)
+    }
+  }
 
 }
 </script>

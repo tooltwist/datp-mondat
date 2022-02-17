@@ -40,37 +40,41 @@ client-only
     .notification.is-danger(v-else-if="loadError")
       | {{loadError}}
     .columns.is-mobile(v-else)
-      .column.is-3(v-for="node in nodes")
-        .card.my-node-card(@click="selectNode(node.nodeId)")
+      .column.is-3(v-for="group in groups")
+        .card.my-node-card(@click="selectNode(group.nodeGroup)")
           header.card-header
             p.card-header-title.has-text-grey
-              | {{ node.name }}
+              | {{ group.nodeGroup }}
+
           .card-content
             .content.has-text-centered
-              b-icon(v-if="node.type==='master'", icon="arrange-bring-to-front", size="is-large", type="is-primary")
+              b-icon(v-if="group.nodeGroup==='master'", icon="arrange-bring-to-front", size="is-large", type="is-primary")
               b-icon(v-else, icon="google-circles-communities", size="is-large", type="is-primary")
+
           footer.card-footer
             .card-footer-item
-              span(v-if="node.type==='master'")
-                b {{node.description}}
-                p type: {{node.type}}
-                //- p version: {{node.version}}
-                p &nbsp;
-                p
-                  b-icon(icon="transit-connection", size="is-small")
-                  | &nbsp;{{node.pipelines.length}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                  b-icon(icon="call-merge", size="is-small")
-                  | &nbsp;{{node.stepTypes.length}}
-              span(v-else)
-                b {{node.description}}
-                p type: {{node.type}}
-                //- p version: {{node.version}}
-                p status: {{node.status}}
-                p
-                  b-icon(icon="transit-connection", size="is-small")
-                  | &nbsp;{{node.pipelines.length}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                  b-icon(icon="call-merge", size="is-small")
-                  | &nbsp;{{node.stepTypes.length}}
+              span(v-if="group.nodes.length > 1") {{group.nodes.length}} nodes
+              span(v-else) {{group.nodes.length}} node
+              //- span(v-if="group.nodeGroup==='master'")
+              //-   b {{node.description}}
+              //-   p type: {{node.type}}
+              //-   //- p version: {{node.version}}
+              //-   p &nbsp;
+              //-   p
+              //-     b-icon(icon="transit-connection", size="is-small")
+              //-     | &nbsp;{{node.pipelines.length}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              //-     b-icon(icon="call-merge", size="is-small")
+              //-     | &nbsp;{{node.stepTypes.length}}
+              //- span(v-else)
+              //-   b {{node.description}}
+              //-   p type: {{node.type}}
+              //-   //- p version: {{node.version}}
+              //-   p status: {{node.status}}
+              //-   p
+              //-     b-icon(icon="transit-connection", size="is-small")
+              //-     | &nbsp;{{node.pipelines.length}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              //-     b-icon(icon="call-merge", size="is-small")
+              //-     | &nbsp;{{node.stepTypes.length}}
 
 
 
@@ -124,7 +128,7 @@ export default {
 
   data: function () {
     return {
-      nodes: [ ],
+      groups: [ ],
       loading: true,
       loadError: null,
 
@@ -154,7 +158,7 @@ export default {
       ],//- columns
 
       polling: null, // handle from setInterval
-      autoUpdate: true, // Constantly refresh the screen
+      autoUpdate: false, // Constantly refresh the screen
     }
   },//- data
 
@@ -166,8 +170,9 @@ export default {
 
     const url = `${$monitorEndpoint}/nodes`
     try {
-      const nodes = await $axios.$get(url)
-      return { nodes, loading: false, loadError: null }
+      const groups = await $axios.$get(url)
+      // console.log(`groups=`, groups)
+      return { groups, loading: false, loadError: null }
     } catch (e) {
       console.log(`url=`, url)
       console.log(`e.response=`, e.response)
@@ -184,7 +189,7 @@ export default {
     this.polling = setInterval(async () => {
       if (this.autoUpdate) {
         const url = `${this.$monitorEndpoint}/nodes`
-        this.nodes = await this.$axios.$get(url)
+        this.groups = await this.$axios.$get(url)
       }
     }, 2000)
   },//- created

@@ -68,18 +68,29 @@
               b-input(v-model="description")
             b-field(label="Notes")
               textarea.textarea(rows="15", v-model="notes", placeholder="Enter any notes here...")
+
+          b-tab-item(key="versions", label="All versions")
+            | YARP
+            | {{pipelineVersions}}
+            DatemonTable(:data="pipelineVersions", :columns="versionsColumns")
+            //, @Zselect="selectPipeline")
+
+
 </template>
 
 <script>
 import draggable from "vuedraggable"
 import StepBox from '~/components/StepBox.vue'
 import StepTypeBox from '~/components/StepTypeBox.vue'
+import DatemonTable from "~/components/DatmonTable.vue"
+
 
 export default {
   components: {
     StepBox,
     StepTypeBox,
-    draggable
+    draggable,
+    DatemonTable,
   },
 
   async asyncData({ $axios, $monitorEndpoint, params }) {
@@ -92,8 +103,10 @@ export default {
     // A bit lazy here, we'll select all nodes...
     const url1 = `${$monitorEndpoint}/nodes`
     const url = `${$monitorEndpoint}/pipeline/${pipelineName}/definition`
+    const url2 = `${$monitorEndpoint}/pipeline/${pipelineName}`
     try {
       const nodes = await $axios.$get(url1)
+      const versions = await $axios.$get(url2)
 
       // Now find our node
       // const nodeId = params.nodeId
@@ -141,7 +154,7 @@ export default {
       for (const st of stepTypes) {
         st.id = typeId++
       }
-      return { pipelineName, description, notes, node, steps, stepTypes, validStepTypes, nextId, loading: false }
+      return { pipelineName, description, notes, pipelineVersions: versions, node, steps, stepTypes, validStepTypes, nextId, loading: false }
     } catch (e) {
       console.log(`url1=`, url1)
       console.log(`url=`, url)
@@ -155,11 +168,14 @@ export default {
       loading: true,
       loadError: null,
 
+      pipelineVersions: [ ],
+
       stepOpen: -1,
       stepTypeGroupOpen: 0, // expanded step type group
 
       pipelineName: '',
       description: '',
+      version: '',
       notes: '',
 
       steps: [ ],
@@ -171,6 +187,26 @@ export default {
       node: { },
       nextId: 0,
       dirty: false, // needs to be updated
+
+      versionsColumns: [
+        // {
+        //     field: 'name',
+        //     label: 'Pipeline name',
+        // },
+        {
+            field: 'version',
+            label: 'Version',
+        },
+        {
+            field: 'description',
+            label: 'Description',
+        },
+        {
+            field: 'tags',
+            label: 'Tags',
+        },
+      ]
+
     }
   },
 

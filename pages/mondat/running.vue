@@ -215,7 +215,7 @@ export default {
       try {
         const result = await this.$axios.$get(url)
         const transactions = result
-        console.log(`transactions=`, transactions)
+        // console.log(`transactions=`, transactions)
         if (transactions.length) {
           this.page += 1
           this.transactions.push(...transactions)

@@ -353,6 +353,7 @@ export default {
 
       this.stopAnyPolling()
       this.pollResponse = null
+      this.testResponse = 'waiting...'
 
       // Run the test
       this.readytToTestAgain = false

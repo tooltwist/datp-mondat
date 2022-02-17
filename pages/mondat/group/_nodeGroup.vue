@@ -12,7 +12,7 @@
     h2.title.is-4.has-text-grey
       .datemon-heading-icon
         b-icon(icon="state-machine", size="is-small")
-      | Node {{nodeId}}
+      | Node Group {{nodeGroup}}
 
     span(v-if="loading")
       | Loading...
@@ -51,7 +51,7 @@ export default {
       loading: true,
       loadError: null,
 
-      nodeId: '',
+      nodeGroup: '',
       node: null,
 
       pipelineColumns: [
@@ -101,14 +101,14 @@ export default {
       const nodes = await $axios.$get(url)
 
       console.log(`nodes=`, nodes)
-      const nodeId = params.nodeId
-      // console.log(`nodeId=`, nodeId)
+      const nodeGroup = params.nodeGroup
+      // console.log(`nodeGroup=`, nodeGroup)
       for (const node of nodes) {
-        if (node.nodeId === nodeId) {
-          return { nodeId, node, loading: false }
+        if (node.nodeGroup === nodeGroup) {
+          return { nodeGroup, node, loading: false }
         }
       }
-      return { nodeId, node: null, loading: false }
+      return { nodeGroup, node: null, loading: false }
     } catch (e) {
       console.log(`url=`, url)
       console.log(`e.response=`, e.response)

@@ -90,9 +90,14 @@ export default {
           to: { name: 'mondat-performance' }
         },
         {
+          title: 'Queues',
+          icon: 'human-queue',
+          to: { name: 'mondat-queues' }
+        },
+        {
           title: 'Nodes',
           icon: 'state-machine',
-          to: { name: 'mondat-nodes' }
+          to: { name: 'mondat-nodeGroups' }
         },
 
         // {

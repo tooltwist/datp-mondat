@@ -38,7 +38,12 @@ export default {
   // },
 
   vite: {
-    ssr: false
+    ssr: false,
+    server: {
+      hmr: {
+        port: 23567
+      }
+    }
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css

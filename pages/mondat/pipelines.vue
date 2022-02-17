@@ -22,7 +22,7 @@
       span(v-else-if="loadError")
         .notification.is-danger() {{loadError}}
       template(v-else)
-        DatemonTable(:data="pipelines", :columns="columns", @select="selectPipeline")
+        DatemonTable(:data="uniquePipelines", :columns="columns", @select="selectPipeline")
 </template>
 
 <script>
@@ -68,6 +68,7 @@ export default {
     }
 
     const url = `${$monitorEndpoint}/pipelines`
+    console.log(`url=`, url)
     try {
       const pipelines = await $axios.$get(url)
       return { pipelines, loading: false }
@@ -75,6 +76,17 @@ export default {
       console.log(`url=`, url)
       console.log(`e.response=`, e.response)
       return { nodes: [ ], loading: false, loadError: e.toString() }
+    }
+  },
+
+  computed: {
+    uniquePipelines: function () {
+      const arr = { }
+      for (const pipeline of this.pipelines) {
+        arr[pipeline.name] = pipeline
+      }
+      const list = Object.values(arr)
+      return list
     }
   },
 
