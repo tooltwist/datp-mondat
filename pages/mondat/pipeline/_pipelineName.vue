@@ -25,9 +25,13 @@
         .notification.is-danger() {{loadError}}
       template(v-else)
         b-tabs()
+
+          // Tab for the pipelin definition.
           b-tab-item(key="definition", label="Definition")
             br
             .columns
+
+              // Column showing the pipeline
               .column.is-one-third
                 .my-backdrop
                   //- .my-pipeline-header {{pipelineName}}
@@ -36,6 +40,8 @@
                       div(v-for="(step, index) in steps", :key="step.id")
                         StepBox(:step="step", :stepNo="index", :validStepTypes="validStepTypes", @changed="onStepDefinitionChange", @deleted="onStepDelete", :open="stepOpen===index", @open="stepOpen = index")
               .column.is-one-quarter
+
+              // Column with available step types
               .column.is-one-third
                 .my-backdrop
                   span.my-pipeline-header-2 Available Steps &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -63,15 +69,16 @@
                           StepTypeBox(:stepType="st", :editing="true")
                 //- | {{filteredSteps}}
 
+          // Tab with description and notes
           b-tab-item(key="notes", label="Details")
             b-field(label="Description")
               b-input(v-model="description")
             b-field(label="Notes")
               textarea.textarea(rows="15", v-model="notes", placeholder="Enter any notes here...")
 
+          // Tab with pipeline versions
           b-tab-item(key="versions", label="All versions")
-            | YARP
-            | {{pipelineVersions}}
+            //- | {{pipelineVersions}}
             DatemonTable(:data="pipelineVersions", :columns="versionsColumns")
             //, @Zselect="selectPipeline")
 
@@ -101,37 +108,32 @@ export default {
 
     const pipelineName = params.pipelineName
     // A bit lazy here, we'll select all nodes...
-    const url1 = `${$monitorEndpoint}/nodes`
+    const url1 = `${$monitorEndpoint}/activeNodes?stepTypes=true`
     const url = `${$monitorEndpoint}/pipeline/${pipelineName}/definition`
     const url2 = `${$monitorEndpoint}/pipeline/${pipelineName}`
     try {
-      const nodes = await $axios.$get(url1)
+      const activeNodes = await $axios.$get(url1)
+      // console.log(`activeNodes=`, activeNodes)
       const versions = await $axios.$get(url2)
 
+      // Apportion the step types into categories
+      for (const group of activeNodes) {
+        for (const type of group.stepTypes) {
+          type._group = 'miscellaneous'
+          type._name = type.name
+          const pos = type.name.indexOf('/')
+          if (pos >= 0) {
+            type._group = type.name.substring(0, pos)
+            type._name = type.name.substring(pos + 1)
+          }
+        }
+      }
+
       // Now find our node
-      // const nodeId = params.nodeId
-      const nodeName = 'master'
-      let node = null
-      // console.log(`nodeName=`, nodeName)
-      for (const n of nodes) {
-        // console.log(`n=`, n)
-        if (n.name === nodeName) {
-          // return { nodeId, node }
-          node = n
-          break
-        }
-      }
-      // console.log(`node=`, node)
-      for (const type of node.stepTypes) {
-        type._group = 'miscellaneous'
-        type._name = type.name
-        const pos = type.name.indexOf('/')
-        if (pos >= 0) {
-          type._group = type.name.substring(0, pos)
-          type._name = type.name.substring(pos + 1)
-        }
-      }
-      const stepTypes = node.stepTypes.sort(compareStepTypes)
+      // activeNodes will be like { nodeGroup, nodes: [ ], stepTypes: [ ], warnings: [ ] }
+      const nodeGroup = 'master'
+      const group = activeNodes.find(group => group.nodeGroup === nodeGroup)
+      const stepTypes = group.stepTypes.sort(compareStepTypes)
 
       // Create an index of valid step types
       const validStepTypes = { }
@@ -154,7 +156,7 @@ export default {
       for (const st of stepTypes) {
         st.id = typeId++
       }
-      return { pipelineName, description, notes, pipelineVersions: versions, node, steps, stepTypes, validStepTypes, nextId, loading: false }
+      return { pipelineName, description, notes, pipelineVersions: versions, group, steps, stepTypes, validStepTypes, nextId, loading: false }
     } catch (e) {
       console.log(`url1=`, url1)
       console.log(`url=`, url)
@@ -184,7 +186,7 @@ export default {
       groups: [ ],
       filter: '',
 
-      node: { },
+      group: { },
       nextId: 0,
       dirty: false, // needs to be updated
 

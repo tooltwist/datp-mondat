@@ -11,7 +11,9 @@ import config from "../protected-config/websiteConfig"
 import formserviceMisc from "~/lib/formservice-misc"
 const api = config.api
 const $formserviceEndpoint = `${api.protocol}://${api.host}:${api.port}/${config.prefix.formservice}/${api.version}`
-//console.log(`$formserviceEndpoint=`, $formserviceEndpoint)
+// console.log(`$formserviceEndpoint=`, $formserviceEndpoint)
+
+const VERBOSE = 0
 
 export const state = () => ({
   provider: null,
@@ -27,7 +29,7 @@ export const state = () => ({
 
 export const actions = {
   async prepare({ commit }, { leftViewName, rightViewName, mappingId, provider, service }) {
-    // console.log(`ACTION prepare(${leftViewName}, ${rightViewName}, ${mappingId})`)
+    if (VERBOSE) console.log(`ACTION prepare(${leftViewName}, ${rightViewName}, ${mappingId})`)
     // console.log(`$formserviceEndpoint=`, $formserviceEndpoint)
 
     if (leftViewName && rightViewName && mappingId) {
@@ -41,13 +43,13 @@ export const actions = {
   },
 
   async reloadRightView({ commit, state }, { }) {
-    // console.log(`ACTION reloadRightView()`)
+    if (VERBOSE) console.log(`ACTION reloadRightView()`)
     const view = await formserviceMisc.getView($formserviceEndpoint, state.rightViewName)
     commit('setRightView', { viewName: state.rightViewName, view })
   },
 
-  async reloadMapping({ commit, state, $formserviceEndpoint }) {
-    // console.log(`ACTION reloadMapping()`)
+  async reloadMapping({ commit, state }) {
+    if (VERBOSE) console.log(`ACTION reloadMapping()`)
     const mapping = await formserviceMisc.getMapping($formserviceEndpoint, state.mappingId)
     commit('setMapping', { mappingId: state.mappingId, mapping })
   },
@@ -99,9 +101,9 @@ export const mutations = {
   },
 
   setMapping(state, { mappingId, mapping, provider, service }) {
-    // console.log(`MUTATION viewMapping:setMapping()`)
+    // if (VERBOSE) console.log(`MUTATION viewMapping:setMapping()`)
     // console.log(`  mappingId=`, mappingId)
-    // console.log(`  mapping=`, mapping)
+    // if (VERBOSE) console.log(`  mapping=`, mapping)
     state.mappingId = mappingId
     state.mapping = mapping
     if (provider) {

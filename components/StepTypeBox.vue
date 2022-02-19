@@ -9,6 +9,7 @@
     .my-z-box-cell
       .my-description {{stepType.description}}
       //- .my-stepType {{stepTypeGroup(stepType)}} / {{stepTypeName(stepType)}}
+      .my-not-available.is-pulled-left(v-if="!stepType.availableInEveryNode") &nbsp; Not available in all nodes &nbsp;
       .my-stepType {{stepTypeName(stepType)}}
 </template>
 
@@ -51,6 +52,14 @@ export default {
   min-width: $box-width;
   margin: 0px;
   padding: 0px;
+
+  .my-not-available {
+    font-size: 14px;
+    background-color: red;
+    color: white;
+    padding-top: 1px;
+    line-height: 1.2em;
+  }
 
   .my-stepType {
     font-size: 11px;

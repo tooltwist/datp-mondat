@@ -168,7 +168,7 @@ export default {
       return { loading: true, loadError: null}
     }
 
-    const url = `${$monitorEndpoint}/nodes`
+    const url = `${$monitorEndpoint}/activeNodes`
     try {
       const groups = await $axios.$get(url)
       // console.log(`groups=`, groups)
@@ -188,7 +188,7 @@ export default {
 
     this.polling = setInterval(async () => {
       if (this.autoUpdate) {
-        const url = `${this.$monitorEndpoint}/nodes`
+        const url = `${this.$monitorEndpoint}/activeNodes`
         this.groups = await this.$axios.$get(url)
       }
     }, 2000)

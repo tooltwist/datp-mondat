@@ -96,7 +96,7 @@ export default {
 
 
     // A bit lazy here, we'll select all nodes...
-    const url = `${$monitorEndpoint}/nodes`
+    const url = `${$monitorEndpoint}/activeNodes`
     try {
       const nodes = await $axios.$get(url)
 
