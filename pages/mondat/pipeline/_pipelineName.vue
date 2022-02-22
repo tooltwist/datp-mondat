@@ -79,7 +79,7 @@
           // Tab with pipeline versions
           b-tab-item(key="versions", label="All versions")
             //- | {{pipelineVersions}}
-            DatemonTable(:data="pipelineVersions", :columns="versionsColumns")
+            MondatTable(:data="pipelineVersions", :columns="versionsColumns")
             //, @Zselect="selectPipeline")
 
 
@@ -89,7 +89,7 @@
 import draggable from "vuedraggable"
 import StepBox from '~/components/StepBox.vue'
 import StepTypeBox from '~/components/StepTypeBox.vue'
-import DatemonTable from "~/components/DatmonTable.vue"
+import MondatTable from "~/components/MondatTable.vue"
 
 
 export default {
@@ -97,7 +97,7 @@ export default {
     StepBox,
     StepTypeBox,
     draggable,
-    DatemonTable,
+    MondatTable,
   },
 
   async asyncData({ $axios, $monitorEndpoint, params }) {

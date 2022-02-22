@@ -18,7 +18,7 @@ client-only
       | Performance&nbsp;&nbsp;
       b-icon(icon="gauge", size="is-large")
 
-    DatemonNotification
+    MondatNotification
       | Transaction throughput measures the current number of transactions per minute being processed.
 
     br
@@ -71,7 +71,7 @@ client-only
     br
     //- | {{performance300}}
 
-    DatemonNotification
+    MondatNotification
       | The following gauges show the average time for each step to complete, in milliseconds.
     br
     h3.subtitle.is-6.has-text-grey
@@ -83,8 +83,8 @@ client-only
 <script>
 import LazyLinearGauge from '~/components/LazyLinearGauge.vue'
 import LazyRadialGauge from '~/components/LazyRadialGauge.vue'
-import DatemonNotification from "~/components/DatmonNotification.vue"
-import DatemonTable from "~/components/DatmonTable.vue"
+import MondatNotification from "~/components/MondatNotification.vue"
+import MondatTable from "~/components/MondatTable.vue"
 
 const POLLING_INTERVAL = 5000
 
@@ -92,8 +92,8 @@ export default {
   components: {
     LazyLinearGauge,
     LazyRadialGauge,
-    DatemonNotification,
-    DatemonTable,
+    MondatNotification,
+    MondatTable,
   },
   data: function () {
     return {

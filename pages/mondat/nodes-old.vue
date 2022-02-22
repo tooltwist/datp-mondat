@@ -14,7 +14,7 @@ client-only
         b-icon(icon="state-machine", size="is-small")
       | Nodes
 
-    DatemonNotification
+    MondatNotification
       p
         | The&nbsp;
         b D.A.T.P.
@@ -30,7 +30,7 @@ client-only
         | &nbsp;node is reponsible for triaging incoming transactions, and depending upon the
         | transaction type and data will pass the transaction off to a pipeline running on another node.
 
-    //- DatemonTable(:data="nodes", :columns="columns")
+    //- MondatTable(:data="nodes", :columns="columns")
 
     br
     br
@@ -115,14 +115,14 @@ client-only
 
 
 <script>
-import DatemonNotification from "~/components/DatmonNotification.vue"
-import DatemonTable from "~/components/DatmonTable.vue"
+import MondatNotification from "~/components/MondatNotification.vue"
+import MondatTable from "~/components/MondatTable.vue"
 import Card from '~/components/Card'
 
 export default {
   components: {
-    DatemonNotification,
-    DatemonTable,
+    MondatNotification,
+    MondatTable,
     Card,
   },
 

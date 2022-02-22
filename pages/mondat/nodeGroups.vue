@@ -22,7 +22,7 @@ client-only
       b-tag(v-if="loading", rounded, type="is-success", size="is-small") Loading
     .is-clearfix
 
-    DatemonNotification
+    MondatNotification
       p
         | The&nbsp;
         b D.A.T.P.
@@ -119,14 +119,14 @@ client-only
 
 
 <script>
-import DatemonNotification from "~/components/DatmonNotification.vue"
-import DatemonTable from "~/components/DatmonTable.vue"
+import MondatNotification from "~/components/MondatNotification.vue"
+import MondatTable from "~/components/MondatTable.vue"
 import Card from '~/components/Card'
 
 export default {
   components: {
-    DatemonNotification,
-    DatemonTable,
+    MondatNotification,
+    MondatTable,
     Card,
   },
 

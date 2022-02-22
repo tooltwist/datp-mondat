@@ -12,7 +12,7 @@
         b-icon(icon="head-question-outline", size="is-small")
       | Abandoned Transactions&nbsp;&nbsp;
 
-    DatemonNotification
+    MondatNotification
       | An "abandoned" transaction is one that has completed, but
       | nobody has received or collected the reply.
       br
@@ -31,12 +31,12 @@
 </template>
 
 <script>
-import DatemonNotification from "~/components/DatmonNotification.vue"
-// import DatemonTable from "~/components/DatemonTable.vue"
+import MondatNotification from "~/components/MondatNotification.vue"
+// import MondatTable from "~/components/MondatTable.vue"
 
 export default {
   components: {
-    DatemonNotification,
+    MondatNotification,
   },
 
   data: function () {

@@ -21,7 +21,7 @@
 
     // If the node was not found
     template(v-else-if="node === null")
-      DatemonNotification
+      MondatNotification
         p
           | Unknown node.
 
@@ -29,21 +29,21 @@
     template(v-else)
       b-tabs(type="is-boxed")
         b-tab-item(label="Pipelines", icon="google-photos")
-          DatemonTable(:data="node.pipelines", :columns="pipelineColumns")
+          MondatTable(:data="node.pipelines", :columns="pipelineColumns")
 
         b-tab-item(label="Step Types", icon="google-photos")
-          DatemonTable(:data="node.stepTypes", :columns="stepTypeColumns")
+          MondatTable(:data="node.stepTypes", :columns="stepTypeColumns")
 
 </template>
 
 <script>
-import DatemonNotification from "~/components/DatmonNotification.vue"
-import DatemonTable from "~/components/DatmonTable.vue"
+import MondatNotification from "~/components/MondatNotification.vue"
+import MondatTable from "~/components/MondatTable.vue"
 
 export default {
   components: {
-    DatemonNotification,
-    DatemonTable,
+    MondatNotification,
+    MondatTable,
   },
 
   data: function () {

@@ -23,7 +23,7 @@ client-only
     .is-clearfix
 
 
-    DatemonNotification
+    MondatNotification
       | Processing requests are sent to queues, which are forwarded to worker threads.
       | Sometimes events are sent to a node group, and sometimes they are send to a specific node.
       | A node reads events from both it's own queue and the group queue, and passes these on
@@ -142,16 +142,16 @@ client-only
 <script>
 // import LazyLinearGauge from '~/components/LazyLinearGauge.vue'
 // import LazyRadialGauge from '~/components/LazyRadialGauge.vue'
-import DatemonNotification from "~/components/DatmonNotification.vue"
-import DatemonTable from "~/components/DatmonTable.vue"
+import MondatNotification from "~/components/MondatNotification.vue"
+import MondatTable from "~/components/MondatTable.vue"
 // import MondatPieChart from "~/components/MondatPieChart.vue"
 
 export default {
   components: {
     // LazyLinearGauge,
     // LazyRadialGauge,
-    DatemonNotification,
-    DatemonTable,
+    MondatNotification,
+    MondatTable,
     // MondatPieChart,
   },
   data: function () {

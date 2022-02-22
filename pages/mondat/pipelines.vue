@@ -12,7 +12,7 @@
           b-icon(icon="transit-connection", size="is-small")
         | Pipelines
 
-      DatemonNotification
+      MondatNotification
         | A pipeline is a series of steps used to process a transaction.
         | Each transaction type maps onto a specific pipeline, however the steps in a pipeline may delegate their funcrtionality
         | by invoking further pipelines.
@@ -22,17 +22,17 @@
       span(v-else-if="loadError")
         .notification.is-danger() {{loadError}}
       template(v-else)
-        DatemonTable(:data="uniquePipelines", :columns="columns", @select="selectPipeline")
+        MondatTable(:data="uniquePipelines", :columns="columns", @select="selectPipeline")
 </template>
 
 <script>
-import DatemonNotification from "~/components/DatmonNotification.vue"
-import DatemonTable from "~/components/DatmonTable.vue"
+import MondatNotification from "~/components/MondatNotification.vue"
+import MondatTable from "~/components/MondatTable.vue"
 
 export default {
   components: {
-    DatemonNotification,
-    DatemonTable,
+    MondatNotification,
+    MondatTable,
   },
 
   data: function () {

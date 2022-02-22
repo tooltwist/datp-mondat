@@ -13,7 +13,7 @@
         b-icon(icon="arrow-left-right-bold", size="is-small")
       | Field mapping
 
-    DatemonNotification
+    MondatNotification
       | This page allows forms to be defined, and mapped against our standard API forms.
     br
 
@@ -104,7 +104,7 @@ import FormserviceFields from '~/components/formservice-fields'
 import FormserviceMappingVisual from '~/components/formservice-mapping-visual.vue'
 import FormserviceMappingRequest from '~/components/formservice-mapping-request.vue'
 import FormserviceMappingResponse from '~/components/formservice-mapping-response.vue'
-import DatemonNotification from "~/components/DatmonNotification.vue"
+import MondatNotification from "~/components/MondatNotification.vue"
 import FormserviceMisc from '~/lib/formservice-misc'
 
 export default {
@@ -114,7 +114,7 @@ export default {
     FormserviceMappingVisual,
     FormserviceMappingRequest,
     FormserviceMappingResponse,
-    DatemonNotification,
+    MondatNotification,
   },
 
   async asyncData({ params, $http, $monitorEndpoint }) {

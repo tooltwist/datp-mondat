@@ -14,7 +14,7 @@
         b-icon(icon="bank-transfer", size="is-small")
       | Recently Finished Transactions
 
-    DatemonNotification
+    MondatNotification
       | The following are the most recently run transactions.
 
     //- span(v-if="loading")
@@ -30,7 +30,7 @@
             b-button(type="is-primary", @click="reselect") update
           b-field(label="Filter", horizontal)
             b-input(v-model="filter", @ZZinput="reselect", placeholder="(minimum 3 characters)")
-      DatemonTable(:data="transactions", :columns="columns2", @select="selectTransaction")
+      MondatTable(:data="transactions", :columns="columns2", @select="selectTransaction")
       client-only
         InfiniteLoading(@infinite="infiniteHandler", :identifier="infiniteId")
 
@@ -42,16 +42,16 @@
 </template>
 
 <script>
-import DatemonNotification from "~/components/DatmonNotification.vue"
-import DatemonTable from "~/components/DatmonTable.vue"
+import MondatNotification from "~/components/MondatNotification.vue"
+import MondatTable from "~/components/MondatTable.vue"
 import InfiniteLoading from 'vue-infinite-loading'
 
 const PAGESIZE = 10
 
 export default {
   components: {
-    DatemonNotification,
-    DatemonTable,
+    MondatNotification,
+    MondatTable,
     InfiniteLoading,
   },
 

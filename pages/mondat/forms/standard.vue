@@ -14,7 +14,7 @@
         b-icon(icon="api", size="is-small")
       | Standard API Definitions
 
-    DatemonNotification
+    MondatNotification
       | This screen is used to define our standard API for each type of service, as "forms".
       | The request and response are defined separately, and the&nbsp;
       b Field Mapping
@@ -56,7 +56,7 @@ import FormserviceFields from '~/components/formservice-fields'
 import FormserviceMappingVisual from '~/components/formservice-mapping-visual.vue'
 import FormserviceMappingRequest from '~/components/formservice-mapping-request.vue'
 import FormserviceMappingResponse from '~/components/formservice-mapping-response.vue'
-import DatemonNotification from "~/components/DatmonNotification.vue"
+import MondatNotification from "~/components/MondatNotification.vue"
 
 export default {
   name: "Messages",
@@ -65,7 +65,7 @@ export default {
     FormserviceMappingVisual,
     FormserviceMappingRequest,
     FormserviceMappingResponse,
-    DatemonNotification,
+    MondatNotification,
   },
   data() {
     return {

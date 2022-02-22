@@ -27,7 +27,7 @@
     span(v-else-if="loadError")
       .notification.is-danger() {{loadError}}
     template(v-else)
-      DatemonTable(:data="testCases", :columns="columns", :rows="0", @select="selectTestCase", @runTest="doRunTest")
+      MondatTable(:data="testCases", :columns="columns", :rows="0", @select="selectTestCase", @runTest="doRunTest")
 
 
 
@@ -126,15 +126,15 @@
 </template>
 
 <script>
-import DatemonNotification from "~/components/DatmonNotification.vue"
-import DatemonTable from "~/components/DatmonTable.vue"
+import MondatNotification from "~/components/MondatNotification.vue"
+import MondatTable from "~/components/MondatTable.vue"
 
 const POLLING_INTERVAL = 500
 
 export default {
   components: {
-    DatemonNotification,
-    DatemonTable,
+    MondatNotification,
+    MondatTable,
   },
 
   data: function () {

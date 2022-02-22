@@ -16,7 +16,7 @@
         b-icon(icon="bank-transfer", size="is-medium")
       | Transaction {{txId}}
     br
-    DatemonNotification
+    MondatNotification
       p
         | This page shows only steps that have been run.
         | Steps that have not been initiated yet will not be shown.
@@ -89,11 +89,20 @@
 
               b-tab-item(key="log", label="Log entries")
                 // Log entries
-                b-table.my-table.is-size-7(
-                  :data="logEntries",
-                  :columns="logEntriesColumns",
-                  hoverable)
-                //- | {{logEntries}}
+                b-table.my-table.is-size-7(:data="logEntries")
+                  b-table-column(v-slot="props", field="when", label="Time")
+                    | {{props.row.when}}
+                  b-table-column(v-slot="props", field="source", label="Src")
+                    b-tooltip(:label="longDetails(props.row)", position="is-bottom")
+                      div {{shortDetails(props.row)}}
+                  b-table-column(v-slot="props", field="message", label="Message")
+                    span.dateTimeMessage(v-if="props.row.message.startsWith('***')")
+                      // Date
+                      | &nbsp;&nbsp;Time: {{props.row.message.substring(3)}}&nbsp;&nbsp;
+                    span(v-else)
+                      // Message
+                      | {{props.row.message}}
+
 
               b-tab-item(key="details", label="Details")
                 table.table
@@ -154,18 +163,18 @@
 
             //- pre.is-size-6(v-if="typeof(stepDetails) === 'object'")
               | {{JSON.stringify(stepDetails, '', 2)}}
-      //- DatemonTable(:data="steps", :columns="columns", :rows="14")
+      //- MondatTable(:data="steps", :columns="columns", :rows="14")
 </template>
 
 <script>
-import DatemonNotification from "~/components/DatmonNotification.vue"
-import DatemonTable from "~/components/DatmonTable.vue"
+import MondatNotification from "~/components/MondatNotification.vue"
+import MondatTable from "~/components/MondatTable.vue"
 import StepRunResult from "~/components/StepRunResult.vue"
 
 export default {
   components: {
-    DatemonNotification,
-    DatemonTable,
+    MondatNotification,
+    MondatTable,
     StepRunResult,
   },
 
@@ -204,68 +213,6 @@ export default {
       hierarchy: [ ],
       currentStepId: '',
       stepDetails: null,
-
-      logEntriesColumns: [
-        // {
-        //   field: 'created',
-        //   label: 'Timestamp',
-        //   // width: '500',
-        //   // numeric: true
-        // },
-        {
-          field: 'level',
-          label: 'Type',
-          // width: '500',
-          // numeric: true
-        },
-        {
-          field: 'source',
-          label: 'Source',
-          // width: '500',
-          // numeric: true
-        },
-        {
-          field: 'message',
-          label: 'Message',
-          // width: '500',
-          // numeric: true
-        },
-      ],
-
-      columns: [//ZZZZZ Is this used?
-        {
-          field: 'fullSequence',
-          label: 'Sequence',
-          // width: '500',
-          // numeric: true
-        },
-        {
-          field: 'note',
-          label: 'Note',
-          cellClass: "my-bold-cell",
-          // cellClass: "is-primary",
-        },
-        // {
-        //     field: 'description',
-        //     label: 'Description',
-        // },
-        {
-          field: 'status',
-          label: 'Status',
-        },
-        {
-          field: 'stepType',
-          label: 'Step type',
-        },
-        {
-          field: 'stepId',
-          label: 'Step',
-        },
-        // {
-        //     field: 'startTime',
-        //     label: 'Start time',
-        // },
-      ]
     }
   }, //- data
 
@@ -307,7 +254,25 @@ export default {
     },
 
     logEntries: function() {
-      return this.stepDetails.logs
+      // Insert short times into the log entries
+      const list = [ ]
+      let previousMinute = '---'
+      for (const entry of this.stepDetails.logs) {
+        const dat = new Date(entry.created)
+        const day = dat.toLocaleDateString('PST')
+
+        const time = dat.toLocaleTimeString('PST') + `.${dat.getMilliseconds()}s`
+        const minute = time.substring(0, 5)
+        const seconds = time.substring(6)
+        if (minute != previousMinute) {
+          list.push({ when: '', level: '', surce: '', message: `***${day} ${minute}`})
+          previousMinute = minute
+        }
+        entry.when = seconds
+        list.push(entry)
+      }
+      return list
+      // return this.stepDetails.logs
     }
   },
 
@@ -358,7 +323,7 @@ export default {
         alert('Unknown stepId in showDetails() parent')
         return
       }
-      console.log(`showDetails in parent`, stepId)
+      // console.log(`showDetails in parent`, stepId)
       this.stepDetails = `Loaded details for step ${stepId}`
       // console.log(`stepId=`, stepId)
 
@@ -366,28 +331,29 @@ export default {
       for (const step of this.steps) {
         // console.log(`step=`, step)
         if (step.stepId === stepId) {
-          console.log(`found the step`)
+          // console.log(`found the step`)
           this.stepDetails = step
           this.currentStepId = stepId
           break
         }
       }
-
-      // const url = `${this.$monitorEndpoint}/stepInstance/${stepId}`
-      // try {
-      //   this.stepDetails = await this.$axios.$get(url)
-      //   this.currentStepId = stepId
-      // } catch (e) {
-      //   console.log(`url=`, url)
-      //   console.log(`e.response=`, e.response)
-      //   alert(`Could not load step details:`, e)
-      // }
     },
 
     showTransactionDetails: async function() {
       this.stepDetails = null
       this.currentStepId = ''
-    }
+    },
+
+    shortDetails: function (row) {
+      if (row.source && row.level) {
+        return `${row.source.substring(0, 1).toUpperCase()} ${row.level.substring(0, 1).toUpperCase()}`
+      }
+      return ''
+    },
+
+    longDetails: function (entry) {
+      return `Source: ${entry.source}, Level: ${entry.level}`
+    },
   }//- methods
 }
 
@@ -441,6 +407,16 @@ function formHierarchy(steps) {
   }
   .my-bold-cell span {
     font-weight: 600;
+  }
+  .dateTimeMessage {
+    margin-top: 3px;
+    margin-bottom: 2px;
+    padding: 2px;
+    font-weight: 500;
+    font-size: 14px;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    border-radius: 4px;
+    background-color: #594cb2;
   }
 }
 </style>

@@ -14,7 +14,7 @@
         b-icon(icon="shape", size="is-small")
       | Transaction types
 
-    DatemonNotification
+    MondatNotification
       | Each transaction type is mapped to a specific pipeline version.
 
     span(v-if="loading")
@@ -22,7 +22,7 @@
     span(v-else-if="loadError")
       .notification.is-danger() {{loadError}}
     template(v-else)
-      DatemonTable(:data="mapping", :columns="columns", :rows="0", @select="selectMapping")
+      MondatTable(:data="mapping", :columns="columns", :rows="0", @select="selectMapping")
 
 
     //
@@ -63,13 +63,13 @@
 
 
 <script>
-import DatemonNotification from "~/components/DatmonNotification.vue"
-import DatemonTable from "~/components/DatmonTable.vue"
+import MondatNotification from "~/components/MondatNotification.vue"
+import MondatTable from "~/components/MondatTable.vue"
 
 export default {
   components: {
-    DatemonNotification,
-    DatemonTable,
+    MondatNotification,
+    MondatTable,
   },
 
   data: function () {

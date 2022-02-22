@@ -65,8 +65,8 @@
 </template>
 
 <script>
-import DatemonNotification from "~/components/DatmonNotification.vue"
-import DatemonTable from "~/components/DatmonTable.vue"
+import MondatNotification from "~/components/MondatNotification.vue"
+import MondatTable from "~/components/MondatTable.vue"
 import LazyLinearGauge from '~/components/LazyLinearGauge.vue'
 import LazyRadialGauge from '~/components/LazyRadialGauge.vue'
 
@@ -78,8 +78,8 @@ export default {
   layout: 'standalone',
 
   components: {
-    DatemonNotification,
-    DatemonTable,
+    MondatNotification,
+    MondatTable,
     LazyLinearGauge,
     LazyRadialGauge,
   },

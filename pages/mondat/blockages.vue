@@ -12,7 +12,7 @@
         b-icon(icon="timer-off-outline", size="is-small")
       | Blocked Transactions&nbsp;&nbsp;
 
-    DatemonNotification
+    MondatNotification
       | A "blocked" transaction is one that reports it is unable to proceed,
       | due to factors outside it's control. For example, because it needs to contact
       | an external system that is offline.
@@ -28,12 +28,12 @@
 </template>
 
 <script>
-import DatemonNotification from "~/components/DatmonNotification.vue"
-// import DatemonTable from "~/components/DatemonTable.vue"
+import MondatNotification from "~/components/MondatNotification.vue"
+// import MondatTable from "~/components/MondatTable.vue"
 
 export default {
   components: {
-    DatemonNotification,
+    MondatNotification,
   },
 
   data: function () {
