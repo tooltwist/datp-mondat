@@ -131,30 +131,31 @@ export default {
         //   to: '/forms/messages'
         // },
         {
-          title: 'Recent',
-          icon: 'eye-outline',
+          title: 'Transactions',
+          // icon: 'eye-outline',
+          icon: 'bank-transfer',
           to: { name: 'mondat-transactions' }
         },
-        {
-          title: 'Running',
-          icon: 'run',
-          to: { name: 'mondat-running' }
-        },
-        {
-          title: 'Finished',
-          icon: 'bank-transfer',
-          to: { name: 'mondat-complete' }
-        },
-        {
-          title: 'Sleeping',
-          icon: 'sleep',
-          to: { name: 'mondat-sleeping' }
-        },
-        {
-          title: 'Failures',
-          icon: 'alert-rhombus-outline',
-          to: { name: 'mondat-failures' }
-        },
+        // {
+        //   title: 'Running',
+        //   icon: 'run',
+        //   to: { name: 'mondat-running' }
+        // },
+        // {
+        //   title: 'Finished',
+        //   icon: 'bank-transfer',
+        //   to: { name: 'mondat-complete' }
+        // },
+        // {
+        //   title: 'Sleeping',
+        //   icon: 'sleep',
+        //   to: { name: 'mondat-sleeping' }
+        // },
+        // {
+        //   title: 'Failures',
+        //   icon: 'alert-rhombus-outline',
+        //   to: { name: 'mondat-failures' }
+        // },
 
         // {
         //   title: 'Broken webhooks',
@@ -173,7 +174,7 @@ export default {
         {
           title: 'Testing',
           icon: 'bike-fast',
-          to: { name: 'mondat-testCases' }
+          to: { name: 'mondat-tests' }
         },
         {
           title: 'Pipelines',
@@ -186,7 +187,7 @@ export default {
           to: { name: 'mondat-transactionTypes' }
         },
         {
-          title: 'Standard API',
+          title: 'Generic API',
           icon: 'api',
           to: { name: 'mondat-forms-standard' }
         },

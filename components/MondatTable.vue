@@ -12,12 +12,16 @@ div
       td.my-heading-2(v-for="c in columns")
         | {{label(c)}}
     tr.my-row-1(v-for="(rec, index) in data", v-if="rows<=0 || index<rows", @click="select(rec)")
-      td.my-row-2(v-for="c in columns")
+      td.my-row-2(v-for="c in columns", :style="columnStyle(c, rec)")
+        //- div {{c}}
         span(v-if="c.type==='transactionIconId'")
           .transaction-status-icon(:style="{ backgroundColor: transactionStatusColor(rec) }")
-          | {{rec.txId}}
+            b-icon.my-icon(:icon="transactionStatusIcon(rec.status)", size="is-small")
+          | {{ shortTxId(rec.txId) }}
         span(v-else-if="c.type==='transactionStatus'")
           span(:style="{ color: transactionStatusColor(rec) }") {{rec.status}}
+        span(v-else-if="c.type==='dateTime'")
+          | {{dateTime(c, rec)}}
         span(v-else-if="c.type==='button'")
           button.button.is-small(@click.stop="doButtonClick(c, rec)") {{c.label}}
         span(v-else)
@@ -87,6 +91,80 @@ export default {
       } else {
         console.log(`Button column has no customEvent property`)
       }
+    },//-doButtonClick
+
+    shortTxId(txId) {
+      if (txId.startsWith('tx-')) {
+        txId = txId.substring(3)
+      }
+      if (txId.length > 8) {
+        txId = txId.substring(0, 8)
+      }
+      return txId
+    },//- shortTxId
+
+    dateTime(column, rec) {
+      const value = this.field(column, rec)
+      // console.log(`value=`, value)
+      // console.log(`typeof(value)=`, typeof(value))
+      const dat = new Date(value)
+      // console.log(`dat=`, dat)
+      const day = dat.toLocaleDateString('PST')
+      const time = dat.toLocaleTimeString('PST')
+      return `${day} ${time}`
+    },//-dateTime
+
+    columnStyle(column, rec) {
+      // console.log(`columnStyle()`, column)
+      const style = { }
+      if (column.width) {
+        // console.log(`column.width=`, column.width)
+        style.width = column.width
+      }
+      switch (rec.status) {
+        case 'queued':
+        case 'running':
+          style['color'] = '#48c78e'
+          style['font-weight'] = 600
+          break
+        case 'sleeping':
+          // style['color'] = 'light-blue'
+          style['font-weight'] = 600
+          break
+
+        case 'internal-error':
+          style['color'] = 'red'
+          style['font-weight'] = 600
+          break
+        case 'aborted':
+        case 'failed':
+          style['color'] = '#f14668'
+          // style['font-weight'] = 600
+          break
+      }
+      return style
+    },
+
+    transactionStatusIcon(status) {
+      switch (status) {
+        case 'queued':
+          return 'human-queue'
+        case 'running':
+          return 'run'
+        case 'sleeping':
+          return 'sleep'
+
+        case 'success':
+          return 'check'
+
+        case 'failed':
+        case 'aborted':
+        case 'internal-error':
+          return 'alert-octagon-outline'
+
+        default:
+          return 'bank-transfer'
+      }
     }
   }
 }
@@ -121,7 +199,6 @@ font-family: Work Sans;
   color: rgba(255, 255, 255, 0.4);
 }
 
-
 .my-row-1 {
   font-family:'Courier New', Courier, monospace;
   height: 44px;
@@ -153,8 +230,11 @@ font-family: Work Sans;
   display: inline-block;
   width: 9px;
   height: 9px;
-  // background-color: red;
   margin-right: 10px;
   border-radius: 6px;
+}
+
+.my-icon {
+  display: inline-block;
 }
 </style>

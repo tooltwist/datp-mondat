@@ -280,25 +280,26 @@ export default {
 
   methods: {
     backToTransactions: function() {
-      switch (this.txinfo.status) {
-        case 'queued':
-        case 'running':
-          this.$router.push({ path: `/mondat/running` })
-          break
-        case 'success':
-          this.$router.push({ path: `/mondat/complete` })
-          break
-        case 'failed':
-        case 'aborted':
-        case 'timeout':
-        case 'internal-error':
-          this.$router.push({ path: `/mondat/failures` })
-          break
-        case 'sleeping':
-          this.$router.push({ path: `/mondat/sleeping` })
-          break
-        default:
-      }
+      this.$router.push({ path: `/mondat/transactions` })
+      // switch (this.txinfo.status) {
+      //   case 'queued':
+      //   case 'running':
+      //     this.$router.push({ path: `/mondat/running` })
+      //     break
+      //   case 'success':
+      //     this.$router.push({ path: `/mondat/complete` })
+      //     break
+      //   case 'failed':
+      //   case 'aborted':
+      //   case 'timeout':
+      //   case 'internal-error':
+      //     this.$router.push({ path: `/mondat/failures` })
+      //     break
+      //   case 'sleeping':
+      //     this.$router.push({ path: `/mondat/sleeping` })
+      //     break
+      //   default:
+      // }
     },
 
     reloadDetails: async function() {

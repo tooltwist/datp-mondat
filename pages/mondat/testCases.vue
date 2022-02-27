@@ -14,9 +14,6 @@
       a.button(href="/mondat/loadTesting", target="_blank") Load testing...
 
 
-    //- h2.title.is-3.has-text-grey
-      | Test Client&nbsp;&nbsp;&nbsp;
-      b-icon(icon="ab-testing", size="is-large")
     h2.title.is-4
       .datemon-heading-icon
         b-icon(icon="bike-fast", size="is-small")
@@ -30,99 +27,107 @@
       MondatTable(:data="testCases", :columns="columns", :rows="0", @select="selectTestCase", @runTest="doRunTest")
 
 
-
     //
     //  Modal to edit mapping
     //
     b-modal(v-model="showModal", :width="640", scroll="keep")
       .card
-        .card-content
+        .card-content.myModalContent
           .content
-            h1.title.is-4
-              | Test Case
-            //- | {{selectedRecord}}
-            hr
             section
-
-              //- card.card
-              b-field(label="Name")
-                b-input(v-model="selectedRecord.name")
-              b-field(label="Description")
-                b-input(v-model="selectedRecord.description")
-                //- b-input(v-model="selectedRecord.transactionType", :readonly="!isNew")
-              //- b-field(label="Pipeline")
-                b-input(v-model="selectedRecord.pipelineName")
-              //- | ZZZZ 1 {{mapping}}
-              b-field(label="Transaction type")
-                b-select(placeholder="Select one", v-model="selectedRecord.transactionType")
-                  option(v-for="txType in mapping", :value="txType.transactionType", :key="txType.transactionType")
-                    | {{ txType.transactionType }}
-                    //- | {{ pipeline.name }}, {{pipeline.version}}
-              //- .columns
-              //-   .column.is-6
-              b-field(label="Input data (json)")
-                b-input(type="textarea", rows="10", v-model="selectedRecord.inputData", @input="validateInput", @blur="formatInput")
-              //- .is-size-7.has-text-danger.is-pulled-right(v-if="errorMsg") {{errorMsg}}
-
-            //- .column.is-6
-              b-field(label="Response")
-                b-input(type="textarea", rows="10", v-model="testResponse", readonly)
-
-            hr
-            .is-pulled-right
-              | &nbsp;&nbsp;
-              button.button.is-primary(@click="doSave") Save
-            .is-pulled-right
-              | &nbsp;&nbsp;
-              button.button(@click="cancelModal") Cancel
-            .is-pulled-left
-              | &nbsp;&nbsp;
-              button.button.is-danger(@click="doDelete") Delete
-            .is-size-7.has-text-danger(v-if="errorMsg") &nbsp;&nbsp;&nbsp;{{errorMsg}}
-            .is-clearfix
-
-    b-modal(v-model="showTestModal", :width="800", scroll="keep")
-      .card
-        .card-content
-          .content
-            h1.title.is-4
-              | Test '{{selectedRecord.name}}' in progress...
-            | {{selectedRecord.description}}
-            //- | {{selectedRecord}}
-            hr
-            section
-              .is-pulled-right.is-size-7
-                | Transaction type:&nbsp;
-                b {{selectedRecord.transactionType}}&nbsp;&nbsp;
-              b-field(label="Initial Response")
-                b-input(type="textarea", rows="10", v-model="testResponse", disabled)
-              b-field(label="Polling Response")
-                b-input(type="textarea", rows="10", v-model="pollResponse", disabled)
-            hr
-            .is-pulled-right
-              | &nbsp;&nbsp;
-              button.button(@click="doCancelTest") Cancel
-            .is-pulled-right
-              | &nbsp;&nbsp;
-              button.button.is-primary(v-if="readytToTestAgain", @click="testRunner") Test again
-              //- .is-size-7.has-text-danger(v-if="errorMsg") &nbsp;&nbsp;&nbsp;{{errorMsg}}
-            .is-pulled-left {{testTimer}}{{testTimer2}}
-            .is-clearfix
-
-              //- //- card.card
-              //- b-field(label="Name")
-              //-   b-input(v-model="selectedRecord.name")
+              h1.title.is-4
+                | Test '{{selectedRecord.name}}'
+              | {{selectedRecord.description}}
+              //- | {{selectedRecord}}
+              hr
+              b-tabs(v-model="activeTab", type="is-toggle-rounded")
+                b-tab-item(label="Definition")
+                  br
+                  b-field(label="Name", label-position="inside")
+                    b-input(v-model="selectedRecord.name")
+                  b-field(label="Description", label-position="inside")
+                    b-input(v-model="selectedRecord.description")
+                  br
+                  br
+                  b-field(label="Transaction type", zlabel-position="inside")
+                    b-select(placeholder="Select one", v-model="selectedRecord.transactionType")
+                      option(v-for="txType in mapping", :value="txType.transactionType", :key="txType.transactionType")
+                        | {{ txType.transactionType }}
 
 
 
-    //- hr
-    //- .is-pulled-right
-    //-   | &nbsp;&nbsp;
-    //-   button.button.is-primary(@click="saveMapping") Save
+                b-tab-item(label="Input")
+                  br
+                  b-field(label="Input data (json)")
+                    b-input(type="textarea", rows="10", v-model="selectedRecord.inputData", @input="validateInput", @blur="formatInput")
+                  //- .is-size-7.has-text-danger.is-pulled-right(v-if="errorMsg") {{errorMsg}}
 
-    //- h3.subtitle.is-6.has-text-grey
-    //-   | YARP
-    //- | etc etc
+                  
+                  .is-pulled-right
+                    | &nbsp;&nbsp;
+                    button.button.is-primary(@click="doSave") Save
+                  .is-pulled-right
+                    | &nbsp;&nbsp;
+                    button.button(@click="cancelModal") Cancel
+                  .is-pulled-left
+                    | &nbsp;&nbsp;
+                    button.button.is-danger(@click="doDelete") Delete
+                  .is-size-7.has-text-danger(v-if="errorMsg") &nbsp;&nbsp;&nbsp;{{errorMsg}}
+                  .is-clearfix
+
+
+                b-tab-item(label="Run test")
+                  section
+                    br
+                    .is-pulled-right.is-size-7
+                      | Transaction type:&nbsp;
+                      b {{selectedRecord.transactionType}}&nbsp;&nbsp;
+                    b-field(label="Initial Response")
+                      b-input(type="textarea", rows="10", v-model="testResponse", disabled)
+                    //- b-field(label="Polling Response")
+                    //-   b-input(type="textarea", rows="10", v-model="pollResponse", disabled)
+                  hr
+                  .is-pulled-right
+                    | &nbsp;&nbsp;
+                    button.button(@click="doCancelTest") Cancel
+                  .is-pulled-right
+                    | &nbsp;&nbsp;
+                    button.button.is-primary(v-if="readytToTestAgain", @click="testRunner") Test again
+                    //- .is-size-7.has-text-danger(v-if="errorMsg") &nbsp;&nbsp;&nbsp;{{errorMsg}}
+                  .is-pulled-left {{testTimer}}{{testTimer2}}
+                  .is-clearfix
+
+
+                b-tab-item(label="Polling")
+                  section
+                    br
+                    .is-pulled-right.is-size-7
+                      | Transaction type:&nbsp;
+                      b {{selectedRecord.transactionType}}&nbsp;&nbsp;
+                    //- b-field(label="Initial Response")
+                    //-   b-input(type="textarea", rows="10", v-model="testResponse", disabled)
+                    b-field(label="Polling Response")
+                      b-input(type="textarea", rows="10", v-model="pollResponse", disabled)
+                  hr
+                  .is-pulled-right
+                    | &nbsp;&nbsp;
+                    button.button(@click="doCancelTest") Cancel
+                  .is-pulled-right
+                    | &nbsp;&nbsp;
+                    button.button.is-primary(v-if="readytToTestAgain", @click="testRunner") Test again
+                    //- .is-size-7.has-text-danger(v-if="errorMsg") &nbsp;&nbsp;&nbsp;{{errorMsg}}
+                  .is-pulled-left {{testTimer}}{{testTimer2}}
+                  .is-clearfix
+
+
+                b-tab-item(label="Transaction")
+
+        footer.card-footer
+          a.card-footer-item(href="#")
+            .is-danger Delete
+          a.card-footer-item(href="#", @click="doRunTest") Run test
+          a.card-footer-item(href="#", @click="doSave") Save
+          a.card-footer-item(href="#", @click="cancelModal") Cancel
 </template>
 
 <script>
@@ -140,6 +145,7 @@ export default {
   data: function () {
     return {
       testCases: [ ],
+      currentTest: 'first-test',
       mapping: [ ],
       loading: true,
       loadError: null,
@@ -165,6 +171,8 @@ export default {
       ],//- columns
 
 
+      activeTab: 1,
+
       // Editing a single row.
       showModal: false,
       selectedRecord: { },
@@ -175,11 +183,6 @@ export default {
       showTestModal: false,
 
 
-      // name: 'namee',
-      // description: 'desc',
-      // transactionType: 'example',
-      // input: '{ "hello": "there" }',
-      // // errorMsg: 'Invalid JSON',
       polling: null,
       testResponse: '',
       pollResponse: '',
@@ -441,42 +444,6 @@ export default {
           this.pollResponse = `See result above.`
         }
 
-
-        // switch (metadata.responseType) {
-
-        //   case 'synchronous':
-        //     this.pollResponse = `See result above.`
-        //     break
-
-        //   case 'poll-for-result':
-        //     // console.log(`Will poll for the result`)
-        //     this.pollResponse = `polling...`
-        //     this.polling = setInterval(async () => {
-        //       // console.log(`check result`)
-        //       try {
-        //         const url2 = `${this.$datpEndpoint}/result/${transactionId}`
-        //         // console.log(`url2=`, url2)
-        //         const response2 = await this.$axios.$get(url2, {
-        //           // Put inquiryToken in a header
-        //         })
-        //         // console.log(`response2=`, response2)
-        //         if (response2.status !== 'running') {
-        //           this.stopAnyPolling()
-        //           this.pollResponse = JSON.stringify(response2, '', 2)
-        //           const endTime2 = Date.now()
-        //           this.testTimer2 = `, ${endTime2 - this.startTime}ms`
-        //         }
-        //       } catch (e) {
-        //         console.log(`e=`, e)
-        //         alert(`Error polling for result.`)
-        //       }
-        //     }, POLLING_INTERVAL)
-        //     break
-
-        //   default:
-        //     this.pollResponse = `Unknown response!`
-        //     break
-        // }
       } else {
         // !metadata
         this.pollResponse = `No metadata!`
@@ -499,3 +466,9 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.myModalContent {
+  min-height: 700px;
+}
+</style>
