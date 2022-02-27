@@ -31,7 +31,7 @@
             | &nbsp;
             b-button.my-status-button(size="is-small", type="is-success", @click="selectRunningStatuses") running
             | &nbsp;
-            b-button.my-status-button(size="is-small", type="is-info", @click="selectStoppedStatuses") stopped
+            b-button.my-status-button(size="is-small", type="is-info", @click="selectStoppedStatuses") finished
             | &nbsp;
             b-button.my-status-button(size="is-small", type="is-danger", @click="selectErrorStatuses") errors
           .is-pulled-left
@@ -193,7 +193,7 @@ export default {
 
     selectTransaction: function (row) {
       const txId = row.txId
-      this.$router.push({ path: `/mondat/steps/${txId}` })
+      this.$router.push({ path: `/mondat/transactions/${txId}` })
     },
 
 

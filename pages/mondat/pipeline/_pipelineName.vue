@@ -144,7 +144,7 @@ export default {
       // Get details of the specific pipeline
       // console.log(`url=`, url)
       const definition = await $axios.$get(url)
-      console.log(`definition=`, definition)
+      // console.log(`definition=`, definition)
 
       // Add IDs so it can be draggable
       const description = definition.description

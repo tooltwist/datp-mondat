@@ -180,7 +180,7 @@ export default {
       // console.log(`selectTRansaction!!!`, row)
       const txId = row.txId
       // console.log(`selectTransaction(${txId})`)
-      this.$router.push({ path: `/mondat/steps/${txId}` })
+      this.$router.push({ path: `/mondat/transactions/${txId}` })
     },
 
     // rowClass: function(row) {

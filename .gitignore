@@ -89,3 +89,7 @@ sw.*
 # Vim swap files
 *.swp
 zzz.*
+
+# Temporary backup files
+*-junk.vue
+*-junk

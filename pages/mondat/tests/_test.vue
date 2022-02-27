@@ -26,11 +26,13 @@
     span(v-else-if="loadError")
       .notification.is-danger() {{loadError}}
     template(v-else)
+      .is-pulled-right
+        button.button.is-success(@click="testRunner") Run test
+      .is-clearfix
       br
       section
-        .is-pulled-right
-          button.button.is-success(@click="doRunTest") Run test
 
+        //- | {{transactionId}}
         b-tabs(v-model="activeTab", type="is-toggle-rounded")
           b-tab-item(label="Definition")
             br
@@ -76,6 +78,7 @@
 
 
           b-tab-item(label="Transaction")
+            TransactionAudit(v-if="transactionId", :txId="transactionId")
 
 </template>
 
@@ -114,6 +117,7 @@ export default {
 
       polling: null,
       testResponse: '',
+      transactionId: null, // Set from testResponse.metadata.txId
       pollResponse: '',
       testTimer: 0,
       testTimer2: 0,
@@ -217,35 +221,6 @@ export default {
       }
     },//- formatInput
 
-    // selectTestCase(row) {
-    //   // console.log(`selectTestCase()`)
-    //   // console.log(`row=`, row)
-
-    //   this.selectedRecord = row
-    //   // this.isNew = false
-    //   // this.showModal = true
-    //   this.errorMsg = ''
-    //   this.selectedRecord.originalName = this.selectedRecord.name
-    // },
-
-    // newRecord() {
-    //   // console.log(`newRecord()`)
-    //   this.selectedRecord = {
-    //     name: '',
-    //     description: '',
-    //     transactionType: '1.0',
-    //     inputData: `{
-    //       "metadata": {
-    //         "reply": "longpoll"
-    //       },
-    //       "data": {
-    //       }
-    //     }`,
-    //   }
-    //   this.isNew = true
-    //   this.showModal = true
-    //   this.errorMsg = ''
-    // },
 
     async doSave() {
       // console.log(`doSave()`, this.selectedRecord)
@@ -291,26 +266,9 @@ export default {
       })
     },
 
-    // cancelModal() {
-    //   // console.log(`cancelModal()`)
-    //   // this.showModal = false
-    //   this.stopAnyPolling()
-    // },
-
-    async doRunTest (row) {
-      // console.log(`doRunTest()`)
-      // console.log(`row=`, row)
-
-
-
-      // this.selectedRecord = row
-      // this.showTestModal = true
-
-      this.testRunner()
-    },
 
     async testRunner() {
-      console.log(`testRunner()`)
+      // console.log(`testRunner()`)
       // alert(`testRunner()`)
 
       this.stopAnyPolling()
@@ -323,7 +281,7 @@ export default {
       this.testTimer = ``
       this.testTimer2 = ``
       const url = `${this.$datpEndpoint}/tx/start/${this.currentTest.transactionType}`
-      console.log(`url=`, url)
+      // console.log(`url=`, url)
       let response
       try {
         const data = await JSON.parse(this.currentTest.inputData)
@@ -350,7 +308,7 @@ export default {
       const metadata = response.metadata
       if (metadata) {
         // this.pollResponse = `polling...`
-        const transactionId = metadata.txId
+        this.transactionId = metadata.txId
         const inquiryToken = metadata.inquiryToken
 
 
@@ -367,13 +325,10 @@ export default {
               return
             }
             try {
-              const url2 = `${this.$datpEndpoint}/tx/status/${transactionId}?reply=longpoll`
-
-              console.log(`url2=`, url2)
+              const url2 = `${this.$datpEndpoint}/tx/status/${this.transactionId}?reply=longpoll`
               const response2 = await this.$axios.$get(url2, {
                 // Put inquiryToken in a header
               })
-              // console.log(`response2=`, response2)
               if (
                 response2.metadata
                 &&
@@ -390,7 +345,6 @@ export default {
                 const endTime2 = Date.now()
                 this.testTimer2 = `${endTime2 - this.startTime}ms`
               }
-
             } catch (e) {
               console.log(`e=`, e)
               this.stopAnyPolling()
@@ -413,7 +367,6 @@ export default {
 
     stopAnyPolling() {
       if (this.polling !== null) {
-        console.log(`STOPPING CURRENT POLLING`)
         clearTimeout(this.polling)
         this.polling = null
       }

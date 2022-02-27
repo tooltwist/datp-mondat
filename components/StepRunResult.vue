@@ -87,7 +87,11 @@ export default {
       // console.log(`step=`, this.step)
       const stepId = this.step.step.stepId
       // console.log(`stepId=`, stepId)
-      this.$emit('showDetails', stepId)
+      if (stepId) {
+        this.$emit('showDetails', stepId)
+      } else {
+        console.log(`showMe: Null stepId. this.step=`, this.step)
+      }
     },
 
     showDetails(stepId) {

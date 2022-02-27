@@ -5,24 +5,8 @@
  * the author or owner be liable for any claim or damages.
  */
 <template lang="pug">
-.my-steps-page
-  section.section
-    .is-pulled-right
-      b-button(type="is-successZ", @click="reloadDetails") Reload
-      | &nbsp;&nbsp;
-      b-button(type="is-success", @click="backToTransactions") Back
-    h2.title.is-4.has-text-grey
-      .datemon-heading-icon
-        b-icon(icon="bank-transfer", size="is-medium")
-      | Transaction {{txId}}
+  .my-steps-page
     br
-    MondatNotification
-      p
-        | This page shows only steps that have been run.
-        | Steps that have not been initiated yet will not be shown.
-        p
-        | Note that the steps reported here may not match up with the current pipeline definition
-        | for the transaction type, if a new version of the pipeline is in use.
 
     span(v-if="loading")
       | Loading...
@@ -34,20 +18,17 @@
           div(@click="showTransactionDetails")
             | Transaction type:&nbsp;&nbsp;&nbsp;
             b {{txinfo.transactionType}}
-          br
           StepRunResult(v-for="rec in hierarchy", :step="rec", :key="rec.path", :level="0", :currentStepId="currentStepId", @showDetails="showDetails")
-          //- | {{hierarchy}}
-          //- pre
-            | {{JSON.stringify(steps, '', 2)}}
-        .column.is-1
-        .column.is-7
 
+        //- .column.is-1
+        //- .column.is-7
+        .column.is-8
           // Right hand column with details
           template(v-if="currentStepId === ''")
 
             // Show the transaction details
-            br
-            br
+            .is-pulled-right
+              b-button(size="is-small", @click="reloadDetails") reload
             b.is-size-6 Transaction {{txId}}
             br
             br
@@ -78,13 +59,11 @@
           template(v-else-if="stepDetails")
 
             // Show the Step details
-            br
-            br
+            .is-pulled-right
+              b-button(size="is-small", @click="reloadDetails") reload
             b.is-size-6 Step {{stepDetails.stepId}}
             br
-            br
-            //- pre
-              | {{JSON.stringify(stepDetails, '', 2)}}
+
             b-tabs(:animated="false")
 
               b-tab-item(key="log", label="Log entries")
@@ -160,10 +139,6 @@
 
               b-tab-item(key="stepData", label="StepData")
                   b-input(type="textarea", v-model="stepDetailsJSON", rows="19", size="is-small", readonly, disabled)
-
-            //- pre.is-size-6(v-if="typeof(stepDetails) === 'object'")
-              | {{JSON.stringify(stepDetails, '', 2)}}
-      //- MondatTable(:data="steps", :columns="columns", :rows="14")
 </template>
 
 <script>
@@ -178,36 +153,50 @@ export default {
     StepRunResult,
   },
 
-  async asyncData({ $axios, $monitorEndpoint, params }) {
+  props: {
+    txId: String,
+  },
+
+  async mounted() {
     // Only run on the client
     if (process.server) {
       return { }
     }
 
-    console.log(params.txId)
-    const txId = params.txId
-    const url = `${$monitorEndpoint}/transaction/${txId}`
+    // console.log(this.txId)
+    const url = `${this.$monitorEndpoint}/transaction/${this.txId}`
     try {
-      const txinfo = await $axios.$get(url)
-      const steps = txinfo.steps
-      // console.log(`steps=`, steps)
-
-      const hierarchy = formHierarchy(steps)
-      return { txId, txinfo, steps, hierarchy, loading: false }
+      this.txinfo = await this.$axios.$get(url)
+      this.steps = this.txinfo.steps
+      this.hierarchy = formHierarchy(this.steps)
+      this.loading = false
     } catch (e) {
       console.log(`url=`, url)
       console.log(`e=`, e)
       console.log(`e.response=`, e.response)
-      return { loading: false, loadError: e.toString() }
+      this.loading = false
+      this.loadError = e.toString()
     }
   }, //- asyncData
+
+  watch: {
+    txId: async function () {
+      // The txid changes on the test page, when a new test is run.
+      // We need to load the details of the new transaction, but we
+      // wait a short while so the log has something to show.
+      setTimeout(async () => {
+        await this.reloadDetails()
+        await this.showTransactionDetails()
+      }, 500)
+    }
+  },
 
   data: function () {
     return {
       loading: true,
       loadError: null,
 
-      txId: '',
+      // txId: '',
       txinfo: null,
       steps: [ ],
       hierarchy: [ ],
@@ -276,32 +265,7 @@ export default {
     }
   },
 
-
-
   methods: {
-    backToTransactions: function() {
-      this.$router.push({ path: `/mondat/transactions` })
-      // switch (this.txinfo.status) {
-      //   case 'queued':
-      //   case 'running':
-      //     this.$router.push({ path: `/mondat/running` })
-      //     break
-      //   case 'success':
-      //     this.$router.push({ path: `/mondat/complete` })
-      //     break
-      //   case 'failed':
-      //   case 'aborted':
-      //   case 'timeout':
-      //   case 'internal-error':
-      //     this.$router.push({ path: `/mondat/failures` })
-      //     break
-      //   case 'sleeping':
-      //     this.$router.push({ path: `/mondat/sleeping` })
-      //     break
-      //   default:
-      // }
-    },
-
     reloadDetails: async function() {
       // Same loading as asyncData
       this.loading = true
@@ -321,7 +285,7 @@ export default {
 
     showDetails: async function(stepId) {
       if (!stepId) {
-        alert('Unknown stepId in showDetails() parent')
+        alert('Null stepId in showDetails() parent')
         return
       }
       // console.log(`showDetails in parent`, stepId)
@@ -418,6 +382,9 @@ function formHierarchy(steps) {
     font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     border-radius: 4px;
     background-color: #594cb2;
+  }
+  .yarp {
+    background-color: yellow;
   }
 }
 </style>
