@@ -32,27 +32,37 @@ export default {
 
 .frame-inner {
   flex-grow: 0;
-  padding: 8px 17px 9px 15px;
+  padding-top: 15px;
+  padding-right: 45px;
+  padding-bottom: 15px;
+  padding-left: 45px;
   border-radius: 4px;
+  border-color: #909090;
   background-color: #594cb2;
+  background-color: black;
+  background-color: #e0e0e0;
+  background-color: #303030;
+  // background-color: red;
 }
 
 .my-text {
   flex-grow: 0;
-  font-family: Work Sans;
+  font-family: Open Sans;
   font-size: 14px;
   font-weight: normal;
   font-stretch: normal;
   font-style: normal;
-  line-height: normal;
+  line-height: 180%;
   letter-spacing: normal;
-  text-align: left;
-  color: rgba(255, 255, 255, 0.8);
+  // text-align: left;
+  text-align: justify;
+  color: rgba(255, 255, 255, 0.6);
+  // color: #909090;
 
   // spacing between paragraphs
-  p + p {
-    margin-top: 8px;
-  }
+  // p + p {
+  //   margin-top: 8px;
+  // }
 }
 
 </style>

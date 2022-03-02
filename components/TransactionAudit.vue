@@ -138,7 +138,7 @@
                 | Not available at this time
 
               b-tab-item(key="stepData", label="StepData")
-                  b-input(type="textarea", v-model="stepDetailsJSON", rows="19", size="is-small", readonly, disabled)
+                b-input(type="textarea", v-model="stepDetailsJSON", rows="19", size="is-small", readonly, disabled)
 </template>
 
 <script>

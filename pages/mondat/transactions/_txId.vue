@@ -17,8 +17,8 @@
     MondatNotification
       p
         | This page shows only steps that have been run.
-        | Steps that have not been initiated yet will not be shown.
-        p
+        | Steps that have not been initiated yet will not be shown. &nbsp;
+        //p
         | Note that the steps reported here may not match up with the current pipeline definition
         | for the transaction type, if a new version of the pipeline is in use.
 

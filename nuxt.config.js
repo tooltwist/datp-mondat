@@ -96,6 +96,7 @@ export default {
   // https://google-fonts.nuxtjs.org/options
   googleFonts: {
     families: {
+      'Open+Sans': true,
       'Work+Sans': true,
       // Lato: [100, 300],
       // Raleway: {

@@ -181,11 +181,11 @@ export default {
           icon: 'transit-connection',
           to: { name: 'mondat-pipelines' }
         },
-        {
-          title: 'TX Types',
-          icon: 'shape',
-          to: { name: 'mondat-transactionTypes' }
-        },
+        // {
+        //   title: 'TX Types',
+        //   icon: 'shape',
+        //   to: { name: 'mondat-transactionTypes' }
+        // },
         {
           title: 'Generic API',
           icon: 'api',
@@ -242,6 +242,10 @@ export default {
 
 <style lang="scss" scoped>
 .my-default-layout {
+  .main-content {
+    min-height: 100vh;
+  }
+
   .heading-name {
     display: inline-block;
     // font-family: 'Courier New', Courier, monospace;

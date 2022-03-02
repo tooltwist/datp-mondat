@@ -26,12 +26,12 @@
             .card-content.my-card-content
               .content
                 .has-text-right.is-size-7 {{originalStepType}}
-                a.is-pulled-right.my-trash-can(@click="onDelete")
+                a.is-pulled-right.my-trash-can(v-if="editable", @click="onDelete")
                   b-icon(icon="trash-can-outline")
                 b-field(label="Description")
-                  b-input(v-model="description", @blur="onBlur", :placeholder="bestDescription")
+                  b-input(v-model="description", :readonly="!editable", @blur="onBlur", :placeholder="bestDescription")
                 b-field(label="Definition", v-if="stepHasDefinition(originalStepType)")
-                  textarea.textarea(rows="8", v-model="json", @input="onInput", @blur="onBlur")
+                  textarea.textarea(rows="8", v-model="json", :readonly="!editable", @input="onInput", @blur="onBlur")
                 .is-danger.is-size-7 {{errorMsg}}
 </template>
 
@@ -51,6 +51,7 @@ export default {
       required: true
     },
     open: Boolean,
+    editable: Boolean,
   },
   data: function () {
     return {

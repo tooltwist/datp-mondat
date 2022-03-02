@@ -23,12 +23,13 @@ div
         span(v-else-if="c.type==='dateTime'")
           | {{dateTime(c, rec)}}
         span(v-else-if="c.type==='button'")
-          button.button.is-small(@click.stop="doButtonClick(c, rec)") {{c.label}}
+          button.button.is-small.my-tiny-button(@click.stop="doButtonClick(c, rec)") {{c.label}}
         span(v-else)
           | {{field(c, rec)}}
     tr.my-row-1(v-for="n in rows", v-if="rows>0 && n>data.length")
       td(v-for="c in columns")
-  //- | {{data}}
+    tr.my-final-row
+      td
 </template>
 
 
@@ -105,10 +106,10 @@ export default {
 
     dateTime(column, rec) {
       const value = this.field(column, rec)
-      // console.log(`value=`, value)
-      // console.log(`typeof(value)=`, typeof(value))
+      if (!value) {
+        return ''
+      }
       const dat = new Date(value)
-      // console.log(`dat=`, dat)
       const day = dat.toLocaleDateString('PST')
       const time = dat.toLocaleTimeString('PST')
       return `${day} ${time}`
@@ -175,20 +176,27 @@ export default {
 .my-table {
   width: 100%;
   cursor: pointer;
+  padding-bottom: 90px;
+  background-color: #322f44;
+  border-radius: 5px;
 }
 
 .my-heading-1 {
-  height: 59px;
+  // height: 59px;
   padding: 0px;
-  background-color: #322f44;
+  // background-color: #322f44;
 }
 
 .my-heading-2 {
-  height: 59px;
+  // height: 59px;
   gap: 10px;
-  padding: 36px 18px 12px;
+  padding-top: 26px;
+  padding-left: 18px;
+  padding-right: 18px;
+  padding-bottom: 12px;
+  // padding: 16px 18px 0x;
 
-font-family: Work Sans;
+// font-family: Work Sans;
   font-size: 12px;
   font-weight: bold;
   font-stretch: normal;
@@ -200,21 +208,24 @@ font-family: Work Sans;
 }
 
 .my-row-1 {
-  font-family:'Courier New', Courier, monospace;
-  height: 44px;
+  // font-family:'Courier New', Courier, monospace;
+  // height: 44px;
   // flex-grow: 0;
   // padding: 35px 299px 12px 24px;
   padding: 0px;
-  background-color: #322f44;
-  border-bottom: solid 1px rgba(255, 255, 255, 0.13);
+  // background-color: #322f44;
+  border-top: solid 1px rgba(255, 255, 255, 0.13);
 }
 
 .my-row-2 {
-  font-family:'Courier New', Courier, monospace;
+  // font-family:'Courier New', Courier, monospace;
 
-  height: 44px;
+  // height: 44px;
   gap: 10px;
-  padding: 14px 18px;
+  row-gap: 0px;
+  // padding: 14px 18px;
+  padding: 5px 5px;
+  padding-left: 25px;
 
   font-size: 14px;
   font-weight: normal;
@@ -224,6 +235,11 @@ font-family: Work Sans;
   letter-spacing: normal;
   text-align: left;
   color: rgba(255, 255, 255, 0.8);
+}
+
+.my-final-row {
+  border-top: solid 1px rgba(255, 255, 255, 0.13);
+  height: 12px;
 }
 
 .transaction-status-icon {
@@ -236,5 +252,19 @@ font-family: Work Sans;
 
 .my-icon {
   display: inline-block;
+}
+
+.is-dark-mode-active .button {
+  &.my-tiny-button {
+    // padding-top: 0px;
+    // padding-bottom: 0px;
+    padding-left: 6px;
+    padding-right: 6px;
+    height: 19px;
+    border-color: #909090 !important;
+    color: #909090 !important;
+    // color: yellow !important;
+    // background-color: #070707;
+  }
 }
 </style>

@@ -27,11 +27,15 @@ client-only
         | The&nbsp;
         b D.A.T.P.
         | &nbsp;system is distributed, meaning runs across multiple software servers, which we call nodes.
+        br
+        br
       p
         | As nodes come online they make their pipelines available.
         | Typically each node runs as a separate Docker container, which allows them to be developed independantly
         | by different teams. This design also maximises security, because each node is unable to
         | access the data or logic of other nodes.
+        br
+        br
       p
         | The&nbsp;
         b master
@@ -199,5 +203,13 @@ export default {
 <style lang="scss" scoped>
 .my-node-card {
   cursor: pointer;
+  background-color: #36334b;
+
+  .card-header-title {
+    font-size: 1.2em; 
+    font-family: 'Open Sans';
+    color: #f0f0f0 !important;
+  }
 }
+
 </style>

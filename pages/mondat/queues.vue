@@ -37,7 +37,7 @@ client-only
       //| {{ JSON.stringify(nodeStats, '', 2) }}
     .columns.is-mobile(v-else)
       .column.is-3(v-for="group in nodeStats")
-        .card.Zmy-node-card
+        .card.my-node-group-card
           header.card-header
             .card-header-title.has-text-grey Node group '{{ group.nodeGroup }}'
           .card-content
@@ -297,6 +297,11 @@ export default {
 
 <style lang="scss" scoped>
 .my-queues {
+  .my-node-group-card {
+    background-color: #36334b;
+  }
+
+
   font-size: 0.85em;
   .my-icon {
     margin: 5px;
