@@ -54,28 +54,42 @@ export default {
             label: 'Description',
         },
         {
-            field: 'version',
+            field: '_shortVersion',
             label: 'Version',
+        },
+        {
+            field: 'nodeGroup',
+            label: 'Node Group',
         },
       ]
     }
   },
 
   async asyncData({ $axios, $monitorEndpoint }) {
+    // alert('pipelines 1')
     // Only run on the client
     if (process.server) {
       return { }
     }
+    // alert('pipelines 2')
 
-    const url = `${$monitorEndpoint}/pipelines`
+    const url = `${$monitorEndpoint}/pipelineTypes`
     console.log(`url=`, url)
     try {
       const pipelines = await $axios.$get(url)
+      // console.log(`pipelines=`, pipelines)
+
+      for (const pipeline of pipelines) {
+        pipeline._shortVersion = pipeline.pipelineVersion ?? ''
+        if (pipeline._shortVersion.length > 7) {
+          pipeline._shortVersion = pipeline._shortVersion.substring(0, 7)
+        }
+      }
       return { pipelines, loading: false }
     } catch (e) {
       console.log(`url=`, url)
       console.log(`e.response=`, e.response)
-      return { nodes: [ ], loading: false, loadError: e.toString() }
+      return { pipelines: [ ], loading: false, loadError: e.toString() }
     }
   },
 

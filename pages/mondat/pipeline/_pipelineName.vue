@@ -6,13 +6,14 @@
  */
 <template lang="pug">
   .my-steps-page
-
     section.section
       .is-pulled-right
         template(v-if="displayedVersion==='draft'")
           b-button(type="is-warning", @click="commitDraft") Commit
           | &nbsp;&nbsp;&nbsp;
           b-button(type="is-warning", @click="saveDraftSteps") Save
+        | &nbsp;&nbsp;&nbsp;
+        b-button(type="is-gray", @click="showImportModal") Import
         | &nbsp;&nbsp;&nbsp;
         b-button(type="is-gray", @click="backToPipelines") Back
       h2.title.is-4
@@ -43,11 +44,9 @@
             br
             b-field(horizontal, label="Name", label-position="inside")
               b-input(v-model="pipelineName", readonly)
-            br
             b-field(horizontal, label="Description", label-position="inside")
               b-input(v-model="YeditableDescription", @input="saveAnyPipelineTypeUpdates")
 
-            br
             br
             b-field(horizontal)
               b-checkbox(v-model="YeditableIstransactionType", @input="saveAnyPipelineTypeUpdates") Can this pipeline be used as a transaction type?
@@ -63,7 +62,7 @@
                   | {{ shortVersion(version.version) }}
                   | {{(version.version==='draft'||!version._latestCommitComment) ? '' : ' - ' + version._latestCommitComment}}
 
-            br
+            //- br
             b-field(horizontal, label="Run in node group", label-position="inside")
               b-select(v-model="YeditableNodeGroup", @input="saveAnyPipelineTypeUpdates")
                 option(v-for="nodeGroup in activeNodes", :value="nodeGroup.nodeGroup", :key="nodeGroup.nodeGroup")
@@ -71,7 +70,7 @@
 
             br
             b-field(label="Notes")
-              textarea.textarea(rows="15", v-model="YeditableNotes", placeholder="Enter any notes here...", @input="saveAnyPipelineTypeUpdates")
+              textarea.textarea(rows="12", v-model="YeditableNotes", placeholder="Enter any notes here...", @input="saveAnyPipelineTypeUpdates")
             //- br
             //- hr
             //- | {{pipelineType}}
@@ -127,7 +126,9 @@
                       p
                         | This pipeline cannot be modified because it's definition
                         | has already been committed. If you would like to make changes,
-                        | click on the clone button above to create a draft version.
+                        | click on the clone button on the&nbsp;
+                        i All versions
+                        | &nbsp;tab to create a draft version.
 
                   template(v-if="!YnodeGroupActive")
                     br
@@ -189,6 +190,38 @@
         //- hr
         //- | pipelineVersions: {{pipelineVersions}}
 
+
+
+    b-modal(v-model="importModalVisible", :width="450", scroll="keep")
+      .card
+        .card-content
+          .content.has-text-centered
+            //- | Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+            //- | Phasellus nec iaculis mauris. <a>@bulmaio</a>.
+
+
+            br
+            b-field
+
+              b-upload.file-label(v-model="dropFiles", multiple, drag-drop, accept=".json,.datp", required, validationMessage="Please select a file")
+                section.section
+                  .content.has-text-centered
+                    p
+                      b-icon(icon="upload", size="is-large")
+                    p Drop your .datp files here to import
+            .tags
+            span(v-for="(file, index) in dropFiles", :key="index" class="tag is-primary")
+              | {{file.name}}
+              button.delete.is-small(type="buton", @click="deleteDropFile(index)")
+            //- | {{dropFiles}}
+            br
+            //- br
+            //- b-button(type="is-success", @click="importButton") Import
+            //- br
+            //- br
+        footer.card-footer
+          a.card-footer-item(href="#", @click="importModalVisible = false") Cancel
+          a.card-footer-item(href="#", @click="importButton") Import
 </template>
 
 <script>
@@ -258,7 +291,7 @@ export default {
         YeditableNotes: pipelineType.notes,
       }
     } catch (e) {
-      console.log(`e.response=`, e.response)
+      // console.log(`e.response=`, e.response)
       return { loading: false, loadError: e.toString() }
     }
   },
@@ -292,12 +325,10 @@ YcommitLog: [ ],
       // Pipeline editing stuff
       displayedVersion: '',
 
-      // description: '',
-      // version: '',
-      // notes: '',
-      // nodeGroup: '',
-      // version: '',
-      // isTransactionType: false,
+      // Importing stuff
+      importModalVisible: false,
+      importing: false,
+      dropFiles: [ ],
 
       activeNodes: [ ],
       // steps: [ ],
@@ -446,6 +477,9 @@ YcommitLog: [ ],
       this.$router.push({ path: `/mondat/pipelines` })
     },
 
+    deleteDropFile(index) {
+      this.dropFiles.splice(index, 1)
+    },
 
     async saveAnyPipelineTypeUpdates () {
       // console.log(`saveAnyPipelineTypeUpdates()`)
@@ -607,81 +641,94 @@ YcommitLog: [ ],
       const versionToExport = rec.version
       console.log(`rec.name=`, rec.name)
 
-      // const exportObject = {
-      //   name: rec.name,
-      //   description: rec.description,
-      //   commitComments: rec.commitComments,
-      //   note: rec.notes,
-      //   stepsJson: rec.stepsJson
-      // }
-      
+      // Get the file from the server
       const url = `${this.$monitorEndpoint}/pipeline/${this.pipelineName}/${versionToExport}/export`
-      console.log(`url=`, url)
+      // console.log(`url=`, url)
       const response = await this.$axios.$get(url)
-      console.log(`response=`, response)
+      // console.log(`response=`, response)
 
-      const filename = response.filename
-      const contents = response.contents
+      if (response.status === 'ok') {
+        const filename = response.filename
+        const contents = response.contents
 
-      const fileURL = window.URL.createObjectURL(new Blob([contents]));
-      const fileLink = document.createElement('a');
+        const fileURL = window.URL.createObjectURL(new Blob([contents]));
+        const fileLink = document.createElement('a');
 
-      fileLink.href = fileURL;
-      fileLink.setAttribute('download', filename);
-      document.body.appendChild(fileLink);
+        fileLink.href = fileURL;
+        fileLink.setAttribute('download', filename);
+        document.body.appendChild(fileLink);
 
-      fileLink.click();
-
-
-
-      // // Don't allow deleting the pipeline version currently in use
-      // // console.log(`versionToDelete=`, versionToDelete)
-      // // console.log(`this.pipelineType=`, this.pipelineType)
-      // if (versionToDelete === this.pipelineType.pipelineVersion) {
-      //   // ZZZZZ Should not actually show the button
-      //   this.$buefy.dialog.alert({
-      //     title: 'Error',
-      //     message: 'Sorry, cannot delete the version currently in use.',
-      //     type: 'is-danger'
-      //   })
-      //   return
-      // }
-
-      // // Check the user wants to proceed.
-      // this.$buefy.dialog.confirm({
-      //   title: 'Delete pipeline version?',
-      //   message: `Are you sure you want to delete version ${versionToDelete} ${latestCommitComment(rec)}`,
-      //   confirmText: 'Delete',
-      //   type: 'is-danger',
-      //   onConfirm: async () => {
-      //     // Get the server to delete the pipeline version
-      //     console.log(`Time to delete`)
-      //     const url = `${this.$monitorEndpoint}/pipeline/${this.pipelineName}/${versionToDelete}`
-      //     console.log(`url=`, url)
-      //     const result = await this.$axios.$delete(url)
-      //     console.log(`result=`, result)
-
-      //     // Reload the pipeline versions
-      //     await this.reloadThePipelineVersions()
-      //   }
-      // })
+        fileLink.click();
+      } else {
+        this.$buefy.toast.open({
+                    duration: 5000,
+                    message: response.message,
+                    position: 'is-top',
+                    type: 'is-danger'
+                })
+      }
     },//- deleteButton
 
-    // async clonePipeline () {
-    //   console.log(`clonePipeline()`)
+    async showImportModal () {
+      this.dropFiles = [ ]
+      this.importModalVisible = true
+    },
 
-    //   // See if we already have a draft pipeline.
-    //   const draftPipeline = this.pipelineVersions.find(pipeline => (pipeline.version === 'draft'))
-    //   if (draftPipeline) {
-    //     this.$buefy.dialog.alert({
-    //       title: 'Error',
-    //       message: 'Sorry, this pipeline already has a draft pipeline.',
-    //       type: 'is-danger'
-    //     })
-    //     return
-    //   }
-    //   this.doClone(this.displayedVersion)
-    // },
+    async importButton() {
+      console.log(`importButton()`)
+
+      for (const file of this.dropFiles) {
+        // console.log(`file=`, file)
+        // console.log(`file.name=`, file.name)
+        // console.log(`file.type=`, file.type)
+        // console.log(`file.filename=`, file.filename)
+
+        const filename = file.name
+        const type = file.type
+
+        const reader = new FileReader();
+        reader.onload = async (evt) => {
+          const contents = evt.target.result
+          const body = {
+            filename,
+            type,
+            contents
+          }
+
+          // Get the file from the server
+          const url = `${this.$monitorEndpoint}/pipeline/import/${this.pipelineName}`
+          // console.log(`url=`, url)
+          const response = await this.$axios.$put(url, body)
+          // console.log(`response=`, response)
+          if (response.message) {
+            this.$buefy.toast.open({
+                    duration: 5000,
+                    message: response.message,
+                    position: 'is-bottom',
+                    type: 'is-danger'
+                })
+          } else {
+            this.$buefy.toast.open({
+                    duration: 5000,
+                    message: `${filename} loaded.`,
+                    position: 'is-bottom',
+                    type: 'is-success'
+                })
+          }
+        }
+        reader.readAsText(file);  // This line triggers the load
+      }
+
+      // Close the modal
+      this.dropFiles = [ ]
+      this.importModalVisible = false
+
+      // Wait a few seconds then reload the pipeline versions
+      setTimeout(async () => {
+        await this.reloadThePipelineVersions()
+      }, 3000)
+
+    },//- importButton
 
     async doClone(versionToClone) {
       // console.log(`doClone()`)

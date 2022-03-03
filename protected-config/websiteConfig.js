@@ -15,13 +15,13 @@ export default {
     // host: 'ec2co-ecsel-1cczhydjd93vi-698147999.us-east-1.elb.amazonaws.com',
     // port: 80,
 
-    // // Inside Visual Studio Code
-    // host: 'localhost',
-    // port: 33370,
-
-    // Standalone SERVER
+    // Inside Visual Studio Code
     host: 'localhost',
-    port: 4000,
+    port: 33370,
+
+    // // Standalone SERVER
+    // host: 'localhost',
+    // port: 4000,
 
     // // Inside Docker
     // host: 'localhost',

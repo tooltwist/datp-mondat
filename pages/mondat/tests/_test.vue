@@ -42,7 +42,7 @@
               b-input(v-model="currentTest.description")
             br
             br
-            b-field(label="Transaction type", zlabel-position="inside")
+            b-field(label="Pipeline being tested", zlabel-position="inside")
               b-select(placeholder="Select one", v-model="currentTest.transactionType")
                 option(v-for="txType in mapping", :value="txType.transactionType", :key="txType.transactionType")
                   | {{ txType.transactionType }}

@@ -84,10 +84,12 @@ export default {
 
 
   async asyncData({ $axios, $monitorEndpoint }) {
+    // alert(`tests 1`)
     // Only run on the client
     if (process.server) {
       return { }
     }
+    // alert(`tests 2`)
 
     const url = `${$monitorEndpoint}/transactionMapping`
     const url2 = `${$monitorEndpoint}/testCases`

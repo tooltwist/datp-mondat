@@ -172,9 +172,11 @@ export default {
 
   created() {
     // Only run on the client
+    // alert(`transactions 1`)
     if (process.server) {
       return
     }
+    // alert(`transactions 2`)
     this.doUpdate()
   },//- created
 

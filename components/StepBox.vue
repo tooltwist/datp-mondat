@@ -116,7 +116,7 @@ export default {
   watch: {
     'step': function () {
       // alert('step changed')
-      console.log(`STEP CHANGED`)
+      // console.log(`STEP CHANGED`)
       this.gottaStep(this.step)
     }
   },
