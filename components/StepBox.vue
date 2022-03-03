@@ -30,6 +30,17 @@
                   b-icon(icon="trash-can-outline")
                 b-field(label="Description")
                   b-input(v-model="description", :readonly="!editable", @blur="onBlur", :placeholder="bestDescription")
+                //- br
+                //- | step.definition.description: {{ step.definition.description }}
+                //- br
+                //- | step.description: {{ step.description }}
+                //- br
+                //- | step.definition.stepType: {{ step.definition.stepType }}
+                //- br
+                //- | step.stepType: {{ step.stepType }}
+                //- br
+                //- | json: {{ json }}
+                //- br
                 b-field(label="Definition", v-if="stepHasDefinition(originalStepType)")
                   textarea.textarea(rows="8", v-model="json", :readonly="!editable", @input="onInput", @blur="onBlur")
                 .is-danger.is-size-7 {{errorMsg}}
@@ -56,8 +67,9 @@ export default {
   data: function () {
     return {
       id: '',
-      definition: { },
+      // definition: { },
 
+      // Edited values
       description: '',
       json: '',
 
@@ -76,8 +88,8 @@ export default {
       if (this.description) {
         return this.description
       }
-      if (this.definition.msg) {
-        return this.definition.msg
+      if (this.step.definition.msg) {
+        return this.step.definition.msg
       }
       return `Step #${this.originalId}`
     },
@@ -96,24 +108,45 @@ export default {
   created: function () {
     // Set the JSON string version of the definition
     // console.log(`created()`)
-    this.definition = this.step.definition
+    // this.definition = this.step.definition
 
-    // Save the values we came in with
-    this.originalId = this.step.id
-    this.originalDescription = this.definition.description
-    this.originalStepType = this.definition.stepType
-    const clone = { ...this.definition }
-    delete clone.id
-    delete clone.description
-    delete clone.stepType
-    this.originalJson = JSON.stringify(clone, '', 4)
+    this.gottaStep(this.step)
+  },
 
-    // We'll modify copies of the original values
-    this.description = this.originalDescription
-    this.json = this.originalJson
+  watch: {
+    'step': function () {
+      // alert('step changed')
+      console.log(`STEP CHANGED`)
+      this.gottaStep(this.step)
+    }
   },
 
   methods: {
+
+    gottaStep: function (step) {
+      // console.log(`gottaStep()`)
+      // Save the values we came in with
+      this.originalId = step.id
+      this.originalDescription = step.definition.description
+      this.originalStepType = step.definition.stepType
+      // future?
+      // this.originalDescription = step.description ?? step.definition.description
+      // this.originalStepType = step.stepType ?? step.definition.stepType
+this.originalStepType = step.stepType ?? step.definition.stepType
+this.originalDescription = step.description ?? step.definition.description
+
+      // Create a JSON version of the step definition
+      const clone = { ...step.definition }
+      delete clone.id
+      delete clone.description
+      delete clone.stepType
+      this.originalJson = JSON.stringify(clone, '', 4)
+
+      // We'll modify copies of the original values
+      this.description = this.originalDescription
+      this.json = this.originalJson
+    },
+
     onExpand () {
       this.$emit('open', { })
     },
@@ -143,7 +176,7 @@ export default {
           newDefinition.stepType = this.originalStepType
           newDefinition.description = this.description
           // console.log(`EMMITTING`)
-          this.$emit('changed', { id: this.originalId, definition: newDefinition })
+          this.$emit('changed', { id: this.originalId, description: this.description, definition: newDefinition })
         } catch (e) {
           console.log(`Invalid JSON`)
           this.errorMsg = e.toString()

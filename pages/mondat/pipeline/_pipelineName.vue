@@ -9,9 +9,10 @@
 
     section.section
       .is-pulled-right
-        b-button(v-if="displayedVersion==='draft'", type="is-warning", @click="commitDraft") Commit
-        b-button(v-if="displayedVersion==='draft'", type="is-warning", @click="saveDraftSteps") Save
-        b-button(v-else, type="is-warning", @click="clonePipeline") Clone
+        template(v-if="displayedVersion==='draft'")
+          b-button(type="is-warning", @click="commitDraft") Commit
+          | &nbsp;&nbsp;&nbsp;
+          b-button(type="is-warning", @click="saveDraftSteps") Save
         | &nbsp;&nbsp;&nbsp;
         b-button(type="is-gray", @click="backToPipelines") Back
       h2.title.is-4
@@ -19,8 +20,8 @@
           b-icon(icon="bank-transfer", size="is-small")
         | Pipeline '{{pipelineName}}' &nbsp;&nbsp;&nbsp;
         b-tag(v-if="displayedVersion==='draft'", type="is-primary") &nbsp;Draft version - can be modified&nbsp;
-        b-tag(v-else-if="displayedVersion===pipelineType.pipelineVersion", type="is-success") &nbsp;viewing {{displayedVersion}} - currently in use&nbsp;
-        b-tag(v-else, type="is-danger") &nbsp;viewing {{displayedVersion}} - not in use&nbsp;
+        b-tag(v-else-if="displayedVersion===pipelineType.pipelineVersion", type="is-success") &nbsp;viewing {{shortVersion(displayedVersion)}} - currently in use&nbsp;
+        b-tag(v-else, type="is-danger") &nbsp;viewing {{shortVersion(displayedVersion)}} - not in use&nbsp;
         template(v-if="!YnodeGroupActive")
           | &nbsp;&nbsp;
           b-tag(type="is-danger") &nbsp;Node group {{pipelineType.nodeGroup}} is not active&nbsp;
@@ -33,51 +34,69 @@
       template(v-else)
         b-tabs(v-model="currentTab")
 
-          // Tab for pipeline details
+
+          //
+          //  Tab for pipeline details
+          //
           b-tab-item(key="details", label="Details")
-            br
+            .my-update-status.has-text-right &nbsp; {{YupdateStatus}}
             br
             b-field(horizontal, label="Name", label-position="inside")
-              b-input(v-model="pipelineName")
+              b-input(v-model="pipelineName", readonly)
             br
             b-field(horizontal, label="Description", label-position="inside")
-              b-input(v-model="pipelineType.description")
+              b-input(v-model="YeditableDescription", @input="saveAnyPipelineTypeUpdates")
 
-            br
             br
             br
             b-field(horizontal)
-              b-checkbox(v-model="pipelineType.isTransactionType") Can this pipeline be used as a transaction type?
+              b-checkbox(v-model="YeditableIstransactionType", @input="saveAnyPipelineTypeUpdates") Can this pipeline be used as a transaction type?
+
+            //- | {{pipelineVersions}}
+            br
+            b-field(horizontal, label="Version in use", label-position="inside")
+              //- b-input(v-model="version")
+              b-select(v-model="YeditablePipelineVersion", @input="saveAnyPipelineTypeUpdates")
+                option(:value="'disabled'", :key="'disabled'")
+                  | disabled
+                option(v-for="version in pipelineVersions", :value="version.version", :key="version.version")
+                  | {{ shortVersion(version.version) }}
+                  | {{(version.version==='draft'||!version._latestCommitComment) ? '' : ' - ' + version._latestCommitComment}}
 
             br
-            br
-            br
             b-field(horizontal, label="Run in node group", label-position="inside")
-              b-select(v-model="pipelineType.nodeGroup", @input="resetStepsAndStepTypes")
+              b-select(v-model="YeditableNodeGroup", @input="saveAnyPipelineTypeUpdates")
                 option(v-for="nodeGroup in activeNodes", :value="nodeGroup.nodeGroup", :key="nodeGroup.nodeGroup")
                   | {{ nodeGroup.nodeGroup }}
 
-            //- | {{pipelineVersions}}
-            b-field(horizontal, label="Version in use", label-position="inside")
-              //- b-input(v-model="version")
-              b-select(v-model="pipelineType.pipelineVersion", @input="resetStepsAndStepTypes")
-                option(v-for="version in pipelineVersions", :value="version.version", :key="version.version")
-                  | {{ version.version }}
-                  | {{(version.version==='draft'||!version._latestCommitComment) ? '' : ' - ' + version._latestCommitComment}}
             br
-            br
-            br
-            br
-            hr
+            b-field(label="Notes")
+              textarea.textarea(rows="15", v-model="YeditableNotes", placeholder="Enter any notes here...", @input="saveAnyPipelineTypeUpdates")
+            //- br
+            //- hr
+            //- | {{pipelineType}}
 
 
-          // Tab with pipeline versions
+          //
+          //  Tab with pipeline versions
+          //
           b-tab-item(key="versions", label="All versions")
             //- | {{pipelineVersions}}
-            MondatTable(:data="pipelineVersions", :columns="versionsColumns", @select="displayPipelineVersion")
+            MondatTable(:data="pipelineVersions",
+                :columns="versionsColumns",
+                @select="setDisplayedVersion",
+                @clone="cloneButton",
+                @delete="deleteButton",
+                @export="exportButton")
 
+
+
+          //
           // Tab for the pipeline definition.
+          //
           b-tab-item(key="definition", label="Definition")
+            br
+            .my-pipeline-header Pipeline Steps for {{shortVersion(displayedVersion)}}
             br
             .columns
 
@@ -85,8 +104,6 @@
               .column.is-one-third
                 .my-backdrop
                   //- .my-pipeline-header {{pipelineName}}
-                  .my-pipeline-header Pipeline Steps
-                  br
                   template(v-if="YnodeGroupActive")
                     draggable(v-model="Ysteps", :group="{ name: 'myList' }")
                       transition-group
@@ -95,15 +112,16 @@
                   template(v-else)
                         div(v-for="(step, index) in Ysteps", :key="step.id")
                           StepBox(:step="step", :stepNo="index", :editable="false", :validStepTypes="YstepTypeIndex", @changed="onStepDefinitionChange", @deleted="onStepDelete", :open="stepOpen===index", @open="stepOpen = index")
+                  //- | displayedVersion: {{displayedVersion}}
+                  //- br
+                  //- | Ysteps: {{Ysteps}}
+
               .column.is-one-quarter
 
               // Column with available step types
               .column.is-one-third
                 .my-backdrop
                   template(v-if="!YstepsEditable")
-                    br
-                    br
-                    br
                     br
                     MondatNotification
                       p
@@ -151,18 +169,25 @@
                           div(v-for="st in group.types", :key="st.id")
                             StepTypeBox(:stepType="st", :editing="true")
 
+          //
           // Tab for commit history.
+          //
           b-tab-item(key="history", label="History")
+            br
+            .my-pipeline-header History for {{shortVersion(displayedVersion)}}
             br
             //- | {{YcommitLog}}
             MondatTable(:data="YcommitLog", :columns="commitLogColumns")
 
 
+          //
           // Tab with description and notes
-          b-tab-item(key="notes", label="Notes")
+          //
+          //- b-tab-item(key="notes", label="Notes")
             b-field(label="Notes")
               textarea.textarea(rows="15", v-model="notes", placeholder="Enter any notes here...")
-
+        //- hr
+        //- | pipelineVersions: {{pipelineVersions}}
 
 </template>
 
@@ -171,6 +196,9 @@ import draggable from "vuedraggable"
 import StepBox from '~/components/StepBox.vue'
 import StepTypeBox from '~/components/StepTypeBox.vue'
 import MondatTable from "~/components/MondatTable.vue"
+
+// Time before saving changes
+const SAVE_DELAY = 1000
 
 
 export default {
@@ -183,9 +211,11 @@ export default {
 
   async asyncData({ $axios, $monitorEndpoint, params }) {
     // Only run on the client
+    // alert('pipeline 1')
     if (process.server) {
       return { }
     }
+    // alert('pipeline 2')
 
     const pipelineName = params.pipelineName
     try {
@@ -202,12 +232,15 @@ export default {
       const url2 = `${$monitorEndpoint}/pipeline/${pipelineName}`
       const { type: pipelineType, pipelines } = await $axios.$get(url2)
       // console.log(`pipelineType=`, pipelineType)
-      const displayedVersion = pipelineType.pipelineVersion
-      // console.log(`displayedVersion=`, displayedVersion)
+      // console.log(`pipelines=`, pipelines)
 
       // Sort the pipelines by version
       pipelines.forEach(setLatestCommentFields)
       pipelines.sort(comparePipelineVersions)
+
+      // If this pipelineType is disabled, show the first available version
+      const displayedVersion = (pipelineType.pipelineVersion === 'disabled') ? pipelines[0].version : pipelineType.pipelineVersion
+      // console.log(`displayedVersion=`, displayedVersion)
 
       // Get the steps for the current pipeline, and details
       // of step types available in it's current node group.
@@ -216,7 +249,14 @@ export default {
       return { 
         Ysteps: steps, YstepTypeArray: stepTypeArray, YstepTypeIndex: stepTypeIndex, YcommitLog: commitLog, YnextStepId: nextId,
         
-        pipelineName, activeNodes, pipelineType, pipelineVersions: pipelines, displayedVersion, loading: false }
+        pipelineName, activeNodes, pipelineType, pipelineVersions: pipelines, displayedVersion, loading: false,
+
+        YeditableDescription: pipelineType.description,
+        YeditableIstransactionType: pipelineType.isTransactionType,
+        YeditableNodeGroup: pipelineType.nodeGroup,
+        YeditablePipelineVersion: pipelineType.pipelineVersion,
+        YeditableNotes: pipelineType.notes,
+      }
     } catch (e) {
       console.log(`e.response=`, e.response)
       return { loading: false, loadError: e.toString() }
@@ -242,18 +282,26 @@ YcommitLog: [ ],
       pipelineType: {},
       pipelineVersions: [ ],
 
+      // PipelineType editing stuff
+      YeditableDescription: null,
+      YeditableIstransactionType: null,
+      YeditableNodeGroup: null,
+      YeditablePipelineVersion: null,
+      YeditableNotes: null,
+
+      // Pipeline editing stuff
       displayedVersion: '',
 
-      description: '',
-      version: '',
-      notes: '',
-      nodeGroup: '',
-      version: '',
-      isTransactionType: false,
+      // description: '',
+      // version: '',
+      // notes: '',
+      // nodeGroup: '',
+      // version: '',
+      // isTransactionType: false,
 
       activeNodes: [ ],
-      steps: [ ],
-      stepTypes: [ ],
+      // steps: [ ],
+      // stepTypes: [ ],
       // validStepTypes: { },
       groups: [ ],
       filter: '',
@@ -264,7 +312,7 @@ YcommitLog: [ ],
 
       versionsColumns: [
         {
-            field: 'version',
+            field: '_shortVersion',
             label: 'Version',
         },
         {
@@ -279,6 +327,21 @@ YcommitLog: [ ],
         {
             field: 'tags',
             label: 'Tags',
+        },
+        {
+          type: 'button',
+          label: 'export',
+          customEvent: 'export',
+        },
+        {
+          type: 'button',
+          label: 'clone',
+          customEvent: 'clone',
+        },
+        {
+          type: 'button',
+          label: 'delete',
+          customEvent: 'delete',
         },
       ],
 
@@ -299,6 +362,10 @@ YcommitLog: [ ],
         },
       ],
 
+      // show when the pipeline details are being saved
+      Ydirty: false,
+      YupdateStatus: '',
+      saveTimer: null,
     }
   },
 
@@ -307,46 +374,6 @@ YcommitLog: [ ],
       const pipeline = this.pipelineVersions.find(pipeline => (pipeline.version === this.displayedVersion))
       return pipeline?._latestCommitComment
     },
-
-    // stepsForDisplayedPipeline: function () {
-    //   console.log(`stepsForDisplayedPipeline()`)
-    //   // Find the displayed pipeline
-    //   for (const version of this.pipelineVersions) {
-    //     if (version.version === this.displayedVersion) {
-    //       // console.log(`version=`, version)
-    //       // console.log(`version.stepsJson=`, version.stepsJson)
-    //       try {
-    //         const steps = JSON.parse(version.stepsJson)
-    //         return steps
-    //       } catch (e) {
-    //         alert('Invalid step definition in database')
-    //         return [ ]
-    //       }
-    //     }
-    //   }
-    //   return [ ]
-    // },
-
-    // validStepTypes: function () {
-    //   // Create an index of valid step types
-    //   const validStepTypes = { }
-    //   for (const type of this.availableStepTypesForThisNodeGroup) {
-    //     validStepTypes[type.name] = type
-    //   }
-    //   console.log(`validStepTypes=`, validStepTypes)
-    //   return validStepTypes
-    // },
-
-    /*
-     *  Return a Map of available step types, for the current node group
-     */
-    // validStepTypes: function () {
-    //   const map = new Map()
-    //   for (const stepType of this.availableStepTypesForThisNodeGroup) {
-    //     map.put(stepType.name, stepType)
-    //   }
-    //   return map
-    // },
 
     /**
      * Return an array of step types for the current node group.
@@ -419,7 +446,86 @@ YcommitLog: [ ],
       this.$router.push({ path: `/mondat/pipelines` })
     },
 
-    resetStepsAndStepTypes: function () {
+
+    async saveAnyPipelineTypeUpdates () {
+      // console.log(`saveAnyPipelineTypeUpdates()`)
+
+      const { changed } = this.checkForPipelineTypeUpdates(false)
+      if (changed) {
+        if (this.saveTimer) {
+          clearTimeout(this.saveTimer)
+          this.saveTimer = null
+        }
+        this.dirty = true
+        this.YupdateStatus = 'to save'
+        this.saveTimer = setTimeout(async () => {
+          this.saveTimer = null
+          const { updates } = this.checkForPipelineTypeUpdates(true)
+          this.YupdateStatus = 'saving'
+          // console.log(`SAVING`, updates)
+
+          // Pass the update to the server
+          const url = `${this.$monitorEndpoint}/pipelineType/${this.pipelineName}`
+          // console.log(`url=`, url)
+          const result = await this.$axios.$post(url, updates)
+          // console.log(`result=`, result)
+
+          this.YupdateStatus = 'saved'
+          setTimeout(() => { this.YupdateStatus = ' ' }, 1000)
+        }, SAVE_DELAY)
+      }
+    },
+
+    checkForPipelineTypeUpdates(updatePipelineTypeRecord) {
+      let changed = false
+      const updates = { }
+      if (this.YeditableDescription != this.pipelineType.description) {
+        // console.log(`description changed`)
+        updates.description = this.YeditableDescription
+        if (updatePipelineTypeRecord) {
+          this.pipelineType.description = this.YeditableDescription
+        }
+        changed = true
+      }
+      if (this.YeditableIstransactionType != this.pipelineType.isTransactionType) {
+        // console.log(`isTransactionType changed`)
+        updates.isTransactionType = this.YeditableIstransactionType
+        if (updatePipelineTypeRecord) {
+          this.pipelineType.isTransactionType = this.YeditableIstransactionType
+        }
+        changed = true
+      }
+      if (this.YeditablePipelineVersion != this.pipelineType.pipelineVersion) {
+        // console.log(`pipelineVersion changed`)
+        this.displayedVersion = this.YeditablePipelineVersion
+        updates.pipelineVersion = this.YeditablePipelineVersion
+        if (updatePipelineTypeRecord) {
+          this.pipelineType.pipelineVersion = this.YeditablePipelineVersion
+        }
+        changed = true
+      }
+      if (this.YeditableNodeGroup != this.pipelineType.nodeGroup) {
+        // console.log(`nodeGroup changed`)
+        updates.nodeGroup = this.YeditableNodeGroup
+        if (updatePipelineTypeRecord) {
+          this.pipelineType.nodeGroup = this.YeditableNodeGroup
+        }
+        changed = true
+      }
+      if (this.YeditableNotes != this.pipelineType.notes) {
+        // console.log(`notes changed`)
+        updates.notes = this.YeditableNotes
+        if (updatePipelineTypeRecord) {
+          this.pipelineType.notes = this.YeditableNotes
+        }
+        changed = true
+      }
+      // console.log(`changed=`, changed)
+      // console.log(`updates=`, updates)
+      return { changed, updates}
+    },
+
+    async resetStepsAndStepTypes () {
       // console.log(`\nresetStepsAndStepTypes()`)
       const requiredPipelineVersion = this.displayedVersion
       const requiredNodeGroup = this.pipelineType.nodeGroup
@@ -432,34 +538,156 @@ YcommitLog: [ ],
     },
 
     /**
-     * Create a copy of the currently displayed pipeline.
+     * Create a copy of the selected pipeline.
      */
-    async clonePipeline () {
-      console.log(`clonePipeline()`)
+
+    async cloneButton (rec) {
+      console.log(`cloneButton()`, rec)
+
+      if (rec.version === 'draft') {
+        //ZZZZZ
+        // The button should not be displayed.
+        return
+      }
 
       // See if we already have a draft pipeline.
       const draftPipeline = this.pipelineVersions.find(pipeline => (pipeline.version === 'draft'))
       if (draftPipeline) {
-        // alert('Already have draft pipeline')
-        this.$buefy.dialog.confirm({
-          title: 'Draft already exists',
-          message: `This pipline already has a draft version.
-                    Would you like to overwrite it?
-                    Any changes you have made will be lost.`,
-          confirmText: 'Overwrite',
-          type: 'is-danger',
-          onConfirm: this.doClone
+        this.$buefy.dialog.alert({
+          title: 'Error',
+          message: 'Sorry, this pipeline already has a draft pipeline.',
+          type: 'is-danger'
         })
         return
       }
-      this.doClone()
+      this.doClone(rec.version)
     },
 
-    async doClone() {
+    async deleteButton (rec) {
+      console.log(`deleteButton()`, rec)
+
+      const versionToDelete = rec.version
+
+      // Don't allow deleting the pipeline version currently in use
+      // console.log(`versionToDelete=`, versionToDelete)
+      // console.log(`this.pipelineType=`, this.pipelineType)
+      if (versionToDelete === this.pipelineType.pipelineVersion) {
+        // ZZZZZ Should not actually show the button
+        this.$buefy.dialog.alert({
+          title: 'Error',
+          message: 'Sorry, cannot delete the version currently in use.',
+          type: 'is-danger'
+        })
+        return
+      }
+
+      // Check the user wants to proceed.
+      this.$buefy.dialog.confirm({
+        title: 'Delete pipeline version?',
+        message: `Are you sure you want to delete version ${versionToDelete} ${latestCommitComment(rec)}`,
+        confirmText: 'Delete',
+        type: 'is-danger',
+        onConfirm: async () => {
+          // Get the server to delete the pipeline version
+          // console.log(`Time to delete`)
+          const url = `${this.$monitorEndpoint}/pipeline/${this.pipelineName}/${versionToDelete}`
+          console.log(`url=`, url)
+          const result = await this.$axios.$delete(url)
+          console.log(`result=`, result)
+
+          // Reload the pipeline versions
+          await this.reloadThePipelineVersions()
+        }
+      })
+    },//- deleteButton
+
+    async exportButton (rec) {
+      console.log(`exportButton(${rec.version})`)
+
+      const versionToExport = rec.version
+      console.log(`rec.name=`, rec.name)
+
+      // const exportObject = {
+      //   name: rec.name,
+      //   description: rec.description,
+      //   commitComments: rec.commitComments,
+      //   note: rec.notes,
+      //   stepsJson: rec.stepsJson
+      // }
+      
+      const url = `${this.$monitorEndpoint}/pipeline/${this.pipelineName}/${versionToExport}/export`
+      console.log(`url=`, url)
+      const response = await this.$axios.$get(url)
+      console.log(`response=`, response)
+
+      const filename = response.filename
+      const contents = response.contents
+
+      const fileURL = window.URL.createObjectURL(new Blob([contents]));
+      const fileLink = document.createElement('a');
+
+      fileLink.href = fileURL;
+      fileLink.setAttribute('download', filename);
+      document.body.appendChild(fileLink);
+
+      fileLink.click();
+
+
+
+      // // Don't allow deleting the pipeline version currently in use
+      // // console.log(`versionToDelete=`, versionToDelete)
+      // // console.log(`this.pipelineType=`, this.pipelineType)
+      // if (versionToDelete === this.pipelineType.pipelineVersion) {
+      //   // ZZZZZ Should not actually show the button
+      //   this.$buefy.dialog.alert({
+      //     title: 'Error',
+      //     message: 'Sorry, cannot delete the version currently in use.',
+      //     type: 'is-danger'
+      //   })
+      //   return
+      // }
+
+      // // Check the user wants to proceed.
+      // this.$buefy.dialog.confirm({
+      //   title: 'Delete pipeline version?',
+      //   message: `Are you sure you want to delete version ${versionToDelete} ${latestCommitComment(rec)}`,
+      //   confirmText: 'Delete',
+      //   type: 'is-danger',
+      //   onConfirm: async () => {
+      //     // Get the server to delete the pipeline version
+      //     console.log(`Time to delete`)
+      //     const url = `${this.$monitorEndpoint}/pipeline/${this.pipelineName}/${versionToDelete}`
+      //     console.log(`url=`, url)
+      //     const result = await this.$axios.$delete(url)
+      //     console.log(`result=`, result)
+
+      //     // Reload the pipeline versions
+      //     await this.reloadThePipelineVersions()
+      //   }
+      // })
+    },//- deleteButton
+
+    // async clonePipeline () {
+    //   console.log(`clonePipeline()`)
+
+    //   // See if we already have a draft pipeline.
+    //   const draftPipeline = this.pipelineVersions.find(pipeline => (pipeline.version === 'draft'))
+    //   if (draftPipeline) {
+    //     this.$buefy.dialog.alert({
+    //       title: 'Error',
+    //       message: 'Sorry, this pipeline already has a draft pipeline.',
+    //       type: 'is-danger'
+    //     })
+    //     return
+    //   }
+    //   this.doClone(this.displayedVersion)
+    // },
+
+    async doClone(versionToClone) {
       // console.log(`doClone()`)
 
       // Get the server to clone the currently displayed pipeline
-      const url = `${this.$monitorEndpoint}/pipeline/clone/${this.pipelineName}/${this.displayedVersion}`
+      const url = `${this.$monitorEndpoint}/pipeline/clone/${this.pipelineName}/${versionToClone}`
       console.log(`url=`, url)
       const newPipeline = await this.$axios.$put(url)
       setLatestCommentFields(newPipeline)
@@ -485,6 +713,8 @@ YcommitLog: [ ],
       const url = `${this.$monitorEndpoint}/pipeline/${this.pipelineName}`
       console.log(`url=`, url)
       await this.$axios.$post(url, this.Ysteps)
+
+      await this.reloadThePipelineVersions()
     },
 
     async commitDraft () {
@@ -501,7 +731,8 @@ YcommitLog: [ ],
 
       // Ask for a commit comment
       this.$buefy.dialog.prompt({
-        message: `Comment for this commit?`,
+        title: 'Commit draft version',
+        message: `Comment:`,
         inputAttrs: {
             // placeholder: 'e.g. Walter',
             maxlength: 64
@@ -514,41 +745,34 @@ YcommitLog: [ ],
           const reply = await this.$axios.$post(url, {comment})
           console.log(`reply=`, reply)
           this.displayedVersion = reply.version
-
-          // Reload the steps
-          // Set temporary fields for display
-          // Sort the pipelines by version
-          const url2 = `${this.$monitorEndpoint}/pipeline/${this.pipelineName}`
-          const { type: pipelineType, pipelines } = await this.$axios.$get(url2)
-          pipelines.forEach(setLatestCommentFields)
-          pipelines.sort(comparePipelineVersions)
-          this.pipelineType = pipelineType
-          this.pipelineVersions = pipelines
-          this.resetStepsAndStepTypes()
+          if (this.YeditablePipelineVersion === 'draft') {
+            this.YeditablePipelineVersion = this.displayedVersion
+          }
+          this.reloadThePipelineVersions()
         }
       })
     },
 
-    // async reloadPipelineVersions () {
-    //   const url2 = `${$monitorEndpoint}/pipeline/${pipelineName}`
-    //   const { type: pipelineType, pipelines } = await $axios.$get(url2)
-    //   // console.log(`pipelineType=`, pipelineType)
-    //   const displayedVersion = pipelineType.pipelineVersion
-    //   // console.log(`displayedVersion=`, displayedVersion)
+    async reloadThePipelineVersions () {
+      console.log(`reloadThePipelineVersions()`)
+      // Reload the pipeline versions
+      const url2 = `${this.$monitorEndpoint}/pipeline/${this.pipelineName}`
+      const { type: pipelineType, pipelines } = await this.$axios.$get(url2)
+      // console.log(`pipelineType=`, pipelineType)
+      // console.log(`pipelines=`, pipelines)
+      // Set temporary fields for display
+      pipelines.forEach(setLatestCommentFields)
+      // Sort the pipelines by version
+      pipelines.sort(comparePipelineVersions)
 
-    //   // Sort the pipelines by version
-    //   pipelines.forEach(setLatestCommentFields)
-    //   pipelines.sort(comparePipelineVersions)
+      this.pipelineType = pipelineType
+      this.pipelineVersions = pipelines
+      this.resetStepsAndStepTypes()
+    },
 
-    //   // Get the steps for the current pipeline, and details
-    //   // of step types available in it's current node group.
-    //   const requiredNodeGroup = pipelineType.nodeGroup
-    //   const { steps, stepTypeArray, stepTypeIndex, commitLog, nextId } = stepsAndStepTypes(pipelines, displayedVersion, this.activeNodes, requiredNodeGroup)
-    //   this.Ysteps = steps
-    //   this.YcommitLog = commitLog
-    //   this.YnextStepId = nextId
-
-    // },
+    shortVersion: function (version) {
+      return shortVersionExternal(version)
+    },
 
     /**
      * When dragging from the step type list to the steps list, we need to create a new step.
@@ -565,50 +789,84 @@ YcommitLog: [ ],
       return rec
     }, //- stepFromStepType
 
-    onStepDefinitionChange({ id, definition }) {
-      // console.log(`onStepDefinitionChange()`)
-      // console.log(`id=`, id)
-      // console.log(`definition=`, definition)
+    onStepDefinitionChange({ id, description, definition }) {
+      console.log(`onStepDefinitionChange()`)
+      console.log(`id=`, id)
+      console.log(`definition=`, definition)
 
-      for (const step of this.steps) {
+      let foundStep = false
+      for (const step of this.Ysteps) {
+
+        // See if this is the changed step
+        // console.log(`${step.id} vs ${id}`)
         if (step.id === id) {
           // console.log(`found step`, step)
           step.definition = definition
+          step.definition.description = description
+          // for future
+          step.description = description
+          step.definition = definition
+          // future
+          // delete step.definition.description
+          // delete step.definition.stepType
           this.dirty = true
-          return
+          foundStep = true
+        } else {
+          // future
+          // Take this chance to provide a slow migration:
+          //    step.definition.stepType => step.stepType
+          //    step.definition.description => step.description
+          if (typeof(step.stepType) === 'undefined') {
+            step.stepType = step.definition.stepType
+          }
+          if (typeof(step.description) === 'undefined') {
+            step.descrription = step.definition.description
+          }
         }
       }
-      console.log(`Internal error 2726551 - upknown step has been edited (${id})`)
+      if (!foundStep) {
+        console.log(`Internal error 2726551 - upknown step has been edited (${id})`)
+      }
+      return foundStep
     }, //- onStepDefinitionChange
 
     onStepDelete({ id }) {
       // console.log(`onStepDelete(${id})`)
 
-      // const before = JSON.stringify(this.steps, '', 2)
+      // const before = JSON.stringify(this.Ysteps, '', 2)
       // console.log(`before = ${before}`)
 
-      for (let i = 0; i < this.steps.length; i++) {
-        const step = this.steps[i]
+      for (let i = 0; i < this.Ysteps.length; i++) {
+        const step = this.Ysteps[i]
         if (step.id === id) {
           // console.log(`found step at ${i}`, step)
-          this.$delete(this.steps, i)
-          // console.log(`this.steps=`, this.steps)
+          this.$delete(this.Ysteps, i)
+          // console.log(`this.Ysteps=`, this.Ysteps)
           this.dirty = true
           break
         }
       }
-      // const after = JSON.stringify(this.steps, '', 2)
+      // const after = JSON.stringify(this.Ysteps, '', 2)
       // console.log(`after = ${after}`)
-      // this.nextId = resequence(this.steps)
+      // this.nextId = resequence(this.Ysteps)
     }, //- onStepDelete
 
-    displayPipelineVersion: function (rec) {
-      // console.log(`displayPipelineVersion()`, rec)
+    setDisplayedVersion: function (rec) {
+      // console.log(`setDisplayedVersion()`, rec)
       this.displayedVersion = rec.version
       this.resetStepsAndStepTypes()
       this.currentTab = 2
-    }
+    },
+
   }//- methods
+}// End of Vue component
+
+
+function shortVersionExternal (version) {
+  if (version.length > 7) {
+    return version.substring(0, 7)
+  }
+  return version
 }
 
 function compareStepTypes(stepType1, stepType2) {
@@ -645,13 +903,24 @@ function stepsAndStepTypes(pipelineVersions, requiredVersion, activeNodes, requi
   // console.log(`stepsAndStepTypes()`)
   // console.log(`activeNodes=`, activeNodes)
 
+  // If this pipelineType is disabled, just show the first version available
+  if (requiredVersion === 'disabled') {
+    // This should not be allowed to happen
+    return { steps: [ ], stepTypeArray: [ ], stepTypeIndex: { }, commitLog: [ ], nextId: 0 }
+  }
+
   // Get the steps for the specified pipeline version.
-  const pipeline = pipelineVersions.find(pipeline => (pipeline.version === requiredVersion))
+  let pipeline = pipelineVersions.find(pipeline => (pipeline.version === requiredVersion))
+  if (!pipeline) {
+    return { steps: [ ], stepTypeArray: [ ], stepTypeIndex: { }, commitLog: [ ], nextId: 0 }
+  }
   let steps = null
   try {
     steps = JSON.parse(pipeline.stepsJson)
     // break
   } catch (e) {
+    console.log(`Invalid pipeline.stepsJson:`, e)
+    console.log(pipeline.stepsJson)
     alert('Invalid step definition in database')
     return { steps: [ ], stepTypeArray: [ ], stepTypeIndex: { }, commitLog: [ ], nextId: 0 }
   }
@@ -733,9 +1002,11 @@ function comparePipelineVersions(p1, p2) {
  * and add temporary values to the pipeline so we can display them.
  */
 function setLatestCommentFields(pipeline) {
+
+  //ZZZZZ Use latestCommit below
+  pipeline._shortVersion = shortVersionExternal(pipeline.version)
   pipeline._latestCommitTimestamp = 0
   pipeline._latestCommitComment = ''
-  pipeline._latestCommitVersion = ''
   try {
     const cc = JSON.parse(pipeline.commitComments)
     if (cc.length > 0) {
@@ -744,16 +1015,47 @@ function setLatestCommentFields(pipeline) {
         pipeline._latestCommitTimestamp = new Date(ts)
       }
       pipeline._latestCommitComment = cc[0]?.c ?? ''
-      pipeline._latestCommitVersion = cc[0]?.v ?? ''
     }
   } catch (e) {
     // Do nothing
   }
 }
+
+function latestCommitComment(pipeline) {
+
+  const { timestamp, comment } = latestCommit(pipeline)
+  if (comment) {
+    return `(${comment}`
+  }
+  return ''
+}
+
+function latestCommit(pipeline) {
+  let timestamp = 0
+  let comment = ''
+  try {
+    const cc = JSON.parse(pipeline.commitComments)
+    if (cc.length > 0) {
+      const ts = cc[0].ts
+      if (ts) {
+        timestamp = new Date(ts)
+      }
+      comment = cc[0]?.c ?? ''
+    }
+  } catch (e) {
+    // Do nothing
+  }
+  return { timestamp, comment }
+}
 </script>
 
 <style lang="scss">
 .my-steps-page {
+  .my-update-status {
+    font-size: 0.7em;
+    color: #d0d0d0;
+  }
+
   .my-small-version {
     font-size: 0.8em;
     margin-left: 38px;

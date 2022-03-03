@@ -12,15 +12,15 @@
         card(title="Performance", icon="gauge")
           | System monitoring
 
-      NuxtLink(to="/mondat/nodes")
+      NuxtLink(to="/mondat/nodeGroups")
         card(title="Nodes", icon="state-machine")
           | Distributed processing
 
       NuxtLink(to="/mondat/pipelines")
         card(title="Pipelines", icon="transit-connection")
-          | Monitor specific pipelines
+          | Pipeline definitions
 
-      NuxtLink(to="/mondat/complete")
+      NuxtLink(to="/mondat/transactions")
         card(title="Transactions", icon="bank-transfer")
           | Investigate transactions
 
