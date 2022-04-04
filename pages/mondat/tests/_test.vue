@@ -183,8 +183,8 @@ export default {
       }
       return { testName, currentTest, mapping, loading: false }
     } catch (e) {
-      console.log(`url=`, url)
-      console.log(`url2=`, url2)
+      // console.log(`url=`, url)
+      // console.log(`url2=`, url2)
       console.log(`e.response=`, e.response)
       return { loading: false, loadError: e.toString() }
     }
@@ -298,6 +298,7 @@ export default {
       this.testTimer = ``
       this.pollTimer = ``
       this.testStatus = ''
+      this.pollStatus = ''
       const url = `${this.$datpEndpoint}/tx/start/${this.currentTest.transactionType}`
       // console.log(`url=`, url)
       let status = 200
@@ -310,6 +311,13 @@ export default {
         this.startTime = Date.now()
         try {
           response = await this.$axios.$put(url, data)
+
+          // These values are inserted by ~/plugins/axios.js
+          // See https://stackoverflow.com/a/50176112/1350573
+          status = response._status
+          statusText = response._statusText
+          delete response._status
+          delete response._statusText
         } catch (e) {
           // Probably an HTTP error response
           console.log(`e.response=`, e.response)
@@ -321,7 +329,7 @@ export default {
 
         // console.log(`status=`, status)
         // console.log(`response=`, response)
-        this.testStatus = `Status = ${status}, ${statusText}`
+        this.testStatus = (status===200) ? '' : `Status = ${status}, ${statusText}`
         this.testResponse = JSON.stringify(response, '', 2)
         this.testTimer = `${endTime - this.startTime}ms`
         this.readytToTestAgain = true
@@ -411,7 +419,7 @@ export default {
               } else {
                 // Finish up
                 this.stopAnyPolling()
-                this.pollStatus = `Status = ${status2}, ${statusText2}`
+                this.pollStatus = (status2===200) ? '' : `Status = ${status2}, ${statusText2}`
                 this.pollResponse = JSON.stringify(response2, '', 2)
                 const endTime2 = Date.now()
                 this.pollTimer = `${endTime2 - this.startTime}ms`

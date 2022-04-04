@@ -56,6 +56,7 @@ export default {
   plugins: [
     '~plugins/config.js',
     // '~plugins/google-charts.js',
+    '~plugins/axios.js',
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
