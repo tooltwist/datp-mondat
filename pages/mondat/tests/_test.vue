@@ -64,8 +64,14 @@
                 b {{currentTest.transactionType}}&nbsp;&nbsp;
               b-field(label="Initial Response")
                 b-input(type="textarea", rows="17", v-model="testResponse", disabled)
-            .is-pulled-left {{testTimer}}
-            .is-clearfix
+              //- br
+              .is-pulled-left
+                template(v-if="testStatus")
+                  br
+                  b-tag(v-if="testStatus", type="is-danger",  size="is-medium") {{testStatus}}
+                  | &nbsp;&nbsp;&nbsp;&nbsp;
+                | {{testTimer}}
+              .is-clearfix
 
 
           b-tab-item(label="Polling")
@@ -73,7 +79,12 @@
               br
               b-field(label="Polling Response")
                 b-input(type="textarea", rows="17", v-model="pollResponse", disabled)
-            .is-pulled-left {{testTimer2}}
+            .is-pulled-left
+              template(v-if="pollStatus")
+                br
+                b-tag(v-if="pollStatus", type="is-danger",  size="is-medium") {{pollStatus}}
+                | &nbsp;&nbsp;&nbsp;&nbsp;
+              | {{pollTimer}}
             .is-clearfix
 
 
@@ -116,11 +127,13 @@ export default {
       errorMsg: '',
 
       polling: null,
+      testTimer: '',
+      testStatus: '', // Only set if not 200
       testResponse: '',
       transactionId: null, // Set from testResponse.metadata.txId
+      pollTimer: '',
+      pollStatus: '', // Only set if not 200
       pollResponse: '',
-      testTimer: 0,
-      testTimer2: 0,
       readytToTestAgain: false, // Set once test is completed
     }
   },//- data
@@ -137,6 +150,7 @@ export default {
     try {
       // Get transaction types
       const url = `${$monitorEndpoint}/transactionMapping`
+      // console.log(`url=`, url)
       const mapping = await $axios.$get(url)
 
       // See if this is a new test
@@ -156,6 +170,7 @@ export default {
 
       // Find this test case. We're being lazy here, selecting all.
       const url2 = `${$monitorEndpoint}/testCases`
+      // console.log(`url2=`, url2)
       let testCases = await $axios.$get(url2)
 
       // Find the current test
@@ -275,23 +290,36 @@ export default {
       this.pollResponse = null
       this.testResponse = 'waiting...'
 
-      // Run the test
+      /*
+       *  Run the test
+       */
       this.activeTab = this.TAB_INITIAL_RESPONSE
       this.readytToTestAgain = false
       this.testTimer = ``
-      this.testTimer2 = ``
+      this.pollTimer = ``
+      this.testStatus = ''
       const url = `${this.$datpEndpoint}/tx/start/${this.currentTest.transactionType}`
       // console.log(`url=`, url)
+      let status = 200
       let response
       try {
         const data = await JSON.parse(this.currentTest.inputData)
         // console.log(`url=`, url)
         // console.log(`data=`, data)
         this.startTime = Date.now()
-        response = await this.$axios.$put(url, data)
+        try {
+          response = await this.$axios.$put(url, data)
+        } catch (e) {
+          // Probably an HTTP error response
+          // console.log(`e.response=`, e.response)
+          status = e.response.status
+          response = e.response.data
+        }
         const endTime = Date.now()
 
-        console.log(`response=`, response)
+        // console.log(`status=`, status)
+        // console.log(`response=`, response)
+        this.testStatus = `Status = ${status}`
         this.testResponse = JSON.stringify(response, '', 2)
         this.testTimer = `${endTime - this.startTime}ms`
         this.readytToTestAgain = true
@@ -304,46 +332,85 @@ export default {
         return
       }
 
-      // See if we need to poll for a result
+      /*
+       *  See if we need to poll for a result
+       */
       const metadata = response.metadata
-      if (metadata) {
+      if (status !== 200) {
+
+        /*
+         *  Replied with an HTTP error code.
+         */
+        this.pollResponse = `Error reply`
+      } else if (!metadata) {
+        
+        /*
+         *  The eply contained no metadata.
+         */
+        this.pollResponse = `No metadata!`
+      } else {
+
+        /*
+         *  We need to poll till the transaction completes.
+         */
         // this.pollResponse = `polling...`
         this.transactionId = metadata.txId
         const inquiryToken = metadata.inquiryToken
-
-
         if (metadata.status === 'running' || metadata.status === 'queued' || metadata.status === 'sleeping') {
           // We'll need to poll for a response
           this.pollResponse = `polling...`
           // alert(`START POLLING`)
           this.activeTab = this.TAB_POLLING
 
+          // Define a function that can be repeatedly called.
           const pollForStatus = async () => {
-            // console.log(`check result`)
+
+            // A sanity check first...
             if (!this.polling) {
               alert('We have already stopped polling')
               return
             }
+
+            // Call the API to get the transaction status, with long poll.
             try {
               const url2 = `${this.$datpEndpoint}/tx/status/${this.transactionId}?reply=longpoll`
-              const response2 = await this.$axios.$get(url2, {
-                // Put inquiryToken in a header
-              })
+              console.log(`url2=`, url2)
+              let status2
+              let response2
+              try {
+                response2 = await this.$axios.$get(url2, {
+                  // Put inquiryToken in a header
+                })
+              } catch (e) {
+                // Probably an HTTP error response
+                // console.log(`e.response=`, e.response)
+                status2 = e.response.status
+                response2 = e.response.data
+              }
+              // console.log(`status2=`, status2)
+              // console.log(`response=`, response)
+
+              // Check the status reply
               if (
+                status2 === 200
+                &&
                 response2.metadata
                 &&
                 (response2.metadata.status === 'running' || response2.metadata.status === 'queued' || response2.metadata.status === 'sleeping')
               )
               {
-                // Still running. Wait a while and try again
+                /*
+                 *  A valid reply and still running. Wait a while and try again.
+                 */
                 console.log(`Still running - wait a while and try again.`)
                 this.polling = setTimeout(pollForStatus, POLLING_INTERVAL)
               } else {
                 // Finish up
                 this.stopAnyPolling()
+                this.pollStatus = status2
                 this.pollResponse = JSON.stringify(response2, '', 2)
                 const endTime2 = Date.now()
-                this.testTimer2 = `${endTime2 - this.startTime}ms`
+                this.pollTimer = `${endTime2 - this.startTime}ms`
               }
             } catch (e) {
               console.log(`e=`, e)
@@ -358,10 +425,6 @@ export default {
         } else {
           this.pollResponse = `Polling was not required.`
         }
-
-      } else {
-        // !metadata
-        this.pollResponse = `No metadata!`
       }
     },
 
