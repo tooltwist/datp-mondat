@@ -301,6 +301,7 @@ export default {
       const url = `${this.$datpEndpoint}/tx/start/${this.currentTest.transactionType}`
       // console.log(`url=`, url)
       let status = 200
+      let statusText = ''
       let response
       try {
         const data = await JSON.parse(this.currentTest.inputData)
@@ -311,15 +312,16 @@ export default {
           response = await this.$axios.$put(url, data)
         } catch (e) {
           // Probably an HTTP error response
-          // console.log(`e.response=`, e.response)
+          console.log(`e.response=`, e.response)
           status = e.response.status
+          statusText = e.response.statusText
           response = e.response.data
         }
         const endTime = Date.now()
 
         // console.log(`status=`, status)
         // console.log(`response=`, response)
-        this.testStatus = `Status = ${status}`
+        this.testStatus = `Status = ${status}, ${statusText}`
         this.testResponse = JSON.stringify(response, '', 2)
         this.testTimer = `${endTime - this.startTime}ms`
         this.readytToTestAgain = true
@@ -374,8 +376,9 @@ export default {
             // Call the API to get the transaction status, with long poll.
             try {
               const url2 = `${this.$datpEndpoint}/tx/status/${this.transactionId}?reply=longpoll`
-              console.log(`url2=`, url2)
+              // console.log(`url2=`, url2)
               let status2
+              let statusText2
               let response2
               try {
                 response2 = await this.$axios.$get(url2, {
@@ -385,6 +388,7 @@ export default {
                 // Probably an HTTP error response
                 // console.log(`e.response=`, e.response)
                 status2 = e.response.status
+                statusText2 = e.response.statusText
                 response2 = e.response.data
               }
               // console.log(`status2=`, status2)
@@ -407,7 +411,7 @@ export default {
               } else {
                 // Finish up
                 this.stopAnyPolling()
-                this.pollStatus = status2
+                this.pollStatus = `Status = ${status2}, ${statusText2}`
                 this.pollResponse = JSON.stringify(response2, '', 2)
                 const endTime2 = Date.now()
                 this.pollTimer = `${endTime2 - this.startTime}ms`
