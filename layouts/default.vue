@@ -90,6 +90,11 @@ export default {
           to: { name: 'mondat-performance' }
         },
         {
+          title: 'Caches',
+          icon: 'human-queue',
+          to: { name: 'mondat-caches' }
+        },
+        {
           title: 'Queues',
           icon: 'human-queue',
           to: { name: 'mondat-queues' }
