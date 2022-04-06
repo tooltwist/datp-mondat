@@ -20,9 +20,9 @@
             b {{txinfo.transactionType}}
           StepRunResult(v-for="rec in hierarchy", :step="rec", :key="rec.path", :level="0", :currentStepId="currentStepId", @showDetails="showDetails")
 
-        //- .column.is-1
-        //- .column.is-7
-        .column.is-8
+        .column.is-1
+        .column.is-7
+          //- .column.is-8
           // Right hand column with details
           template(v-if="currentStepId === ''")
 

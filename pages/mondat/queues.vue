@@ -52,8 +52,8 @@ client-only
             .content.has-text-centered
 
               // Display the orphaned queues (node has died)
-              template(v-if="group.orphanNodes.length > 0")
-                .orphan-queue(v-for="node in group.orphanNodes", @click="selectOrphan(group, node)")
+              template(v-if="Object.keys(group.orphanNodes).length > 0")
+                .orphan-queue(v-for="node in Object.values(group.orphanNodes)", @click="selectOrphan(group, node)")
                   | Orphan {{shortNodeId(node.nodeId)}} ({{node.queueLength}})
                 br
 
@@ -206,6 +206,8 @@ export default {
       try {
         this.loading = true
         this.nodeStats = await this.$axios.$get(url)
+        delete this.nodeStats._status // Added by plugin
+        delete this.nodeStats._statusText
         this.loading = false
         this.loadError = null
       } catch (e) {
@@ -267,6 +269,8 @@ export default {
       // console.log(`url=`, url)
       try {
         const result = await this.$axios.$get(url)
+        delete result._status // Added by plugin
+        delete result._statusText
         // console.log(`result=`, result)
         this.orphanGroup = null
         this.orphanNode = null
@@ -291,7 +295,7 @@ export default {
       this.doUpdate()
     },//- changeUpdateInterval
 
-  }
+  }//- methods
 }
 </script>
 

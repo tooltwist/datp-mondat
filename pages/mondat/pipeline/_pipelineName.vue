@@ -625,9 +625,9 @@ YcommitLog: [ ],
           // Get the server to delete the pipeline version
           // console.log(`Time to delete`)
           const url = `${this.$monitorEndpoint}/pipeline/${this.pipelineName}/${versionToDelete}`
-          console.log(`url=`, url)
+          // console.log(`url=`, url)
           const result = await this.$axios.$delete(url)
-          console.log(`result=`, result)
+          // console.log(`result=`, result)
 
           // Reload the pipeline versions
           await this.reloadThePipelineVersions()
@@ -735,7 +735,7 @@ YcommitLog: [ ],
 
       // Get the server to clone the currently displayed pipeline
       const url = `${this.$monitorEndpoint}/pipeline/clone/${this.pipelineName}/${versionToClone}`
-      console.log(`url=`, url)
+      // console.log(`url=`, url)
       const newPipeline = await this.$axios.$put(url)
       setLatestCommentFields(newPipeline)
       // console.log(`newPipeline=`, newPipeline)
@@ -756,9 +756,9 @@ YcommitLog: [ ],
                 })
         return
       }
-      console.log(`this.Ysteps=`, this.Ysteps)
+      // console.log(`this.Ysteps=`, this.Ysteps)
       const url = `${this.$monitorEndpoint}/pipeline/${this.pipelineName}`
-      console.log(`url=`, url)
+      // console.log(`url=`, url)
       await this.$axios.$post(url, this.Ysteps)
 
       await this.reloadThePipelineVersions()
@@ -788,9 +788,9 @@ YcommitLog: [ ],
         onConfirm: async (comment) => {
           // Commit the draft version
           const url = `${this.$monitorEndpoint}/pipeline/${this.pipelineName}/commit`
-          console.log(`url=`, url)
+          // console.log(`url=`, url)
           const reply = await this.$axios.$post(url, {comment})
-          console.log(`reply=`, reply)
+          // console.log(`reply=`, reply)
           this.displayedVersion = reply.version
           if (this.YeditablePipelineVersion === 'draft') {
             this.YeditablePipelineVersion = this.displayedVersion
@@ -801,7 +801,7 @@ YcommitLog: [ ],
     },
 
     async reloadThePipelineVersions () {
-      console.log(`reloadThePipelineVersions()`)
+      // console.log(`reloadThePipelineVersions()`)
       // Reload the pipeline versions
       const url2 = `${this.$monitorEndpoint}/pipeline/${this.pipelineName}`
       const { type: pipelineType, pipelines } = await this.$axios.$get(url2)
@@ -827,19 +827,28 @@ YcommitLog: [ ],
     stepFromStepType (stepType, arg2, arg3, arg4) {
       // console.log(`stepFromStepType(): stepType=`, stepType)
 
-      // Return a step
-      const rec = {
+      // Create a new step from the step type's default definition
+      const step = {
         id: this.YnextStepId++,
-        definition: stepType.defaultDefinition
+        definition: { ...stepType.defaultDefinition }
       }
-      rec.definition.stepType = stepType.name
-      return rec
+      step.definition.stepType = stepType.name
+
+      // Delete off the field UI definitions.
+      for (let fieldName in stepType.defaultDefinition) {
+        if (fieldName.startsWith('_')) {
+          // console.log(`  deleting ${fieldName}`)
+          delete step.definition[fieldName]
+        }
+      }
+      // console.log(`step=${JSON.stringify(step, '', 2)}`)
+      return step
     }, //- stepFromStepType
 
     onStepDefinitionChange({ id, description, definition }) {
-      console.log(`onStepDefinitionChange()`)
-      console.log(`id=`, id)
-      console.log(`definition=`, definition)
+      // console.log(`onStepDefinitionChange()`)
+      // console.log(`id=`, id)
+      // console.log(`definition=`, definition)
 
       let foundStep = false
       for (const step of this.Ysteps) {

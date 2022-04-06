@@ -30,20 +30,43 @@
                   b-icon(icon="trash-can-outline")
                 b-field(label="Description")
                   b-input(v-model="description", :readonly="!editable", @blur="onBlur", :placeholder="bestDescription")
+                //- | {{haveFieldDescriptions}}
                 //- br
-                //- | step.definition.description: {{ step.definition.description }}
+                //- | {{fieldDescriptions}}
                 //- br
-                //- | step.description: {{ step.description }}
-                //- br
-                //- | step.definition.stepType: {{ step.definition.stepType }}
-                //- br
-                //- | step.stepType: {{ step.stepType }}
-                //- br
-                //- | json: {{ json }}
-                //- br
-                b-field(label="Definition", v-if="stepHasDefinition(originalStepType)")
-                  textarea.textarea(rows="8", v-model="json", :readonly="!editable", @input="onInput", @blur="onBlur")
-                .is-danger.is-size-7 {{errorMsg}}
+                //- hr
+                template(v-if="haveFieldDescriptions")
+                  // Have field descriptions
+                  br
+                  template(v-for="field in fieldDescriptions")
+                    template(v-if="field.type === 'text'")
+                      b-field.my-field(:label="field.label")
+                        input.input(v-model="fieldValues[field.name]", :readonly="!editable", @blur="onBlurField(field)")
+                    template(v-else-if="field.type === 'textarea'")
+                      b-field.my-field(:label="field.label")
+                        textarea.textarea(v-model="fieldValues[field.name]", rows="8", :readonly="!editable", @blur="onBlurField(field)")
+                    template(v-else-if="field.type === 'checkbox'")
+                      b-checkbox.my-field(v-model="fieldValues[field.name]", @input="onBlurField(field)") {{field.label}}
+                      br
+                    template(v-else-if="field.type === 'select'")
+                      //- | {{field.values}}
+                      b-field.my-field(:label="field.label")
+                        b-select(v-model="fieldValues[field.name]", @input="onBlurField(field)")
+                          option(v-for="option in field.options", :value="option.value", :key="option.value") {{option.label}}
+                    template(v-else-if="field.type === 'standard-form'")
+                      b-field.my-field(:label="field.label")
+                        b-select(placeholder="Select a service", v-model="fieldValues[field.name]", @input="onBlurStandardForm(field)")
+                          optgroup(v-for="category in formCategories", :label="category.description")
+                            option(v-for="s in category.services", :value="`std-${s.service}-request`", :key="s.service")
+                              | {{s.service}} - {{s.description}}
+                    template(v-else)
+                      | {{field.name}} {{field.type}} {{field.label}}
+                      br
+
+                template(v-if="showJSONField")
+                  b-field(label="Definition", v-if="stepHasDefinition(originalStepType)")
+                    textarea.textarea(rows="8", v-model="json", :readonly="!editable", @input="onInput", @blur="onBlur")
+                  .is-danger.is-size-7 {{errorMsg}}
 </template>
 
 <script>
@@ -72,6 +95,10 @@ export default {
       // Edited values
       description: '',
       json: '',
+      fieldValues: {
+        // Non-reactive values get added in here
+      },
+      formCategories: [ ],
 
       // open: false,
       errorMsg: '',
@@ -84,6 +111,83 @@ export default {
   },
 
   computed: {
+
+    showJSONField: function () {
+      const type = this.validStepTypes[this.originalStepType]
+      const definition = type.defaultDefinition
+      const showJSON = definition._showJSON
+      if (typeof(showJSON) === 'undefined') {
+        return this.fieldDescriptions.length == 0
+      } else {
+        return showJSON
+      }
+    },
+
+    /**
+     * If default definition contains fields starting with an underscore, these
+     * are field type definitions, not actual field values.
+     * 
+     *  _a: 'text:Label for field a',
+     *  _b: 'textarea:Label for field b',
+     *  _c: 'checkbox:Label for checkbox c',
+     *  _d: 'select:Label for d:value1=Label 1:value2=Label 2',
+     * 
+     * If no field definition fields are provided then the UI will allow
+     * a JSON version of the field definition to be edited. The exception is
+     * a field named `_editJSON` to override the default behaviour.
+     * 
+     *  _showJSON: false,
+     * 
+     */
+    fieldDescriptions: function () {
+      try {
+        const type = this.validStepTypes[this.originalStepType]
+        const definition = type.defaultDefinition
+        // console.log(`definition=`, definition)
+        const list = [ ]
+        for (const fieldName in definition) {
+          if (fieldName === '_showJSON') {
+            continue
+          }
+          if (fieldName.startsWith('_')) {
+            const name = fieldName.substring(1)
+            const def = definition[fieldName]
+            const arr = def.split(':')
+            const type = arr[0]
+            const label = (arr.length > 1) ? arr[1] : name
+            const field = { name, type, label }
+            if (type === 'select') {
+              field.options = [ ]
+              for (let i = 2; i < arr.length; i++) {
+                const str = arr[i]
+                const pos = str.indexOf('=')
+                if (pos >= 0) {
+                  field.options.push({ value: str.substring(0, pos), label: str.substring(pos + 1) })
+                } else {
+                  field.options.push({ value: str, label: str })
+                }
+              }
+            }
+            list.push(field)
+          }
+        }
+        // console.log(`list=`, list)
+        return list
+      } catch (e) { }
+      return [ ]
+    },
+
+    haveFieldDescriptions: function () {
+      
+      // const type = this.validStepTypes[this.originalStepType]
+      // console.log(`type=`, type)
+      // if (type && type.defaultDefinition && type.defaultDefinition.noDefinition) {
+      //   console.log(`YARP`)
+      // }
+      const list = this.fieldDescriptions
+      return list.length > 0
+    },
+
     bestDescription: function () {
       if (this.description) {
         return this.description
@@ -102,15 +206,62 @@ export default {
         return true
       }
       return false
-    }
+    },
+
   }, //- computed
 
-  created: function () {
+  created: async function () {
     // Set the JSON string version of the definition
     // console.log(`created()`)
     // this.definition = this.step.definition
 
     this.gottaStep(this.step)
+
+    // See if any of the fields require a list of information
+    try {
+      const type = this.validStepTypes[this.originalStepType]
+      const definition = type.defaultDefinition
+      // console.log(`definition=`, definition)
+      let requireStandardForms = false
+      for (const fieldName in definition) {
+        if (fieldName.startsWith('_')) {
+          const name = fieldName.substring(1)
+          const def = definition[fieldName]
+          // console.log(`def=`, def)
+          if (def && typeof(def) === 'string') {
+            const arr = def.split(':')
+            const type = arr[0]
+            if (type === 'standard-form') {
+              requireStandardForms = true
+            }
+          }
+        }
+      }
+
+      const url = `${this.$monitorEndpoint}/metadata/services`
+      const reply = await this.$axios.$get(url);
+      const categories = [ ]
+      let currentCategory = null
+      for (const s of reply) {
+
+        // Is this a new category?
+        if (currentCategory === null || currentCategory.category !== s.category) {
+          currentCategory = {
+            category: s.category,
+            description: s.category_description,
+            services: [ ]
+          }
+          categories.push(currentCategory)
+        }
+
+        // Add the service to the category
+        currentCategory.services.push(s)
+      }
+      this.formCategories = categories
+
+    } catch (e) {
+      console.log(`e=`, e)
+    }
   },
 
   watch: {
@@ -124,7 +275,7 @@ export default {
   methods: {
 
     gottaStep: function (step) {
-      // console.log(`gottaStep()`)
+      // console.log(`gottaStep()`, step)
       // Save the values we came in with
       this.originalId = step.id
       this.originalDescription = step.definition.description
@@ -137,6 +288,7 @@ this.originalDescription = step.description ?? step.definition.description
 
       // Create a JSON version of the step definition
       const clone = { ...step.definition }
+
       delete clone.id
       delete clone.description
       delete clone.stepType
@@ -145,6 +297,34 @@ this.originalDescription = step.description ?? step.definition.description
       // We'll modify copies of the original values
       this.description = this.originalDescription
       this.json = this.originalJson
+
+      // Get the description of fields
+      const fields = this.fieldDescriptions
+      for (const f of fields) {
+        // console.log(`f=`, f)
+        if (typeof(clone[f.name]) === 'undefined') {
+
+          // Set a default value
+          // console.log(`SETTING ${f.name}`)
+          switch (f.type) {
+            case 'checkbox':
+              clone[f.name] = false
+              break
+
+            case 'text':
+            case 'textarea':
+            default:
+              clone[f.name] = ''
+              break
+          }
+        }
+        const value = clone[f.name]
+        // console.log(`value=`, value)
+        this.fieldValues[f.name] = (typeof(value) === 'undefined') ? '' : value
+      }
+      this.originalJson = JSON.stringify(clone, '', 4)
+      this.json = this.originalJson
+
     },
 
     onExpand () {
@@ -168,7 +348,7 @@ this.originalDescription = step.description ?? step.definition.description
         try {
           // Accept and format the changes
           const obj = JSON.parse(this.json)
-          this.json = JSON.stringify(obj, '', 2)
+          this.json = JSON.stringify(obj, '', 4)
           this.originalJson = this.json
 
           // Patch the original stepType and the description into the definition
@@ -185,6 +365,40 @@ this.originalDescription = step.description ?? step.definition.description
         }
       }
     },
+    
+    onBlurField: function (field) {
+      console.log(`onBlurField: field=`, field)
+
+      const newValue = this.fieldValues[field.name]
+      console.log(`newValue=`, newValue)
+
+      try {
+        const obj = JSON.parse(this.json)
+        obj[field.name] = newValue
+        this.json = JSON.stringify(obj, '', 2)
+        // console.log(`this.json=`, this.json)
+        this.onBlur()
+      } catch (e) {
+        console.log(`e=`, e)
+      }
+    },
+
+    onBlurStandardForm: function (field) {
+      console.log(`onBlurStandardForm: field=`, field)
+
+      const newValue = this.fieldValues[field.name]
+      console.log(`newValue=`, newValue)
+
+      try {
+        const obj = JSON.parse(this.json)
+        obj[field.name] = newValue
+        this.json = JSON.stringify(obj, '', 2)
+        // console.log(`this.json=`, this.json)
+        this.onBlur()
+      } catch (e) {
+        console.log(`e=`, e)
+      }
+    },
 
     isValidStepType(stepType) {
       return this.validStepTypes[stepType] ? true : false
@@ -193,6 +407,7 @@ this.originalDescription = step.description ?? step.definition.description
     stepHasDefinition(stepType) {
 
       const type = this.validStepTypes[stepType]
+      // console.log(`type=`, type)
       if (type && type.defaultDefinition && type.defaultDefinition.noDefinition) {
         return false
       }
@@ -262,6 +477,10 @@ this.originalDescription = step.description ?? step.definition.description
 
   .invalidStep {
     background-color: crimson;
+  }
+
+  .my-field {
+    margin-bottom: 25px;
   }
 }//- .my-stepbox
 </style>
