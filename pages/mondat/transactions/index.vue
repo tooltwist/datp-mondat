@@ -162,7 +162,7 @@ export default {
       polling: null, // handle from setInterval
       autoUpdateInterval: 20,
 
-      page: 1,
+      offset: 0,
       filter: '',
       list: [ ],
       infiniteId: 1, // Change this to reload InfiniteLoader
@@ -201,6 +201,7 @@ export default {
 
     infiniteHandler: async function($state) {
       // console.log(`infiniteHandler()`)
+      // console.log(`this.offset=`, this.offset)
 
       let status = ''
       if (this.showRunning) status += 'running,'
@@ -211,7 +212,7 @@ export default {
       if (this.showSleeping) status += 'sleeping,'
       if (this.showTimeout) status += 'timeout,'
       if (this.showInternalError) status += 'internal-error,'
-      let url = `${this.$monitorEndpoint}/transactions?page=${this.page}&pagesize=${PAGESIZE}&status=${status}`
+      let url = `${this.$monitorEndpoint}/transactions?offset=${this.offset}&pagesize=${PAGESIZE}&status=${status}`
       if (this.filter) { url += `&filter=${this.filter}` }
       // console.log(`url=`, url)
       try {
@@ -219,7 +220,7 @@ export default {
         const transactions = result
         // console.log(`transactions=`, transactions)
         if (transactions.length) {
-          this.page += 1
+          this.offset += transactions.length
           this.transactions.push(...transactions)
           $state.loaded()
         } else {
@@ -235,7 +236,7 @@ export default {
       // console.error(`doUpdate()`)
       // Empty the existng list (without replacing the reactive array)
       // https://stackoverflow.com/questions/1232040/how-do-i-empty-an-array-in-javascript
-      this.page = 1
+      this.offset = 0
       this.transactions.splice(0, this.transactions.length)
       this.infiniteId += 1; // This triggers reload
 
