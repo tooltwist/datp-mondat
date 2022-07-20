@@ -113,14 +113,20 @@ export default {
   computed: {
 
     showJSONField: function () {
+      console.log(`showJSONField()`)
+      console.log(`this.originalStepType=`, this.originalStepType)
       const type = this.validStepTypes[this.originalStepType]
-      const definition = type.defaultDefinition
-      const showJSON = definition._showJSON
-      if (typeof(showJSON) === 'undefined') {
-        return this.fieldDescriptions.length == 0
-      } else {
-        return showJSON
+      console.log(`type=`, type)
+      if (type) {
+        const definition = type.defaultDefinition ? type.defaultDefinition : { }
+        const showJSON = definition._showJSON
+        if (typeof(showJSON) === 'undefined') {
+          return this.fieldDescriptions.length == 0
+        } else {
+          return showJSON
+        }
       }
+      return true
     },
 
     /**
@@ -220,22 +226,26 @@ export default {
     // See if any of the fields require a list of information
     try {
       const type = this.validStepTypes[this.originalStepType]
-      const definition = type.defaultDefinition
-      // console.log(`definition=`, definition)
-      let requireStandardForms = false
-      for (const fieldName in definition) {
-        if (fieldName.startsWith('_')) {
-          const name = fieldName.substring(1)
-          const def = definition[fieldName]
-          // console.log(`def=`, def)
-          if (def && typeof(def) === 'string') {
-            const arr = def.split(':')
-            const type = arr[0]
-            if (type === 'standard-form') {
-              requireStandardForms = true
+      if (type) {
+        const definition = type.defaultDefinition
+        // console.log(`definition=`, definition)
+        let requireStandardForms = false
+        for (const fieldName in definition) {
+          if (fieldName.startsWith('_')) {
+            const name = fieldName.substring(1)
+            const def = definition[fieldName]
+            // console.log(`def=`, def)
+            if (def && typeof(def) === 'string') {
+              const arr = def.split(':')
+              const type = arr[0]
+              if (type === 'standard-form') {
+                requireStandardForms = true
+              }
             }
           }
-        }
+        }//- for
+      } else {
+        alert(`Unknown type ${this.originalStepType}`)
       }
 
       const url = `${this.$monitorEndpoint}/metadata/services`
