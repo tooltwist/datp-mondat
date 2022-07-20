@@ -7,6 +7,10 @@
 <template lang="pug">
   .my-pipelines-page
     section.section
+      .is-pulled-right
+        template
+          b-button(type="is-warning", @click="showNewPipelineModal") Add pipeline
+          | &nbsp;&nbsp;&nbsp;
       h2.title.is-4
         .datemon-heading-icon
           b-icon(icon="transit-connection", size="is-small")
@@ -23,6 +27,23 @@
         .notification.is-danger() {{loadError}}
       template(v-else)
         MondatTable(:data="uniquePipelines", :columns="columns", @select="selectPipeline")
+
+    
+    b-modal(v-model="newPipelineModalVisible", :width="450", scroll="keep")
+      .card
+        header.card-header
+          p.card-header-title Create new pipeline
+        .card-content
+          .content.has-text-centered
+            br
+            b-field.is-size-6(label="Name", horizontal)
+              b-input.is-size-6(v-model="newPipelineName")
+            br
+            br
+
+        footer.card-footer
+          a.card-footer-item(href="#", @click="newPipelineModalVisible = false") Cancel
+          a.card-footer-item(href="#", @click="createNewPipeline") Create Pipeline
 </template>
 
 <script>
@@ -61,36 +82,20 @@ export default {
             field: 'nodeGroup',
             label: 'Node Group',
         },
-      ]
+      ],
+
+      newPipelineModalVisible: false,
+      newPipelineName: '',
     }
-  },
+  },//- data
 
   async asyncData({ $axios, $monitorEndpoint }) {
-    // alert('pipelines 1')
     // Only run on the client
     if (process.server) {
       return { }
     }
-    // alert('pipelines 2')
-
-    const url = `${$monitorEndpoint}/pipelineTypes`
-    console.log(`url=`, url)
-    try {
-      const pipelines = await $axios.$get(url)
-      // console.log(`pipelines=`, pipelines)
-
-      for (const pipeline of pipelines) {
-        pipeline._shortVersion = pipeline.pipelineVersion ?? ''
-        if (pipeline._shortVersion.length > 7) {
-          pipeline._shortVersion = pipeline._shortVersion.substring(0, 7)
-        }
-      }
-      return { pipelines, loading: false }
-    } catch (e) {
-      console.log(`url=`, url)
-      console.log(`e.response=`, e.response)
-      return { pipelines: [ ], loading: false, loadError: e.toString() }
-    }
+    const { pipelines, loadError } = await loadPipelines($axios, $monitorEndpoint)
+    return { pipelines, loading: false, loadError }
   },
 
   computed: {
@@ -119,9 +124,71 @@ export default {
       } else {
         document.documentElement.classList.remove(htmlClassName)
       }
-    }//- toggleDarkMode
+    },//- toggleDarkMode
+
+    showNewPipelineModal: function () {
+      this.newPipelineName = ''
+      this.newPipelineModalVisible = true
+    },
+
+    createNewPipeline: async function () {
+      // console.log(`this.newPipelineName=`, this.newPipelineName)
+      // console.log(`this.uniquePipelines=`, this.uniquePipelines)
+
+      // Check the pipeline name is not alrady used.
+      for (const pipeline of this.uniquePipelines) {
+        if (this.newPipelineName === pipeline.name) {
+          this.$buefy.toast.open({ message: "This name is already used", type: "is-warning" })
+          return
+        }
+      }
+
+      // Create the new pipeline
+      try {
+        const url = `${this.$monitorEndpoint}/pipelineType/${this.newPipelineName}/new`
+        const response = await this.$axios.$put(url, { })
+      } catch (e) {
+        console.log(`e=`, e)
+        this.$buefy.toast.open({ message: "Error creating new pipeline.", type: "is-danger" })
+      }
+
+      // reload the pipelines
+      const { pipelines, loadError } = await loadPipelines(this.$axios, this.$monitorEndpoint)
+      this.pipelines = pipelines
+      this.loadError = loadError
+      this.newPipelineModalVisible = false
+
+    },//- createNewPipeline
   }//- methods
 }
+
+async function loadPipelines($axios, $monitorEndpoint) {
+  // console.log(`loadPipelines()`)
+
+  let url
+  try {
+    url = `${$monitorEndpoint}/pipelineTypes`
+    // console.log(`url=`, url)
+    const pipelines = await $axios.$get(url)
+    // console.log(`pipelines=`, pipelines)
+
+    for (const pipeline of pipelines) {
+      pipeline._shortVersion = pipeline.pipelineVersion ?? ''
+      if (pipeline._shortVersion.length > 7) {
+        pipeline._shortVersion = pipeline._shortVersion.substring(0, 7)
+      }
+    }
+    return { pipelines, loadError: null }
+
+  } catch (e) {
+
+    // Something went wrong
+    console.log(`url=`, url)
+    console.log(`e.response=`, e.response)
+    return { pipelines: [ ], loadError: e.toString() }
+  }
+}
+
 </script>
 
 <style lang="scss">

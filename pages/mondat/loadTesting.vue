@@ -406,7 +406,7 @@ export default {
         if (tc.name === testCaseName) {
           // Run the test
           //ZZZZZ
-          const url = `${this.$monitorEndpoint}//datp/1.0/tx/start/${tc.transactionType}`
+          const url = `${this.$monitorEndpoint}/tx/start/${tc.transactionType}`
           const data = await JSON.parse(tc.inputData)
           console.log(`url=`, url)
           console.log(`data=`, data)

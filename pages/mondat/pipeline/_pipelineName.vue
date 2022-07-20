@@ -1017,7 +1017,7 @@ function stepsAndStepTypes(pipelineVersions, requiredVersion, activeNodes, requi
     st.id = typeId++
   }
   return { steps, stepTypeArray, stepTypeIndex, commitLog, nextId}
-}
+}//- stepsAndStepTypes
 
 /**
  * Give each step a sequential ID. This is required for drag&drop.
