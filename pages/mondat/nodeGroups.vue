@@ -54,7 +54,7 @@ client-only
 
     .columns.is-mobile(v-else)
       .column.is-3(v-for="group in groups")
-        .card.my-node-card(@click="selectGroup(group.nodeGroup)")
+        .card.my-node-card(@click="selectGroup(group)")
           header.card-header
             p.card-header-title.has-text-grey
               | {{ group.nodeGroup }}
@@ -192,8 +192,16 @@ export default {
       }
     },//- doUpdate
 
-    selectGroup: function (nodeGroup) {
-      // console.log(`selectGroup`, nodeId)
+    selectGroup: function (group) {
+      console.log(`selectGroup`, group)
+      if (group.activeNodes < 1) {
+        this.$buefy.toast.open({
+            message: "This node group is inactive, so no information is available.",
+            type: "is-info",
+          })
+        return
+      }
+      const nodeGroup = group.nodeGroup
       this.$router.push({ path: `/mondat/group/${nodeGroup}` })
     },
   }//- methods

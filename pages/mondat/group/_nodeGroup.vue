@@ -16,23 +16,18 @@
 
     span(v-if="loading")
       | Loading...
+
     span(v-else-if="loadError")
       .notification.is-danger() {{loadError}}
 
-    // If the node was not found
-    template(v-else-if="node === null")
-      MondatNotification
-        p
-          | Unknown node.
-
-    // When the node is found
     template(v-else)
+      //- | StepTypres {{stepTypes}}
       b-tabs(type="is-boxed")
         b-tab-item(label="Pipelines", icon="google-photos")
-          MondatTable(:data="node.pipelines", :columns="pipelineColumns")
+          MondatTable(:data="pipelines", :columns="pipelineColumns")
 
         b-tab-item(label="Step Types", icon="google-photos")
-          MondatTable(:data="node.stepTypes", :columns="stepTypeColumns")
+          MondatTable(:data="stepTypes", :columns="stepTypeColumns")
 
 </template>
 
@@ -52,7 +47,8 @@ export default {
       loadError: null,
 
       nodeGroup: '',
-      node: null,
+      stepTypes: [ ],
+      pipelines: [ ],
 
       pipelineColumns: [
         {
@@ -89,31 +85,56 @@ export default {
   },//- data
 
   async asyncData({ $axios, $monitorEndpoint, params }) {
+
     // Only run on the client
     if (process.server) {
       return { }
     }
+    const nodeGroup = params.nodeGroup
 
 
-    // A bit lazy here, we'll select all nodes...
-    const url = `${$monitorEndpoint}/activeNodes`
+    // A bit lazy here, we'll select all nodes then take the step types
+    // from the first node we find in our node group.
+    let myStepTypes = [ ]
+    const url = `${$monitorEndpoint}/activeNodes?stepTypes=true`
     try {
       const nodes = await $axios.$get(url)
-
-      console.log(`nodes=`, nodes)
-      const nodeGroup = params.nodeGroup
-      // console.log(`nodeGroup=`, nodeGroup)
       for (const node of nodes) {
         if (node.nodeGroup === nodeGroup) {
-          return { nodeGroup, node, loading: false }
+          myStepTypes = node.stepTypes
+          break
         }
       }
-      return { nodeGroup, node: null, loading: false }
+
     } catch (e) {
       console.log(`url=`, url)
       console.log(`e.response=`, e.response)
       return { loading: false, loadError: e.toString() }
     }
+
+    // Get a list of all pipelines, then find those for this node group
+    const myPipelines = [ ]
+    const url2 = `${$monitorEndpoint}/pipelineTypes`
+    try {
+      const pipelines = await $axios.$get(url2)
+      for (const pipeline of pipelines) {
+        if (pipeline.nodeGroup === nodeGroup) {
+          pipeline._shortVersion = pipeline.pipelineVersion ?? ''
+          if (pipeline._shortVersion.length > 7) {
+            pipeline._shortVersion = pipeline._shortVersion.substring(0, 7)
+          }
+          myPipelines.push(pipeline)
+        }
+      }
+
+    } catch (e) {
+      console.log(`url=`, url2)
+      console.log(`e.response=`, e.response)
+      return { loading: false, loadError: e.toString() }
+    }
+
+    return { nodeGroup, stepTypes: myStepTypes, pipelines: myPipelines, loading: false }
+
   },//- asyncData
 
   methods: {
