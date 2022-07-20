@@ -84,14 +84,14 @@ export default {
           icon: 'home',
           to: { name: 'mondat' }
         },
-        {
-          title: 'Performance',
-          icon: 'gauge',
-          to: { name: 'mondat-performance' }
-        },
+        // {
+        //   title: 'Performance',
+        //   icon: 'gauge',
+        //   to: { name: 'mondat-performance' }
+        // },
         {
           title: 'Caches',
-          icon: 'human-queue',
+          icon: 'flash',
           to: { name: 'mondat-caches' }
         },
         {
@@ -177,14 +177,14 @@ export default {
 
       devitems: [
         {
-          title: 'Testing',
-          icon: 'bike-fast',
-          to: { name: 'mondat-tests' }
-        },
-        {
           title: 'Pipelines',
           icon: 'transit-connection',
           to: { name: 'mondat-pipelines' }
+        },
+        {
+          title: 'Testing',
+          icon: 'bike-fast',
+          to: { name: 'mondat-tests' }
         },
         // {
         //   title: 'TX Types',
