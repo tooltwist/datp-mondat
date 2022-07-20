@@ -41,12 +41,16 @@ client-only
           header.card-header
             .card-header-title.has-text-grey Node group '{{ group.nodeGroup }}'
           .card-content
+            .is-pulled-right
+              b-button.is-small.is-warning(@click="openGroupDetailsModal(group)") configure
+            //- | Workers: {{requiredWorkers(group)}}
+            //- br
             | Group queue:&nbsp;&nbsp;
             template(v-if="group.queueLength > 0")
-              b {{group.queueLength}} events
+              b {{group.queueLength}}
             template(v-else)
               //- | Group queue:&nbsp;&nbsp;
-              b empty
+              b -
             br
             br
             .content.has-text-centered
@@ -68,48 +72,59 @@ client-only
                 .card-content
 
                   // Transactions
-                  b Throughput
+                  b Throughput / sec
                   br
-                  | tx/sec: &nbsp;+{{fiveSecondsOfTransactionsIn(node)}},
-                  | &nbsp;
-                  | -{{fiveSecondsOfTransactionsOut(node)}}
-                  br
-                  | steps/second: {{fiveSecondsOfSteps(node)}}
-                  br
-                  br
+                  table.myTable
+                    tr
+                      td trans:
+                      td
+                        b {{fiveSecondsOfTransactionsIn(node)}}
+                        | &nbsp;in
+                      td
+                        b {{fiveSecondsOfTransactionsOut(node)}}
+                        | &nbsp;out
+                    tr
+                      td steps:
+                      td(colspan="1")
+                        b {{fiveSecondsOfSteps(node)}}
 
                   // Queues
                   b Queues
                   br
-                  | regular: {{node.regularQueueLength}},&nbsp;
-                  //- br
-                  | express: {{node.expressQueueLength}}
-                  br
-                  br
+                  table.myTable
+                    tr
+                      td memory:
+                      td
+                        b {{node.events.regularMemoryQueue}}
+                        | &nbsp;in
+                      td
+                        b {{node.events.expressMemoryQueue}}
+                        | &nbsp;out
+                    tr
+                      td REDIS:
+                      td
+                        b {{node.regularQueueLength}}
+                        | &nbsp;in
+                      td
+                        b {{node.expressQueueLength}}
+                        | &nbsp;out
 
                   // Threads
                   b Worker threads
                   br
-                  | {{node.workers.running}} of {{node.workers.total}} active
+                  | {{node.workers.running}} / {{node.workers.required}} / {{node.workers.total}} active
                   template(v-if="node.workers.shuttingDown")
                     br
                     | {{node.workers.shuttingDown}} shutting down
                   template(v-if="node.workers.standby")
                     br
                     | {{node.workers.standby}} on standby
-                  br
-
-                  // Caches
-                  template(v-if="node.transactionsInCache || node.outstandingLongPolls")
+                  template(v-if="node.outstandingLongPolls")
                     br
-                    b Cache
-                    br
-                    | {{node.transactionsInCache}} transactions
-                    br
-                    | {{node.outstandingLongPolls}} long polls
-                    br
-                    br
-                    br
+                    | {{node.outstandingLongPolls}} outstanding long polls
+                    //- br
+                    //- br
+                    //- br
 
     //- MondatPieChart()
     b-modal(v-model="showOrphanNodeModal", :width="550", scroll="keep")
@@ -137,19 +152,36 @@ client-only
           a.card-footer-item(href="#", card-footer-item, @click="closeOrphanModal") Close
           //- a.card-footer-item(href="#", card-footer-item, @click="doDelete") Delete
 
+    b-modal(v-model="showGroupDetailsModal", :width="400", scroll="keep")
+      .card(v-if="nodeGroupBeingAltered")
+        header.card-header
+          p.card-header-title Node group &nbsp;'
+            b {{nodeGroupBeingAltered.nodeGroup}}
+            | '
+        .card-content
+          | Changing these details will update all nodes within the group, and may take a few minutes to propagate.
+          br
+          br
+          br
+          b-field.is-size-6(label="Workers", horizontal)
+            b-input.is-size-6(v-model="requiredWorkersForNodeGroup", type="number")
+          br
+          br
+          //- br
+          //- | nodeGroupBeingAltered IS {{nodeGroupBeingAltered}}
+
+        footer.card-footer
+          a.card-footer-item(href="#", card-footer-item, @click="updateGroupDetails") Update
+          a.card-footer-item(href="#", card-footer-item, @click="closeGroupDetailsModal") Close
+
 </template>
 
 <script>
-// import LazyLinearGauge from '~/components/LazyLinearGauge.vue'
-// import LazyRadialGauge from '~/components/LazyRadialGauge.vue'
 import MondatNotification from "~/components/MondatNotification.vue"
 import MondatTable from "~/components/MondatTable.vue"
-// import MondatPieChart from "~/components/MondatPieChart.vue"
 
 export default {
   components: {
-    // LazyLinearGauge,
-    // LazyRadialGauge,
     MondatNotification,
     MondatTable,
     // MondatPieChart,
@@ -171,6 +203,11 @@ export default {
       // If a node is orphaned
       orphanGroup: null,
       orphanNode: null,
+
+      // Display a modal, where we can change the number of workers for the group.
+      showGroupDetailsModal: false,
+      nodeGroupBeingAltered: null,
+      requiredWorkersForNodeGroup: 1,
     }
   },//- data
 
@@ -189,10 +226,19 @@ export default {
   computed: {
     showOrphanNodeModal: function () {
       return this.orphanNode !== null
-    }
+    },
+
   },
 
   methods: {
+
+    requiredWorkers: function (group) {
+      for (const nodeId in group.nodes) {
+        const node = group.nodes[nodeId]
+        return node.workers.required
+      }
+    },
+    
     changeUpdateInterval: async function () {
       if (this.polling) {
         clearTimeout(this.polling)
@@ -287,6 +333,40 @@ export default {
       this.orphanNode = null
     },
 
+    openGroupDetailsModal: function (group) {
+      this.showGroupDetailsModal = true
+      this.nodeGroupBeingAltered = group
+      this.requiredWorkersForNodeGroup = this.requiredWorkers(group)
+    },
+
+    closeGroupDetailsModal: function () {
+      this.showGroupDetailsModal = false
+      this.nodeGroupBeingAltered = null
+    },
+
+    updateGroupDetails: async function () {
+      // console.log(`updateGroupDetails`)
+
+      const numWorkers = parseInt(this.requiredWorkersForNodeGroup)
+      // console.log(`numWorkers=`, numWorkers)
+      
+      if (!isNaN(numWorkers)) {
+        const url = `${this.$monitorEndpoint}/nodeGroup/${this.nodeGroupBeingAltered.nodeGroup}/setNumWorkers`
+        const data = { numWorkers }
+        // console.log(`url=`, url)
+        // console.log(`data=`, data)
+        const response = await this.$axios.$put(url, data)
+        // console.log(`response=`, response)
+        this.showGroupDetailsModal = false
+        this.nodeGroupBeingAltered = null
+        // console.log(`reply=`, reply);
+        this.$buefy.toast.open({
+          message: "This update may take a minute or two to propagate.",
+          type: "is-info",
+        })
+      }
+    },
+
     changeUpdateInterval: async function () {
       if (this.polling) {
         clearTimeout(this.polling)
@@ -331,6 +411,13 @@ export default {
 
   .my-node {
     background-color: #171717;
+  }
+
+  .myTable tr td {
+    border: none;
+    white-space: nowrap;
+    padding: 2px;
+    text-align: right;
   }
 }
 </style>
