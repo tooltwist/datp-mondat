@@ -320,7 +320,7 @@ export default {
           delete response._statusText
         } catch (e) {
           // Probably an HTTP error response
-          console.log(`e.response=`, e.response)
+          // console.log(`e.response=`, e.response)
           status = e.response.status
           statusText = e.response.statusText
           response = e.response.data
@@ -392,6 +392,14 @@ export default {
                 response2 = await this.$axios.$get(url2, {
                   // Put inquiryToken in a header
                 })
+                
+                // These values are inserted by ~/plugins/axios.js
+                // See https://stackoverflow.com/a/50176112/1350573
+                status2 = response2._status
+                statusText2 = response2._statusText
+                delete response2._status
+                delete response2._statusText
+
               } catch (e) {
                 // Probably an HTTP error response
                 // console.log(`e.response=`, e.response)
