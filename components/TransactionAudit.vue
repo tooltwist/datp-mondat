@@ -236,7 +236,13 @@ export default {
 
     stepDetailsJSON: function() {
       try {
-        return JSON.stringify(this.stepDetails, '', 2)
+
+        // Create JSON without the embedded logs
+        const logs = this.stepDetails.logs
+        delete this.stepDetails.logs
+        const json = JSON.stringify(this.stepDetails, '', 2)
+        this.stepDetails.logs = logs
+        return json
       } catch (e) {
         return this.stepDetails
       }
