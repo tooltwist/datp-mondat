@@ -2,23 +2,30 @@
   "mondat": {
     "protocol": "http",
     "host": "localhost",
-    "port": 33370
+    "port": 3000
   },
-	"datp": {
-		"name": "master",
-		"description": "Master DATP node",
-
+  "datp": {
+    "name": "master",
+    "description": "Master DATP node",
+    //
+    // Running in Docker
     "protocol": "http",
-    "host": "localhost",
+    "host": "192.168.100.74",
     "port": 33370,
+    //
+    // Running standalone
+    // "protocol": "http",
+    // "host": "localhost",
+    // "port": 4000,
+    //
     "midiSupported": false,
     "serveMondat": true
-	},
-	"db": {
-		"host": "db",
-		"port": 3306,
-		"database": "datp_master",
-		"user": "root",
-		"password": ""
-	}
+  // },
+  // "Zdb": {
+  //   "host": "db",
+  //   "port": 3306,
+  //   "database": "datp_master",
+  //   "user": "root",
+  //   "password": ""
+  }
 }

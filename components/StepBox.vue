@@ -113,10 +113,10 @@ export default {
   computed: {
 
     showJSONField: function () {
-      console.log(`showJSONField()`)
-      console.log(`this.originalStepType=`, this.originalStepType)
+      // console.log(`showJSONField()`)
+      // console.log(`this.originalStepType=`, this.originalStepType)
       const type = this.validStepTypes[this.originalStepType]
-      console.log(`type=`, type)
+      // console.log(`type=`, type)
       if (type) {
         const definition = type.defaultDefinition ? type.defaultDefinition : { }
         const showJSON = definition._showJSON

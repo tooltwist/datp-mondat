@@ -11,7 +11,7 @@ ACCOUNT_ID=278087993445
 REGION=us-east-1
 #ENVIRONMENT=trsyduat2
 ECR_REPOSITORY=expanse-mondat
-IMAGE=xpanse/mondat
+IMAGE=xpanse/mondat-aws
 
 
 # Check we have a tag parameter

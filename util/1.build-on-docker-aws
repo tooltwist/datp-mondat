@@ -1,0 +1,27 @@
+#!/bin/bash
+#
+#	Build project into a Docker container.
+#
+dir=$(cd `dirname $0`; pwd)
+cd ${dir}/..
+#pwd
+
+IMAGE=xpanse/mondat-aws
+
+# Build the Docker image
+echo "$" docker build --platform=linux/amd64 -t ${IMAGE} -f util/Dockerfile .
+         docker build --platform=linux/amd64 -t ${IMAGE} -f util/Dockerfile .
+         #docker build --platform=linux/amd64 -t ${IMAGE} -f util/Dockerfile .  2>&1 | tee ,build
+[ $? != 0 ] && exit 1
+
+
+# Record branch, hash, and whether it's clean
+clean=DIRTY; [ -z "$(git ls-files --deleted --modified --others --exclude-standard)" ] && clean=CLEAN
+commit=$(git rev-parse HEAD)
+branch=$(git branch --show-current)
+echo ""
+echo ""
+echo "Build success - ${branch}, ${commit}, ${clean}"
+echo -n "Build success - ${branch}, ${commit}, ${clean} - " >> util/event.log
+date >> util/event.log
+exit 0

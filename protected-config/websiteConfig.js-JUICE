@@ -15,7 +15,7 @@ export default {
     version: '1.0',
   },
   prefix: {
-    monitor: 'mondat',
+    monitor: 'mondat-api',
     datp: 'datp',
     formservice: 'formservice'
   },

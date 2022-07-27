@@ -89,7 +89,7 @@ client-only
                         b {{fiveSecondsOfSteps(node)}}
 
                   // Queues
-                  b Queues
+                  b Queue lengths
                   br
                   table.myTable
                     tr
@@ -107,6 +107,14 @@ client-only
                         | &nbsp;in
                       td
                         b {{node.expressQueueLength}}
+                        | &nbsp;out
+                    tr
+                      td group:
+                      td
+                        b {{group.regularQueueLength}}
+                        | &nbsp;in
+                      td
+                        b {{group.expressQueueLength}}
                         | &nbsp;out
 
                   // Threads
