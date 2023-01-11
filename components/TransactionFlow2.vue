@@ -21,30 +21,30 @@
           td.my-nodeGroup-column
 
         // Display this
-        td.my-nodeGroup-column(:class="{ 'my-selected-f2' : isSelected(f2i) }")
+        td.my-nodeGroup-column(:class="{ 'my-selected-f2':isSelected(f2i), 'my-sibling-f2':isSibling(f2i)  }")
           div(v-if="f2Type(f) === 'TX_START'")
             .f2-tx(@click="selectFlow(f2i)")
               b Start TX
             .f2-index {{f2i}}
-          div(v-else-if="f2Type(f) === 'TX_CALLBACK'")
+          div(v-else-if="f2Type(f) === 'TX_CALLBACK'", :class="indentForF2Level(f)")
             .f2-tx(@click="selectFlow(f2i)")
               | {{f.callback}}
             .f2-index {{f2i}}
-          div(v-else-if="f2Type(f) === 'PIPELINE_START'")
+          div(v-else-if="f2Type(f) === 'PIPELINE_START'", :class="indentForF2Level(f)")
             .f2-pipeline-start(@click="selectFlow(f2i)")
               | Pipeline {{f._pipelineName}}
               template(v-if="f.nodeGroup")
                 br
                 | ({{f.nodeGroup}})
             .f2-index {{f2i}}
-          div(v-else-if="f2Type(f) === 'PIPELINE_CALLBACK'")
+          div(v-else-if="f2Type(f) === 'PIPELINE_CALLBACK'", :class="indentForF2Level(f)")
             .f2-pipeline(@click="selectFlow(f2i)")
               | {{f.callback}}
               //- template(v-if="f.nodeGroup")
                 br
                 | ({{f.nodeGroup}})
             .f2-index {{f2i}}
-          div(v-else-if="f2Type(f) === 'STEP'")
+          div(v-else-if="f2Type(f) === 'STEP'", :class="indentForF2Level(f)")
             .f2-step(@click="selectFlow(f2i)")
               | {{stepTypeDescription(f)}}
             .f2-index {{f2i}}
@@ -55,12 +55,13 @@
       br
       .columns 
         .column
-          b-field(label="Flow")
+          //- | {{selectedF2i}}, {{siblingF2i}}
+          b-field(:label="`Flow    (#${selectedF2i})`")
             b-input.my-state-json(type="textarea", rows="20", v-model="selectedFlowJSON", disabled)
           .my-flowMsg {{flowMsg}}
         .column
-          b-field(label="Step")
-            b-input.my-state-json(type="textarea", rows="20", v-model="selectedStepJSON", disabled)
+          b-field(:label="stepJSONIsForSibling ? `Definition of related step` : `Step definition`")
+            b-input.my-state-json(type="textarea", rows="20", v-model="selectedStepJSON", disabled, :class="{'my-sibling-step': stepJSONIsForSibling}")
 
 </template>
 
@@ -102,9 +103,11 @@ export default {
       loadError: null,
 
       transaction: null,
-      selectedFlowIndex: -1,
+      selectedF2i: -1,
+      siblingF2i: -1,
       selectedFlowJSON: '',
       selectedStepJSON: '',
+      stepJSONIsForSibling: false,
       flowMsg: '',
     }
   }, //- data
@@ -168,11 +171,13 @@ export default {
       return this.numColumns - this.columnForF2(f2)
     },
 
-    classForF2Level(level) {
+    indentForF2Level(f2) {
+      const level = this.f2Level(f2)
       if (level === 0) {
-        return { 'f2-tx': true }
+        return { }
       }
-      return ((level + 1) % 2) ? {'f2-step':true} : {'f2-pipeline':true}
+      // return ((level + 1) % 2) ? {'f2-step':true} : {'f2-pipeline':true}
+      return ((level + 1) % 2) ? {'f2-indent':true} : { }
     },
 
     forPipeline(level) {
@@ -196,6 +201,16 @@ export default {
       } else {
         return f2.l
       }
+    },
+
+    f2Sibling(f2) {
+      if (typeof(f2.__sibling) !== 'undefined') {
+        return f2.__sibling
+      }
+      if (typeof(f2.s) !== 'undefined') {
+        return f2.s
+      }
+      return -1      
     },
 
     isPlumbing(f2) {
@@ -245,14 +260,16 @@ export default {
       return ''
     },
 
-    selectFlow(index) {
+    selectFlow(f2i) {
       // Show the selected flow
-      const flow = this.transaction.f2[index]
-      if (this.selectedFlowIndex === index) {
-        this.selectedFlowIndex = -1
+      const flow = this.transaction.f2[f2i]
+      if (this.selectedF2i === f2i) {
+        this.selectedF2i = -1
+        this.siblingF2i = -1
         return
       }
-      this.selectedFlowIndex = index
+      this.selectedF2i = f2i
+      this.siblingF2i = this.f2Sibling(flow)
       this.selectedFlowJSON = JSON.stringify(flow, '', 2)
       let s = ''
       if (flow.ts1 !== undefined && flow.ts2 !== undefined) {
@@ -269,14 +286,30 @@ export default {
         const step = this.transaction.steps[flow.stepId]
         if (step) {
           this.selectedStepJSON = JSON.stringify(step, '', 2)
+          this.stepJSONIsForSibling = false
           return
+        }
+      } else if (this.siblingF2i >= 0) {
+        // Show the step definition of the sibling (the step this callback refers to).
+        const siblingFlow = this.transaction.f2[this.siblingF2i]
+        if (siblingFlow.stepId) {
+          const siblingStep = this.transaction.steps[siblingFlow.stepId]
+          if (siblingStep) {
+            this.selectedStepJSON = JSON.stringify(siblingStep, '', 2)
+            this.stepJSONIsForSibling = true
+            return
+          }
         }
       }
       this.selectedStepJSON = ''
     },
 
-    isSelected(index) {
-      return (index === this.selectedFlowIndex)
+    isSelected(f2i) {
+      return (f2i === this.selectedF2i)
+    },
+
+    isSibling(f2i) {
+      return (f2i === this.siblingF2i)
     },
 
   }//- methods
@@ -301,9 +334,9 @@ export default {
   .f2-tx {
     display: inline-block;
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 1.0em;
-    font-style: italic;
-    padding: 6px;
+    font-size: 0.9em;
+    // font-style: italic;
+    padding: 2px;
     padding-left: 12px;
     padding-right: 12px;
     color: #ccc;
@@ -327,6 +360,26 @@ export default {
     background-color: #a20f2c;
     text-align: center;
     padding: 1px;
+    padding-left: 5px;
+    padding-right: 5px;
+    border-top: solid 1px #aaa;
+    border-left: solid 1px #aaa;
+    border-bottom: solid 1px #333;
+    border-right: solid 1px #333;
+    cursor: pointer;
+  }
+
+  .f2-step {
+    display: inline-block;
+    font-size: 0.9em;
+    color: white;
+    background-color: #485fc7;
+    padding: 1px;
+    padding-left: 5px;
+    padding-right: 5px;
+    margin-top: 3px;
+    text-align: center;
+    border: solid 1px #485fc7;
     border-top: solid 1px #aaa;
     border-left: solid 1px #aaa;
     border-bottom: solid 1px #333;
@@ -337,31 +390,19 @@ export default {
   .f2-pipeline {
     display: inline-block;
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 1.0em;
-    font-style: italic;
-    color: #ccc;
-    padding: 8px;
+    font-size: 0.9em;
+    color: #666;
+    padding: 1px;
+    padding-left: 5px;
+    padding-right: 5px;
+    margin-top: 3px;
     text-align: center;
-    border: solid 1px #485fc7;
+    border: solid 1px #666;
     cursor: pointer;
   }
 
-  .f2-step {
-    display: inline-block;
-    font-size: 1.1em;
-    color: white;
-    background-color: #485fc7;
-    padding: 4px;
-    margin-top: 1px;
-    margin-bottom: 1px;
-    margin-left: 10px;
-    text-align: center;
-    border: solid 1px #485fc7;
-    border-top: solid 1px #aaa;
-    border-left: solid 1px #aaa;
-    border-bottom: solid 1px #333;
-    border-right: solid 1px #333;
-    cursor: pointer;
+  .f2-indent {
+    margin-left: 20px;
   }
 
   .my-flowMsg {
@@ -369,12 +410,35 @@ export default {
   }
 
   .my-selected-f2 div div {
-    border: solid 1px magenta;
-    // background-color: blue;
+    border: solid 2px magenta;
+
+    &.f2-pipeline, &.f2-step, &.f2-tx {
+      background-color: white;
+      color: black;
+    }
 
     &.f2-index {
       border: none;
     }
+  }
+
+  .my-sibling-f2 div div {
+    border: solid 1px magenta;
+
+    &.f2-pipeline-start, &.f2-step, &.f2-tx {
+      background-color: magenta;
+      color: white;
+      font-weight: 550;
+    }
+
+    &.f2-index {
+      border: none;
+    }
+  }
+
+  .my-sibling-step .textarea {
+    // color: #202020 !important;
+    color: #707 !important;
   }
 }
 </style>
