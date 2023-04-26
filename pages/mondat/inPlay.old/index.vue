@@ -11,11 +11,13 @@
       b-checkbox(v-model="autoUpdate") Auto-update
     h2.title.is-4
       .mondat-heading-icon
-        b-icon(icon="bank-transfer", size="is-small")
-      | Recently Finished Transactions
+        b-icon(icon="run", size="is-small")
+      | Transactions In Play
 
     MondatNotification
-      | The following are the most recently run transactions.
+      | The following transactions have a step that is actively running.
+      br
+      | More specifically, these are transactions that are in progress, but are not queued and are not sleeping.
 
     //- span(v-if="loading")
       | Loading...
@@ -45,6 +47,9 @@
 import MondatNotification from "~/components/MondatNotification.vue"
 import MondatTable from "~/components/MondatTable.vue"
 import InfiniteLoading from 'vue-infinite-loading'
+import { format } from 'date-fns'
+import fromUnixTime from 'date-fns/fromUnixTime'
+import formatDistanceToNow from 'date-fns/formatDistanceToNow'
 
 const PAGESIZE = 10
 
@@ -90,16 +95,22 @@ export default {
       // ],//- columns
 
       columns2: [
+        // {
+        //   // field: "txId",
+        //   label: "Owner",
+        //   // width:
+        //   type: 'owner'
+        // },
         {
           // field: "txId",
           label: "transaction id",
-          // width:
+          width: 300,
           type: 'transactionIconId'
         },
         {
           // field: "txId",
           label: "external id",
-          // width:
+          width: 300,
           type: 'externalId'
         },
         // {
@@ -118,8 +129,32 @@ export default {
           type: 'transactionStatus'
         },
         {
-          field: "startTime",
+          field: "Switches",
+          label: "switches",
+        },
+        // {
+        //   field: "sleepingSince",
+        //   label: "Sleeping Since",
+        //   // width:
+        // },
+        // {
+        //   field: "sleepCounter",
+        //   label: "Retries",
+        //   // width:
+        // },
+        // {
+        //   field: "wakeSwitch",
+        //   label: "Switch",
+        //   // width:
+        // },
+        {
+          field: "startTimeText",
           label: "start time",
+          // width:
+        },
+        {
+          field: "since",
+          label: "Age",
           // width:
         },
 
@@ -148,6 +183,7 @@ export default {
   // },//- asyncData
 
   created() {
+    console.log(`created()`)
     // Only run on the client
     if (process.server) {
       return
@@ -155,8 +191,10 @@ export default {
 
     this.polling = setInterval(async () => {
       if (this.autoUpdate) {
-        const url = `${this.$monitorEndpoint}/transactions`
+        // const url = `${this.$monitorEndpoint}/transactions`
+        const url = `${this.$monitorEndpoint}/transactions/mondat`
         this.transactions = await this.$axios.$get(url)
+        console.log(`this.transactions=`, this.transactions)
       }
     }, 2000)
   },//- created
@@ -170,7 +208,7 @@ export default {
       // console.log(`selectTRansaction!!!`, row)
       const txId = row.txId
       // console.log(`selectTransaction(${txId})`)
-      this.$router.push({ path: `/mondat/transactions/${txId}` })
+      this.$router.push({ path: `/mondat/inPlay/${txId}` })
     },
 
     // rowClass: function(row) {
@@ -182,16 +220,28 @@ export default {
     // },//- rowClass
 
     infiniteHandler: async function($state) {
-      console.log(`infiniteHandler()`)
+      console.log(`infiniteHandler() 2`)
 
-      let url = `${this.$monitorEndpoint}/transactions?page=${this.page}&pagesize=${PAGESIZE}&status=success`
+      let url = `${this.$monitorEndpoint}/transactions/inPlay?page=${this.page}&pagesize=${PAGESIZE}&status=running,queued`
+      // let url = `${this.$monitorEndpoint}/transactions?page=${this.page}&pagesize=${PAGESIZE}&status=running,queued`
+      // let url = `${this.$monitorEndpoint}/transactions?page=${this.page}&pagesize=${PAGESIZE}`
       if (this.filter) { url += `&filter=${this.filter}` }
-      // console.log(`url=`, url)
+      console.log(`url=`, url)
       try {
         const result = await this.$axios.$get(url)
+        console.log(`result=`, result)
         const transactions = result
-        // console.log(`transactions.length=`, transactions.length)
+        // console.log(`transactions=`, transactions)
         if (transactions.length) {
+          // Set the interval from now
+          transactions.forEach(t => {
+            // t.since = new Date(t.startTime)
+            const dat = fromUnixTime(t.startTime / 1000)
+            // t.since = format(dat, 'MM/dd/yyyy')
+            t.since = formatDistanceToNow(dat)
+          })
+
+          // Add to our page
           this.page += 1
           this.transactions.push(...transactions)
           $state.loaded()

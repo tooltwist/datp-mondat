@@ -15,7 +15,7 @@ client-only
         option(:value="60", :key="60") 60 seconds
 
     h2.title.is-4
-      .datemon-heading-icon
+      .mondat-heading-icon
         b-icon(icon="gauge", size="is-small")
       | Queues and Workers
       b-tag.my-tag(v-if="loadError==='Network Error'", rounded, type="is-danger", size="is-medium") Offline
@@ -25,8 +25,8 @@ client-only
 
     MondatNotification
       | Processing requests are sent to queues, which are forwarded to worker threads.
-      | Sometimes events are sent to a node group, and sometimes they are send to a specific node.
-      | A node reads events from both it's own queue and the group queue, and passes these on
+      | Sometimes events are sent to a node group, and sometimes they are sent to a specific node.
+      | A node reads events from both it's own queue and the group queue and passes these on
       | to it's worker threads.
     br
 
@@ -34,108 +34,185 @@ client-only
       | {{loadError}}
 
     //- pre
+    template(v-else)
+      b {{ listSizes.processing }}&nbsp;
+      | transactions processing,&nbsp;&nbsp
+      b {{ listSizes.sleeping }}&nbsp;
+      | transactions sleeping,&nbsp;&nbsp
+      b {{ listSizes.archiving }}&nbsp;
+      | to be archived,&nbsp;&nbsp
+      | and&nbsp;
+      b {{ listSizes.webhooks }}&nbsp;
+      | outstanding webhooks.
+      br
+      br
+      .columns.is-mobile.is-multiline
+        .column.is-6(v-for="group in groups")
+          .card.my-node-group-card
+            header.card-header
+              .card-header-title.has-text-grey Node group '{{ group.nodeGroup }}'
+            .card-content
+              //- .is-pulled-right
+                b-button.is-small.is-warning(@click="openGroupDetailsModal(group)") configure
+              //- | Workers: {{requiredWorkers(group)}}
+              //- br
+              //- | Group queues:&nbsp;&nbsp;
+              //- template(v-if="group.queueLength > 0")
+              //-   b {{group.queueLength}}
+              //- template(v-else)
+              //-   //- | Group queue:&nbsp;&nbsp;
+              //-   b -
+              .columns 
+                .column.is-5
+                  h1.title.is-size-5 Queue Lengths
+                  | &nbsp;&nbsp;in: {{ group.queues.in }}
+                  br
+                  | &nbsp;&nbsp;out: {{ group.queues.out }}
+                  br
+                  | &nbsp;&nbsp;admin: {{ group.queues.admin }}
+                .column.is-5
+                  h1.title.is-size-5 Throughput
+                  h1.subtitle.is-size-7 (during the past minute)
+                  | &nbsp;&nbsp;queued: {{ group.stats.queued }}
+                  br
+                  | &nbsp;&nbsp;de-queued: {{ group.stats.started }}
+                .column.is-2
+                  b-button.is-small.is-warning(@click="openGroupDetailsModal(group)") configure
+              //- h1.title.is-size-5 Workers
+              //- | in: {{ group.queues.in }}
+              table.table.is-fullwidth
+                thead
+                  tr
+                    th Node
+                    th Workers
+                    th Busy
+                    th Waiting
+                    th Required
+                    th Version
+                    th DATP
+                tbody
+                  template(v-for="node in group.nodes")
+                    tr
+                      td {{ shortNodeId(node.nodeId) }}
+                      td.has-text-right {{ node.workers.total }}
+                      td.has-text-right {{ node.workers.running }}
+                      td.has-text-right {{ node.workers.waiting }}
+                      td.has-text-right {{ node.workers.required }}
+                      td.has-text-right {{ node.appVersion }}
+                      td.has-text-right {{ node.datpVersion }}
+                      
+                    //- tr
+                      td(colspan="7")
+                        | {{ node.stats }}
+                //- tfoot
+                  tr
+                    td
+              //- .content.has-text-centered
+              //- | {{ group }}
+              //- | {{ listSizes }}
+
       //| {{ JSON.stringify(nodeStats, '', 2) }}
-    .columns.is-mobile(v-else)
-      .column.is-3(v-for="group in nodeStats")
-        .card.my-node-group-card
-          header.card-header
-            .card-header-title.has-text-grey Node group '{{ group.nodeGroup }}'
-          .card-content
-            .is-pulled-right
-              b-button.is-small.is-warning(@click="openGroupDetailsModal(group)") configure
-            //- | Workers: {{requiredWorkers(group)}}
-            //- br
-            | Group queue:&nbsp;&nbsp;
-            template(v-if="group.queueLength > 0")
-              b {{group.queueLength}}
-            template(v-else)
-              //- | Group queue:&nbsp;&nbsp;
-              b -
-            br
-            br
-            .content.has-text-centered
+      //- .columns.is-mobile.is-multiline
+        .column.is-3(v-for="group in nodeStats")
+          .card.my-node-group-card
+            header.card-header
+              .card-header-title.has-text-grey Node group '{{ group.nodeGroup }}'
+            .card-content
+              .is-pulled-right
+                b-button.is-small.is-warning(@click="openGroupDetailsModal(group)") configure
+              //- | Workers: {{requiredWorkers(group)}}
+              //- br
+              | Group queue:&nbsp;&nbsp;
+              template(v-if="group.queueLength > 0")
+                b {{group.queueLength}}
+              template(v-else)
+                //- | Group queue:&nbsp;&nbsp;
+                b -
+              br
+              br
+              .content.has-text-centered
 
-              // Display the orphaned queues (node has died)
-              template(v-if="Object.keys(group.orphanNodes).length > 0")
-                .orphan-queue(v-for="node in Object.values(group.orphanNodes)", @click="selectOrphan(group, node)")
-                  | Orphan {{shortNodeId(node.nodeId)}} ({{node.queueLength}})
-                br
-
-              // Display active queues
-              .card.my-node(v-for="node in group.nodes")
-                header.card-header
-
-                  b-icon.my-icon(v-if="group.nodeGroup==='master'", icon="arrange-bring-to-front", size="is-small", type="is-primary")
-                  b-icon.my-icon(v-else, icon="google-circles-communities", size="is-small", type="is-primary")
-
-                  b &nbsp; Node {{shortNodeId(node.nodeId)}}
-                .card-content
-
-                  // Transactions
-                  b Throughput / sec
+                // Display the orphaned queues (node has died)
+                template(v-if="Object.keys(group.orphanNodes).length > 0")
+                  .orphan-queue(v-for="node in Object.values(group.orphanNodes)", @click="selectOrphan(group, node)")
+                    | Orphan {{shortNodeId(node.nodeId)}} ({{node.queueLength}})
                   br
-                  table.myTable
-                    tr
-                      td trans:
-                      td
-                        b {{fiveSecondsOfTransactionsIn(node)}}
-                        | &nbsp;in
-                      td
-                        b {{fiveSecondsOfTransactionsOut(node)}}
-                        | &nbsp;out
-                    tr
-                      td steps:
-                      td(colspan="1")
-                        b {{fiveSecondsOfSteps(node)}}
 
-                  // Queues
-                  b Queue lengths
-                  br
-                  table.myTable
-                    tr
-                      td memory:
-                      td
-                        b {{node.events.regularMemoryQueue}}
-                        | &nbsp;in
-                      td
-                        b {{node.events.expressMemoryQueue}}
-                        | &nbsp;out
-                    tr
-                      td REDIS:
-                      td
-                        b {{node.regularQueueLength}}
-                        | &nbsp;in
-                      td
-                        b {{node.expressQueueLength}}
-                        | &nbsp;out
-                    tr
-                      td group:
-                      td
-                        b {{group.regularQueueLength}}
-                        | &nbsp;in
-                      td
-                        b {{group.expressQueueLength}}
-                        | &nbsp;out
+                // Display active queues
+                .card.my-node(v-for="node in group.nodes")
+                  header.card-header
 
-                  // Threads
-                  b Worker threads
-                  br
-                  | {{node.workers.running}} / {{node.workers.required}} / {{node.workers.total}} active
-                  template(v-if="node.workers.shuttingDown")
+                    b-icon.my-icon(v-if="group.nodeGroup==='master'", icon="arrange-bring-to-front", size="is-small", type="is-primary")
+                    b-icon.my-icon(v-else, icon="google-circles-communities", size="is-small", type="is-primary")
+
+                    b &nbsp; Node {{shortNodeId(node.nodeId)}}
+                  .card-content
+
+                    // Transactions
+                    b Throughput / sec
                     br
-                    | {{node.workers.shuttingDown}} shutting down
-                  template(v-if="node.workers.standby")
+                    //- table.myTable
+                      tr
+                        td trans:
+                        td
+                          b {{fiveSecondsOfTransactionsIn(node)}}
+                          | &nbsp;in
+                        td
+                          b {{fiveSecondsOfTransactionsOut(node)}}
+                          | &nbsp;out
+                      tr
+                        td steps:
+                        td(colspan="1")
+                          b {{fiveSecondsOfSteps(node)}}
+
+                    // Queues
+                    b Queue lengths
                     br
-                    | {{node.workers.standby}} on standby
-                  template(v-if="node.outstandingLongPolls")
+                    //- table.myTable
+                      tr
+                        td memory:
+                        td
+                          b {{node.events.regularMemoryQueue}}
+                          | &nbsp;in
+                        td
+                          b {{node.events.expressMemoryQueue}}
+                          | &nbsp;out
+                      tr
+                        td REDIS:
+                        td
+                          b {{node.regularQueueLength}}
+                          | &nbsp;in
+                        td
+                          b {{node.expressQueueLength}}
+                          | &nbsp;out
+                      tr
+                        td group:
+                        td
+                          b {{group.regularQueueLength}}
+                          | &nbsp;in
+                        td
+                          b {{group.expressQueueLength}}
+                          | &nbsp;out
+
+                    // Threads
+                    b Worker threads
                     br
-                    | {{node.outstandingLongPolls}} outstanding long polls
-                    //- br
-                    //- br
-                    //- br
+                    | {{node.workers.running}} / {{node.workers.required}} / {{node.workers.total}} active
+                    template(v-if="node.workers.shuttingDown")
+                      br
+                      | {{node.workers.shuttingDown}} shutting down
+                    template(v-if="node.workers.standby")
+                      br
+                      | {{node.workers.standby}} on standby
+                    template(v-if="node.outstandingLongPolls")
+                      br
+                      | {{node.outstandingLongPolls}} outstanding long polls
+                      //- br
+                      //- br
+                      //- br
 
     //- MondatPieChart()
-    b-modal(v-model="showOrphanNodeModal", :width="550", scroll="keep")
+    //- b-modal(v-model="showOrphanNodeModal", :width="550", scroll="keep")
       .card
         header.card-header
           //- p.card-header-title Field Properties {{tmp._id}}
@@ -200,8 +277,13 @@ export default {
       autoUpdateInterval: 5,
       polling: null,
 
+      // New stuff
+      processing: { },
+      listSizes: { },
+      groups: [ ],
+
       // Statistics data
-      nodeStats: [ ], // statistics about nodes
+      // nodeStats: [ ], // statistics about nodes
 
       // Don't keep repeating an error when polling
       // firstError: true,
@@ -259,9 +341,13 @@ export default {
       const url = `${this.$monitorEndpoint}/queueStats`
       try {
         this.loading = true
-        this.nodeStats = await this.$axios.$get(url)
-        delete this.nodeStats._status // Added by plugin
-        delete this.nodeStats._statusText
+        const reply = await this.$axios.$get(url)
+        this.processing = reply.processing
+        this.listSizes = reply.listSizes
+        this.groups = reply.groups
+
+        delete this.groups._status // Added by plugin
+        delete this.groups._statusText
         this.loading = false
         this.loadError = null
       } catch (e) {
@@ -288,58 +374,58 @@ export default {
       return nodeId.substring(0, 8)
     },//- shortNodeId
 
-    fiveSecondsOfTransactionsIn: function (node) {
-      const arr = node.stats.transactionsInPastMinute
-      const l = arr.length
-      const total = arr[l-1] + arr[l-2] + arr[l-3] + arr[l-4] + arr[l-5]
-      return Math.round(total / 5)
-    },
+    // fiveSecondsOfTransactionsIn: function (node) {
+    //   const arr = node.stats.transactionsInPastMinute
+    //   const l = arr.length
+    //   const total = arr[l-1] + arr[l-2] + arr[l-3] + arr[l-4] + arr[l-5]
+    //   return Math.round(total / 5)
+    // },
 
-    fiveSecondsOfTransactionsOut: function (node) {
-      const arr = node.stats.transactionsOutPastMinute
-      const l = arr.length
-      const total = arr[l-1] + arr[l-2] + arr[l-3] + arr[l-4] + arr[l-5]
-      return Math.round(total / 5)
-    },
+    // fiveSecondsOfTransactionsOut: function (node) {
+    //   const arr = node.stats.transactionsOutPastMinute
+    //   const l = arr.length
+    //   const total = arr[l-1] + arr[l-2] + arr[l-3] + arr[l-4] + arr[l-5]
+    //   return Math.round(total / 5)
+    // },
 
-    fiveSecondsOfSteps: function (node) {
-      const arr = node.stats.stepsPastMinute
-      const l = arr.length
-      const total = arr[l-1] + arr[l-2] + arr[l-3] + arr[l-4] + arr[l-5]
-      return Math.round(total / 5)
-    },
+    // fiveSecondsOfSteps: function (node) {
+    //   const arr = node.stats.stepsPastMinute
+    //   const l = arr.length
+    //   const total = arr[l-1] + arr[l-2] + arr[l-3] + arr[l-4] + arr[l-5]
+    //   return Math.round(total / 5)
+    // },
 
-    selectOrphan: function (group, node) {
-      // console.log(`selectOrphan(${group.nodeGroup}, ${node.nodeId})`)
-      this.orphanGroup = group
-      this.orphanNode = node
-    },
+    // selectOrphan: function (group, node) {
+    //   // console.log(`selectOrphan(${group.nodeGroup}, ${node.nodeId})`)
+    //   this.orphanGroup = group
+    //   this.orphanNode = node
+    // },
 
-    moveOrphanToGroup: async function (group, node) {
-      // console.log(`moveOrphanToGroup()`)
-      // console.log(`group=`, group)
-      // console.log(`node=`, node)
-      const url = `${this.$monitorEndpoint}/handleOrphanQueues/${group.nodeGroup}/${node.nodeId}`
-      // console.log(`url=`, url)
-      try {
-        const result = await this.$axios.$get(url)
-        delete result._status // Added by plugin
-        delete result._statusText
-        // console.log(`result=`, result)
-        this.orphanGroup = null
-        this.orphanNode = null
-        alert(`Moved ${result.moved} events from the dead node's queue to the node group's queue.`)
-      } catch (e) {
-        // console.log(`url=`, url)
-        console.log(`e=`, e)
-        alert(`Error while moving events to group queue`)
-      }
-    },
+    // moveOrphanToGroup: async function (group, node) {
+    //   // console.log(`moveOrphanToGroup()`)
+    //   // console.log(`group=`, group)
+    //   // console.log(`node=`, node)
+    //   const url = `${this.$monitorEndpoint}/handleOrphanQueues/${group.nodeGroup}/${node.nodeId}`
+    //   // console.log(`url=`, url)
+    //   try {
+    //     const result = await this.$axios.$get(url)
+    //     delete result._status // Added by plugin
+    //     delete result._statusText
+    //     // console.log(`result=`, result)
+    //     this.orphanGroup = null
+    //     this.orphanNode = null
+    //     alert(`Moved ${result.moved} events from the dead node's queue to the node group's queue.`)
+    //   } catch (e) {
+    //     // console.log(`url=`, url)
+    //     console.log(`e=`, e)
+    //     alert(`Error while moving events to group queue`)
+    //   }
+    // },
 
-    closeOrphanModal: function () {
-      this.orphanGroup = null
-      this.orphanNode = null
-    },
+    // closeOrphanModal: function () {
+    //   this.orphanGroup = null
+    //   this.orphanNode = null
+    // },
 
     openGroupDetailsModal: function (group) {
       this.showGroupDetailsModal = true
@@ -427,5 +513,6 @@ export default {
     padding: 2px;
     text-align: right;
   }
+
 }
 </style>

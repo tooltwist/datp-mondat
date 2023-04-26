@@ -10,7 +10,7 @@ client-only
     b-field.is-pulled-right
       b-checkbox(v-model="autoUpdate") Auto-update
     h2.title.is-4
-      .datemon-heading-icon
+      .mondat-heading-icon
         b-icon(icon="state-machine", size="is-small")
       | Nodes
 

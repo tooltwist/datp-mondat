@@ -9,9 +9,9 @@ export default {
     port: '$JUICE{mondat.port}'
   },
   api: {
-    protocol: '$JUICE{datp.protocol}',
-    host: '$JUICE{datp.host}',
-    port: '$JUICE{datp.port}',
+    protocol: '$JUICE{mondat.datp.protocol}',
+    host: '$JUICE{mondat.datp.host}',
+    port: '$JUICE{mondat.datp.port}',
     version: '1.0',
   },
   prefix: {

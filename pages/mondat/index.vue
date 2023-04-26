@@ -13,9 +13,9 @@
         //-   card(title="Performance", icon="gauge")
         //-     | System monitoring
 
-        NuxtLink(to="/mondat/caches")
-          card.myCard(title="Caches", icon="flash")
-            | Performance
+        NuxtLink(to="/mondat/performance")
+          card.myCard(title="Performance", icon="flash")
+            | Workload monitoring
 
         NuxtLink(to="/mondat/queues")
           card.myCard(title="Queues", icon="state-machine")
@@ -29,7 +29,15 @@
       .columns.is-mobile
 
         NuxtLink(to="/mondat/transactions")
-          card.myCard(title="Transactions", icon="bank-transfer")
+          card.myCard(title="Recent Transactions", icon="bank-transfer")
+            | Monitoring
+
+        NuxtLink(to="/mondat/inPlay")
+          card.myCard(title="Still Running", icon="bank-transfer")
+            | Long running
+
+        NuxtLink(to="/mondat/archived")
+          card.myCard(title="Archived", icon="bank-transfer")
             | Audit trail
 
     section.section

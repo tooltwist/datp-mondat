@@ -22,6 +22,10 @@ div
           span(:style="{ color: transactionStatusColor(rec) }") {{rec.status}}
         span(v-else-if="c.type==='dateTime'")
           | {{dateTime(c, rec)}}
+        span(v-else-if="c.type==='since'")
+          | {{since(c, rec)}}
+        span(v-else-if="c.type==='ago'")
+          | {{since(c, rec)}} ago
         span(v-else-if="c.type==='button'")
           button.button.is-small.my-tiny-button(@click.stop="doButtonClick(c, rec)") {{c.label}}
         span(v-else)
@@ -29,11 +33,13 @@ div
     tr.my-row-1(v-for="n in rows", v-if="rows>0 && n>data.length")
       td(v-for="c in columns")
     tr.my-final-row
-      td
+      td(v-for="c in columns")
 </template>
 
 
 <script>
+import formatDistanceToNow from 'date-fns/formatDistanceToNow'
+
 export default {
   props: {
     columns: Array,
@@ -71,7 +77,7 @@ export default {
 
     transactionStatusColor: function (rec) {
       // console.log(`rec=`, rec)
-      switch (rec.status.toLowerCase()) {
+      switch (rec.status && rec.status.toLowerCase()) {
         case 'completed': return '#19e775';
         case 'waiting': return '#f1c93d';
         case 'hold': return '#ff4445';
@@ -95,6 +101,9 @@ export default {
     },//-doButtonClick
 
     shortTxId(txId) {
+      if (!txId) {
+        return '?'
+      }
       if (txId.startsWith('tx-')) {
         txId = txId.substring(3)
       }
@@ -105,15 +114,52 @@ export default {
     },//- shortTxId
 
     dateTime(column, rec) {
-      const value = this.field(column, rec)
+      let value = this.field(column, rec)
       if (!value) {
         return ''
       }
-      const dat = new Date(value)
-      const day = dat.toLocaleDateString('PST')
-      const time = dat.toLocaleTimeString('PST')
-      return `${day} ${time}`
+      // return value + 'XZX'
+      try {
+        // console.log(`dateTime: typeof value=`, typeof value)
+        // console.log(`dateTime: value=`, value)
+        const dat = new Date(value)
+        // console.log(`dateTime: typeof value=`, typeof value)
+        // console.log(`dateTime: value=`, value)
+        // console.log(`dateTime: dat=`, dat)
+        const day = dat.toLocaleDateString('PST')
+        const time = dat.toLocaleTimeString('PST')
+        return `${day} ${time}`
+      } catch (e) {
+        // Something wrong with the date value
+        console.log(`Error converting date:`, e)
+        return value
+      }
     },//-dateTime
+
+    since(column, rec) {
+      let value = this.field(column, rec)
+      if (!value) {
+        return ''
+      }
+      // return value + 'XZX'
+      try {
+        // console.log(`dateTime: typeof value=`, typeof value)
+        // console.log(`dateTime: value=`, value)
+        const dat = new Date(value)
+        // console.log(`dateTime: typeof value=`, typeof value)
+        // console.log(`dateTime: value=`, value)
+        // console.log(`dateTime: dat=`, dat)
+        // const day = dat.toLocaleDateString('PST')
+        // const time = dat.toLocaleTimeString('PST')
+        // return `${day} ${time}`
+        const since = formatDistanceToNow(dat)
+        return since
+      } catch (e) {
+        // Something wrong with the date value
+        console.log(`Error converting date:`, e)
+        return value
+      }
+    },//-since
 
     columnStyle(column, rec) {
       // console.log(`columnStyle()`, column)
@@ -227,7 +273,7 @@ export default {
   padding: 5px 5px;
   padding-left: 25px;
 
-  font-size: 14px;
+  font-size: 15px;
   font-weight: normal;
   font-stretch: normal;
   font-style: normal;

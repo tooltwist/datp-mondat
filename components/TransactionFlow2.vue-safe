@@ -10,7 +10,7 @@
     | Loading...
   span(v-else-if="loadError")
     .notification.is-danger() {{loadError}}
-  template(v-else)
+  template(v-else-if="transaction")
     section
       table
       template(v-for="(f, f2i) in transaction.f2")
@@ -24,22 +24,30 @@
         td.my-nodeGroup-column(:class="{ 'my-selected-f2':isSelected(f2i), 'my-sibling-f2':isSibling(f2i)  }")
           div(v-if="f2Type(f) === 'TX_START'")
             .f2-tx(@click="selectFlow(f2i)")
-              b Start TX
+              | -- tx
+              i &nbsp;{{ f.__transactionType }}
+              | &nbsp;--
             .f2-index {{f2i}}
           div(v-else-if="f2Type(f) === 'TX_CALLBACK'", :class="indentForF2Level(f)")
             .f2-tx(@click="selectFlow(f2i)")
-              | {{f.callback}}
+              | --
+              i &nbsp;{{f2Callback(f)}}
+              | &nbsp;--
             .f2-index {{f2i}}
           div(v-else-if="f2Type(f) === 'PIPELINE_START'", :class="indentForF2Level(f)")
             .f2-pipeline-start(@click="selectFlow(f2i)")
-              | Pipeline {{f._pipelineName}}
+              | -- pipeline
+              i &nbsp;{{f.__pipeline}}
+              | &nbsp;--
               template(v-if="f.nodeGroup")
                 br
                 | ({{f.nodeGroup}})
             .f2-index {{f2i}}
           div(v-else-if="f2Type(f) === 'PIPELINE_CALLBACK'", :class="indentForF2Level(f)")
             .f2-pipeline(@click="selectFlow(f2i)")
-              | {{f.callback}}
+              | --
+              i &nbsp;{{f2Callback(f)}}
+              | &nbsp;--
               //- template(v-if="f.nodeGroup")
                 br
                 | ({{f.nodeGroup}})
@@ -47,6 +55,7 @@
           div(v-else-if="f2Type(f) === 'STEP'", :class="indentForF2Level(f)")
             .f2-step(@click="selectFlow(f2i)")
               | {{stepTypeDescription(f)}}
+            | &nbsp;
             .f2-index {{f2i}}
 
         // Display columns to the right
@@ -56,18 +65,18 @@
       .columns 
         .column
           //- | {{selectedF2i}}, {{siblingF2i}}
-          b-field(:label="`Flow    (#${selectedF2i})`")
+          b-field(:label="(selectedF2i>=0) ? `Flow    (#${selectedF2i})` : `Flow`")
             b-input.my-state-json(type="textarea", rows="20", v-model="selectedFlowJSON", disabled)
           .my-flowMsg {{flowMsg}}
         .column
           b-field(:label="stepJSONIsForSibling ? `Definition of related step` : `Step definition`")
             b-input.my-state-json(type="textarea", rows="20", v-model="selectedStepJSON", disabled, :class="{'my-sibling-step': stepJSONIsForSibling}")
-
+  template(v-else)
+    br
+    .notification.is-danger Unknown transaction
 </template>
 
 <script>
-import { FLOWTYPE_TYPES } from '@babel/types'
-
 
 export default {
   components: {
@@ -75,6 +84,7 @@ export default {
 
   props: {
     txId: String,
+    refreshCounter: Number,
   },
 
   async mounted() {
@@ -94,7 +104,17 @@ export default {
         await this.reloadDetails()
         // await this.showTransactionDetails()
       }, 500)
+    },
+    refreshCounter: async function () {
+      // The txid changes on the test page, when a new test is run.
+      // We need to load the details of the new transaction, but we
+      // wait a short while so the log has something to show.
+      // setTimeout(async () => {
+        await this.reloadDetails()
+        // await this.showTransactionDetails()
+      // }, 500)
     }
+
   },
 
   data: function () {
@@ -114,7 +134,6 @@ export default {
 
   computed: {
     maxLevel: function () {
-      console.log(`maxLevel`)
       let max = 0
       for (const f of this.transaction.f2) {
         // console.log(`f=`, f)
@@ -132,14 +151,17 @@ export default {
     reloadDetails: async function() {
       // Same loading as asyncData
       this.loading = true
-      const url = `${this.$monitorEndpoint}/transaction/${this.txId}/state`
+      const url = `${this.$monitorEndpoint}/transaction/${this.txId}/stateStatus`
       console.log(`reloadDetails(): url=${url}`)
       try {
         const reply = await this.$axios.$get(url)
         delete reply._status
         delete reply._statusText
         console.log(`reply=`, reply)
-        this.transaction = reply
+        this.transaction = reply.state
+        // if (!transaction.f2) {
+        //   transaction.f2 = [ ]
+        // }
         // this.transactionStateJSON = JSON.stringify(this.transaction, '', 2)
         // console.log(`txinfo=`, this.txinfo)
         // this.steps = this.txinfo.steps
@@ -203,6 +225,22 @@ export default {
       }
     },
 
+    f2StepId(f2) {
+      if (typeof(f2.__stepId) !== 'undefined') {
+        return f2.__stepId
+      } else {
+        return f2.stepId
+      }
+    },
+
+    f2Description(f2) {
+      if (typeof(f2.__description) !== 'undefined') {
+        return f2.__description
+      } else {
+        return f2.description
+      }
+    },
+
     f2Sibling(f2) {
       if (typeof(f2.__sibling) !== 'undefined') {
         return f2.__sibling
@@ -211,6 +249,14 @@ export default {
         return f2.s
       }
       return -1      
+    },
+
+    f2Callback(f2) {
+      if (typeof(f2.__callback) !== 'undefined') {
+        return f2.__callback
+      } else {
+        return f2.callback
+      }
     },
 
     isPlumbing(f2) {
@@ -246,12 +292,14 @@ export default {
     },
 
     stepTypeDescription(flow) {
-      if (flow.stepId) {
-        // console.log(`flow.stepId=`, flow.stepId)
+      const stepId = this.f2StepId(flow)
+      if (stepId) {
+        // console.log(`stepId=`, stepId)
         // console.log(`this.transaction.steps=`, this.transaction.steps)
         // return flow.description
         // console.log(`this.transaction.steps=`, this.transaction.steps)
-        const step = this.transaction.steps[flow.stepId]
+        const stepId = this.f2StepId(flow)
+        const step = this.transaction.steps[stepId]
         if (step.stepDefinition && step.stepDefinition.stepType) {
           return step.stepDefinition.stepType
         }
@@ -282,8 +330,9 @@ export default {
       this.flowMsg = s
 
       // Show the step definition (if there is one for this flow)
-      if (flow.stepId) {
-        const step = this.transaction.steps[flow.stepId]
+      const stepId = this.f2StepId(flow)
+      if (stepId) {
+        const step = this.transaction.steps[stepId]
         if (step) {
           this.selectedStepJSON = JSON.stringify(step, '', 2)
           this.stepJSONIsForSibling = false
@@ -292,8 +341,9 @@ export default {
       } else if (this.siblingF2i >= 0) {
         // Show the step definition of the sibling (the step this callback refers to).
         const siblingFlow = this.transaction.f2[this.siblingF2i]
-        if (siblingFlow.stepId) {
-          const siblingStep = this.transaction.steps[siblingFlow.stepId]
+        const siblingStepId = this.f2StepId(siblingFlow)
+        if (siblingStepId) {
+          const siblingStep = this.transaction.steps[siblingStepId]
           if (siblingStep) {
             this.selectedStepJSON = JSON.stringify(siblingStep, '', 2)
             this.stepJSONIsForSibling = true
@@ -318,11 +368,17 @@ export default {
 
 <style lang="scss">
 @import "@/assets/scss/main.scss";
+
 .my-transactionFlow {
-  // color: pink;
+  // $heading-font-family: Arial, Helvetica, sans-serif;
+  $heading-font-family: Verdana, Geneva, Tahoma, sans-serif;
+
+  $heading-color: white;
+  $heading-font-size: 0.8em;
+  $heading-font-weight: 500;
 
   .my-state-json textarea {
-    color: #e0e0e0 !important;
+    // color: #e0e0e0 !important;
     font-size: 0.95em;
     line-height: 111%;
   }
@@ -333,71 +389,80 @@ export default {
 
   .f2-tx {
     display: inline-block;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 0.9em;
-    // font-style: italic;
+    font-family: $heading-font-family;
+    font-size: $heading-font-size;
+    font-weight: $heading-font-weight;
+    color: $heading-color;
     padding: 2px;
     padding-left: 12px;
     padding-right: 12px;
-    color: #ccc;
     text-align: center;
-    border: solid 1px #485fc7;
+    // border: solid 1px #485fc7;
     cursor: pointer;
   }
 
   .f2-index {
     display: inline-block;
-    padding-left: 10px;
-    color: #555;
-    font-size: 0.8em;
+    position: relative;
+    top: 3px;
+    padding-left: 5px;
+    color: #999;
+    font-size: 0.7em;
   }
 
 
   .f2-pipeline-start {
     display: inline-block;
-    font-size: 0.9em;
-    color: white;
-    background-color: #a20f2c;
+    font-family: $heading-font-family;
+    font-size: $heading-font-size;
+    font-weight: $heading-font-weight;
+    color: $heading-color;
+    // color: blue;
+    // background-color: #a20f2c;
     text-align: center;
     padding: 1px;
     padding-left: 5px;
     padding-right: 5px;
-    border-top: solid 1px #aaa;
-    border-left: solid 1px #aaa;
-    border-bottom: solid 1px #333;
-    border-right: solid 1px #333;
-    cursor: pointer;
-  }
-
-  .f2-step {
-    display: inline-block;
-    font-size: 0.9em;
-    color: white;
-    background-color: #485fc7;
-    padding: 1px;
-    padding-left: 5px;
-    padding-right: 5px;
-    margin-top: 3px;
-    text-align: center;
-    border: solid 1px #485fc7;
-    border-top: solid 1px #aaa;
-    border-left: solid 1px #aaa;
-    border-bottom: solid 1px #333;
-    border-right: solid 1px #333;
+    // border-top: solid 1px #aaa;
+    // border-left: solid 1px #aaa;
+    // border-bottom: solid 1px #333;
+    // border-right: solid 1px #333;
     cursor: pointer;
   }
 
   .f2-pipeline {
     display: inline-block;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 0.9em;
-    color: #666;
+    font-family: $heading-font-family;
+    font-size: $heading-font-size;
+    font-weight: $heading-font-weight;
+    color: $heading-color;
     padding: 1px;
     padding-left: 5px;
     padding-right: 5px;
     margin-top: 3px;
     text-align: center;
-    border: solid 1px #666;
+    // border: solid 1px #666;
+    cursor: pointer;
+  }
+
+  .f2-step {
+    display: inline-block;
+    font-size: 1.0em;
+    // font-weight: $heading-font-weight;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    color: white;
+    // background-color: #485fc7;
+    background-color: #666;
+    padding: 1px;
+    padding-left: 15px;
+    padding-right: 15px;
+    margin-top: 3px;
+    text-align: center;
+    // border: solid 1px #485fc7;
+    // border-top: solid 1px #aaa;
+    // border-left: solid 1px #aaa;
+    // border-bottom: solid 1px #333;
+    // border-right: solid 1px #333;
     cursor: pointer;
   }
 
@@ -410,10 +475,13 @@ export default {
   }
 
   .my-selected-f2 div div {
-    border: solid 2px magenta;
+    // border: solid 2px magenta;
+    // background-color: magenta;
 
-    &.f2-pipeline, &.f2-step, &.f2-tx {
-      background-color: white;
+    &.f2-pipeline-start, &.f2-pipeline, &.f2-step, &.f2-tx {
+      // background-color: magenta;
+      background-color: #f14668;
+      // background-color: white;
       color: black;
     }
 
@@ -423,12 +491,14 @@ export default {
   }
 
   .my-sibling-f2 div div {
-    border: solid 1px magenta;
+    // border: solid 1px magenta;
+    border: solid 1px #f14668;
 
     &.f2-pipeline-start, &.f2-step, &.f2-tx {
-      background-color: magenta;
+      border: dashed 1px #f14668;
+      // background-color: magenta;
       color: white;
-      font-weight: 550;
+      // font-weight: 550;
     }
 
     &.f2-index {
@@ -437,8 +507,7 @@ export default {
   }
 
   .my-sibling-step .textarea {
-    // color: #202020 !important;
-    color: #707 !important;
+    color: #f14668 !important;
   }
 }
 </style>

@@ -10,7 +10,7 @@
     .is-pulled-right
       b-button(type="is-success", @click="backToTransactions") Back
     h2.title.is-4.has-text-grey
-      .datemon-heading-icon
+      .mondat-heading-icon
         b-icon(icon="bank-transfer", size="is-medium")
       | Transaction {{txId}}
     br

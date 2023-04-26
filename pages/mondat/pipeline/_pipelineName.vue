@@ -17,7 +17,7 @@
         | &nbsp;&nbsp;&nbsp;
         b-button(type="is-gray", @click="backToPipelines") Back
       h2.title.is-4
-        .datemon-heading-icon
+        .mondat-heading-icon
           b-icon(icon="bank-transfer", size="is-small")
         | Pipeline '{{pipelineName}}' &nbsp;&nbsp;&nbsp;
         b-tag(v-if="displayedVersion==='draft'", type="is-primary") &nbsp;Draft version - can be modified&nbsp;
@@ -39,7 +39,7 @@
           //
           //  Tab for pipeline details
           //
-          b-tab-item(key="details", label="Details")
+          b-tab-item(value="details", label="Details")
             .my-update-status.has-text-right &nbsp; {{YupdateStatus}}
             br
             b-field(horizontal, label="Name", label-position="inside")
@@ -79,7 +79,7 @@
           //
           //  Tab with pipeline versions
           //
-          b-tab-item(key="versions", label="All versions")
+          b-tab-item(value="versions", label="All versions")
             //- | {{pipelineVersions}}
             MondatTable(:data="pipelineVersions",
                 :columns="versionsColumns",
@@ -93,7 +93,7 @@
           //
           // Tab for the pipeline definition.
           //
-          b-tab-item(key="definition", label="Definition")
+          b-tab-item(value="definition", label="Definition")
             br
             .my-pipeline-header Pipeline Steps for {{shortVersion(displayedVersion)}}
             br
@@ -173,7 +173,7 @@
           //
           // Tab for commit history.
           //
-          b-tab-item(key="history", label="History")
+          b-tab-item(value="history", label="History")
             br
             .my-pipeline-header History for {{shortVersion(displayedVersion)}}
             br
@@ -184,7 +184,7 @@
           //
           // Tab with description and notes
           //
-          //- b-tab-item(key="notes", label="Notes")
+          //- b-tab-item(value="notes", label="Notes")
             b-field(label="Notes")
               textarea.textarea(rows="15", v-model="notes", placeholder="Enter any notes here...")
         //- hr

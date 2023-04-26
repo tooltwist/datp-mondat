@@ -17,22 +17,31 @@
     //- .is-clearfix
 
     h2.title.is-4
-      .datemon-heading-icon
+      .mondat-heading-icon
         b-icon(icon="bike-fast", size="is-small")
       | Test {{testName}}
+
 
     span(v-if="loading")
       | Loading...
     span(v-else-if="loadError")
       .notification.is-danger() {{loadError}}
     template(v-else)
-      .is-pulled-right
-        button.button.is-success(@click="testRunner") Run test
-      .is-clearfix
-      br
-      section
-
-        //- | {{transactionId}}
+        .is-pulled-right
+          template(v-if="transactionId")
+            button.button.is-success(@click="refreshCounter++") Refresh
+            | &nbsp;&nbsp;&nbsp;
+          button.button.is-success(@click="testRunner") Run test
+        template(v-if="transactionId")
+          | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          span.my-txId(v-if="transactionId") {{transactionId}}
+          br
+          br
+          StateDiagramComponent(:txDetails="details")
+        br
+        //- .is-clearfix
+        //- section
+        //- br
         b-tabs(v-model="activeTab", type="is-toggle-rounded")
           b-tab-item(label="Definition")
             br
@@ -87,9 +96,18 @@
               | {{pollTimer}}
             .is-clearfix
 
+          b-tab-item(label="Transaction", v-if="details")
+            TransactionDetailsComponent(:txDetails="details", :refreshCounter="refreshCounter")
 
-          b-tab-item(label="Transaction")
-            TransactionAudit(v-if="transactionId", :txId="transactionId")
+          b-tab-item(label="Flow", v-if="details")
+            TransactionFlow2Component(:txDetails="details", :refreshCounter="refreshCounter")
+
+          b-tab-item(label="Cache/Archive", v-if="details")
+            TransactionCacheComponent(:txDetails="details", :refreshCounter="refreshCounter", @refresh="reloadDetails")
+
+          b-tab-item(label="State", v-if="details")
+            TransactionStateComponent(:txDetails="details", :refreshCounter="refreshCounter")
+
 
 </template>
 
@@ -126,15 +144,21 @@ export default {
       // isNew: false,
       errorMsg: '',
 
+      transactionId: null, // Set from testResponse.metadata.txId
+      details: null,
+      refreshCounter: 1,
+
       polling: null,
       testTimer: '',
       testStatus: '', // Only set if not 200
       testResponse: '',
-      transactionId: null, // Set from testResponse.metadata.txId
+      
       pollTimer: '',
       pollStatus: '', // Only set if not 200
       pollResponse: '',
       readytToTestAgain: false, // Set once test is completed
+
+      transactionState: '',
     }
   },//- data
 
@@ -161,7 +185,7 @@ export default {
           transactionType: '1.0',
         }
         currentTest.inputData = JSON.stringify({
-          "metadata": { "reply": "longpoll" },
+          "metadata": { "reply": "shortpoll" },
           "data": { }
         }, '', 2)
         return { activeTab: 0, testName: '(new)', currentTest, mapping, loading: false }
@@ -196,6 +220,19 @@ export default {
     // }
     this.stopAnyPolling()
   },//- beforeDestroy
+
+    
+  watch: {
+    transactionId: async function () {
+      await this.reloadDetails()
+    },
+
+    refreshCounter: async function () {
+      await this.reloadDetails()
+    },
+  },
+
+
 
   computed: {
     inputTabLabel: function() {
@@ -281,7 +318,6 @@ export default {
       })
     },
 
-
     async testRunner() {
       // console.log(`testRunner()`)
       // alert(`testRunner()`)
@@ -334,6 +370,11 @@ export default {
         this.testTimer = `${endTime - this.startTime}ms`
         this.readytToTestAgain = true
 
+        // Refresh the tabs shortly
+        setTimeout(async () => {
+          this.refreshCounter++
+        }, 500)
+
       } catch (e) {
         console.log(`e=`, e)
         // alert(`Error invoking API`)
@@ -341,11 +382,12 @@ export default {
         this.readytToTestAgain = true
         return
       }
-
+console.log(`VOG started with status ${status}`)
       /*
        *  See if we need to poll for a result
        */
       const metadata = response.metadata
+console.log(`metadata=`, metadata)
       if (status !== 200) {
 
         /*
@@ -355,18 +397,19 @@ export default {
       } else if (!metadata) {
         
         /*
-         *  The eply contained no metadata.
+         *  The reply contained no metadata.
          */
         this.pollResponse = `No metadata!`
       } else {
-
+console.log(`VOG now polling for completion 1`)
         /*
-         *  We need to poll till the transaction completes.
+         *  Poll until the transaction completes.
          */
         // this.pollResponse = `polling...`
         this.transactionId = metadata.txId
         const inquiryToken = metadata.inquiryToken
         if (metadata.status === 'running' || metadata.status === 'queued' || metadata.status === 'sleeping') {
+console.log(`VOG now polling for completion 2`)
           // We'll need to poll for a response
           this.pollResponse = `polling...`
           // alert(`START POLLING`)
@@ -392,7 +435,9 @@ export default {
                 response2 = await this.$axios.$get(url2, {
                   // Put inquiryToken in a header
                 })
-                
+
+// console.log(`response2=`, response2)
+
                 // These values are inserted by ~/plugins/axios.js
                 // See https://stackoverflow.com/a/50176112/1350573
                 status2 = response2._status
@@ -403,9 +448,13 @@ export default {
               } catch (e) {
                 // Probably an HTTP error response
                 // console.log(`e.response=`, e.response)
-                status2 = e.response.status
-                statusText2 = e.response.statusText
-                response2 = e.response.data
+                if (e.response) {
+                  status2 = e.response.status
+                  statusText2 = e.response.statusText
+                  response2 = e.response.data
+                } else {
+                  console.log(`e=`, e)
+                }
               }
               // console.log(`status2=`, status2)
               // console.log(`response=`, response)
@@ -422,7 +471,7 @@ export default {
                 /*
                  *  A valid reply and still running. Wait a while and try again.
                  */
-                console.log(`Still running - wait a while and try again.`)
+                // console.log(`Still running - wait a while and try again.`)
                 this.polling = setTimeout(pollForStatus, POLLING_INTERVAL)
               } else {
                 // Finish up
@@ -454,6 +503,44 @@ export default {
         this.polling = null
       }
     },
+
+    reloadDetails: async function() {
+      console.log(`reloadDetails()`)
+      this.loading = true
+      const url = `${this.$monitorEndpoint}/transaction/${this.transactionId}/stateStatus`
+      console.log(`reloadDetails(): url=${url}`)
+      try {
+        const txDetails = await this.$axios.$get(url)
+        delete txDetails._status
+        delete txDetails._statusText
+        console.log(`txDetails=`, txDetails)
+
+        if (!txDetails.state) {
+          txDetails.state = { }
+        }
+        if (!txDetails.state.transactionData) {
+          txDetails.state.transactionData = { }
+        }
+        if (!txDetails.state.f2) {
+          txDetails.state.f2 = [ ]
+        }
+        if (!txDetails.state.retry) {
+          txDetails.state.retry = { }
+        }
+        this.details = txDetails
+        // this.transactionStateJSON = reply.state ? JSON.stringify(reply.state, '', 2) : ''
+        // console.log(`txinfo=`, this.txinfo)
+        // this.steps = this.txinfo.steps
+        // this.hierarchy = formHierarchy(this.steps)
+      } catch (e) {
+        console.log(`e=`, e)
+        console.log(`e.response=`, e.response)
+        console.log(`url was`, url)
+        this.loadError = e.toString()
+      }
+      this.loading = false
+    },//- reloadDetails
+
   },//- methods
 
 }
@@ -462,5 +549,9 @@ export default {
 <style lang="scss" scoped>
 .myModalContent {
   min-height: 700px;
+}
+
+.my-txId {
+  color: #485fc7;
 }
 </style>

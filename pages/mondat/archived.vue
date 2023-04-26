@@ -5,17 +5,17 @@
  * the author or owner be liable for any claim or damages.
  */
 <template lang="pug">
-.my-transactions-page
+.my-archived-page
   section.section
     b-field.is-pulled-right
       b-checkbox(v-model="autoUpdate") Auto-update
     h2.title.is-4
       .mondat-heading-icon
-        b-icon(icon="bank-transfer", size="is-small")
-      | Recently Finished Transactions
+        b-icon(icon="archive-outline", size="is-small")
+      | Archived Transactions
 
     MondatNotification
-      | The following are the most recently run transactions.
+      | The following transactions have finished and been saved to the archive.
 
     //- span(v-if="loading")
       | Loading...
@@ -30,7 +30,7 @@
             b-button(type="is-primary", @click="reselect") update
           b-field(label="Filter", horizontal)
             b-input(v-model="filter", @ZZinput="reselect", placeholder="(minimum 3 characters)")
-      MondatTable(:data="transactions", :columns="columns2", @select="selectTransaction")
+      MondatTable.my-table(:data="transactions", :columns="columns2", @select="selectTransaction")
       client-only
         InfiniteLoading(@infinite="infiniteHandler", :identifier="infiniteId")
 
@@ -45,6 +45,9 @@
 import MondatNotification from "~/components/MondatNotification.vue"
 import MondatTable from "~/components/MondatTable.vue"
 import InfiniteLoading from 'vue-infinite-loading'
+import { format } from 'date-fns'
+import fromUnixTime from 'date-fns/fromUnixTime'
+import formatDistanceToNow from 'date-fns/formatDistanceToNow'
 
 const PAGESIZE = 10
 
@@ -90,38 +93,61 @@ export default {
       // ],//- columns
 
       columns2: [
-        {
-          // field: "txId",
-          label: "transaction id",
-          // width:
-          type: 'transactionIconId'
-        },
-        {
-          // field: "txId",
-          label: "external id",
-          // width:
-          type: 'externalId'
-        },
         // {
-        //   field: "txId",
-        //   label: "transaction id",
+        //   // field: "txId",
+        //   label: "Owner",
+        //   // width:
+        //   type: 'owner'
         // },
         {
-          field: "transactionType",
-          label: "type",
+          field: "txId",
+          label: "transaction id",
+          width: 300,
+          // type: 'transactionIconId'
+        },
+        // {
+        //   // field: "txId",
+        //   label: "external id",
+        //   width: 300,
+        //   type: 'externalId'
+        // },
+        // // {
+        // //   field: "txId",
+        // //   label: "transaction id",
+        // // },
+        // {
+        //   field: "transactionType",
+        //   label: "type",
+        //   // width:
+        // },
+        // {
+        //   field: "status",
+        //   label: "status",
+        //   // width:
+        //   type: 'transactionStatus'
+        // },
+        // {
+        //   field: "startTimeText",
+        //   label: "start time",
+        //   // width:
+        // },
+        {
+          field: "created",
+          label: "Created",
+          type: "dateTime"
           // width:
         },
         {
-          field: "status",
-          label: "status",
-          // width:
-          type: 'transactionStatus'
-        },
-        {
-          field: "startTime",
-          label: "start time",
+          field: "created",
+          label: "",
+          type: "ago",
           // width:
         },
+        // {
+        //   field: "since",
+        //   label: "Age",
+        //   // width:
+        // },
 
       ],//- columns2
 
@@ -148,6 +174,7 @@ export default {
   // },//- asyncData
 
   created() {
+    console.log(`created()`)
     // Only run on the client
     if (process.server) {
       return
@@ -155,8 +182,10 @@ export default {
 
     this.polling = setInterval(async () => {
       if (this.autoUpdate) {
-        const url = `${this.$monitorEndpoint}/transactions`
+        // const url = `${this.$monitorEndpoint}/transactions`
+        const url = `${this.$monitorEndpoint}/transactions/archived`
         this.transactions = await this.$axios.$get(url)
+        console.log(`this.transactions=`, this.transactions)
       }
     }, 2000)
   },//- created
@@ -170,7 +199,8 @@ export default {
       // console.log(`selectTRansaction!!!`, row)
       const txId = row.txId
       // console.log(`selectTransaction(${txId})`)
-      this.$router.push({ path: `/mondat/transactions/${txId}` })
+      // this.$router.push({ path: `/mondat/inPlay/${txId}` })
+      this.$router.push({ path: `/mondat/txLookup`, query: { txId } })
     },
 
     // rowClass: function(row) {
@@ -182,16 +212,34 @@ export default {
     // },//- rowClass
 
     infiniteHandler: async function($state) {
-      console.log(`infiniteHandler()`)
+      // console.log(`infiniteHandler() 2`)
 
-      let url = `${this.$monitorEndpoint}/transactions?page=${this.page}&pagesize=${PAGESIZE}&status=success`
+      let url = `${this.$monitorEndpoint}/transactions/archived?page=${this.page}&pagesize=${PAGESIZE}`
+      // let url = `${this.$monitorEndpoint}/transactions?page=${this.page}&pagesize=${PAGESIZE}&status=running,queued`
+      // let url = `${this.$monitorEndpoint}/transactions?page=${this.page}&pagesize=${PAGESIZE}`
       if (this.filter) { url += `&filter=${this.filter}` }
-      // console.log(`url=`, url)
+      console.log(`url=`, url)
       try {
         const result = await this.$axios.$get(url)
+        console.log(`result=`, result)
         const transactions = result
-        // console.log(`transactions.length=`, transactions.length)
+        // console.log(`transactions=`, transactions)
         if (transactions.length) {
+          // // Set the interval from now
+          // transactions.forEach(t => {
+          //   // const dat = new Date('2023-03-12T12:22:03.000Z')
+          //   console.log(`t=`, t)
+          //   try {
+          //     const dat = new Date(t.created)
+          //     t.since = formatDistanceToNow(dat)
+          //     // console.log(`dat=`, dat)
+          //     // console.log(`t.since=`, t.since)
+          //   } catch (e) {
+          //     console.log(`Error setting t.since:`, e)
+          //   }
+          // })
+
+          // Add to our page
           this.page += 1
           this.transactions.push(...transactions)
           $state.loaded()
@@ -218,12 +266,26 @@ export default {
 <style lang="scss">
 @import "@/assets/scss/main.scss";
 
-.my-transactions-page {
+.my-archived-page {
+
+  color: orange !important;
+
+  h2.title.is-4 {
+    color: orange !important;
+  }
 
   .mondat-heading-icon {
     display: inline-block;
-    color: #16aa58;
+    color: orange;
     padding-right: 20px;
+  }
+
+  .my-table {
+    color: orange !important;
+
+    &.my-row-2 {
+      color: orange !important;
+    }
   }
 }
 </style>

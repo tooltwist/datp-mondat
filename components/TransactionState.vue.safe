@@ -1,0 +1,265 @@
+/* Copyright Tooltwist Innovations Limited - All Rights Reserved
+ * This file is part of DATP and as such is proprietary and confidential software.
+ * Unauthorized copying of this file, via any medium is strictly prohibited. All
+ * rights reserved. No warranty, explicit or implicit, provided. In no event shall
+ * the author or owner be liable for any claim or damages.
+ */
+<template lang="pug">
+.my-transactionState
+  //- | {{ details }}
+  span(v-if="loading")
+    | Loading...
+  span(v-else-if="loadError")
+    .notification.is-danger() {{loadError}}
+  template(v-else-if="details.state")
+    //- | {{ details.state }}
+    section
+      table
+        tr
+          td.my-table-label Owner:
+          td.my-flag {{ details.state.owner }}
+        tr
+          td.my-table-label External Id:
+          td.my-flag {{ details.state.externalId }}
+        tr
+          td.my-table-label Transaction type:
+          td.my-flag {{ details.state.transactionData.transactionType }}
+        tr
+          td.my-table-label Status:
+          td.my-flag {{ details.state.transactionData.status }}
+
+        tr
+          td.my-table-label Node group:
+          td.my-flag {{ details.nodeGroup }}
+        tr
+          td.my-table-label Pipeline:
+          td.my-flag {{ details.pipeline }}
+        tr
+          td.my-table-label Queue:
+          td.my-flag {{ details.queue }}
+
+
+      hr
+      table
+        tr
+          td.my-table-label Processing Status:
+          td.my-flag {{ details.processingState }}
+        tr
+          td.my-table-label
+            //- b(v-if="details.inCache") Currently In Cache
+            //- b(v-else) Not Cached
+            | Is in the cache:
+          td.my-flag {{ details.inCache ? 'Y' : 'N' }}
+        tr
+          td.my-table-label
+            //- b(v-if="details.inCache") Currently In Cache
+            //- b(v-else) Not Cached
+            | Remove from cache at:
+          td.my-flag {{ details.ttl }}
+        tr
+          //- td.my-table-label Processing since:&nbsp;
+          td.my-table-label In processing list:&nbsp;
+          td.my-flag {{ timeText(details.processing) }}
+          td.my-table-duration {{ durationText(details.processing, 'in ', '') }}
+        tr
+          td.my-table-label In sleeping list:&nbsp;
+          td.my-flag {{ timeText(details.inSleepingList) }}
+          td.my-table-duration {{ durationText(details.inSleepingList, 'in ', '') }}
+        tr
+          td.my-table-label timestamp: 
+          td.my-flag {{ timeText(details.ts) }}
+          td.my-table-duration {{ durationText(details.ts, '', ' ago') }}
+      hr
+      table
+        tr
+          td.my-table-label
+            //- b(v-if="details.inArchive") In archive
+            //- b(v-else) Not archived
+            | Is archived:
+          td.my-flag {{ details.inArchive ? 'Y' : 'N' }}
+        tr
+          td.my-table-label Archive at (toArchive):
+          td.my-flag {{ timeText(details.toArchive) }} &nbsp;
+          td.my-table-duration {{ durationText(details.toArchive, 'in ', '') }}
+        //- tr
+          td &nbsp;
+        tr
+          td.my-table-label Webhook:&nbsp;
+          td.my-flag {{ timeText(details.inWebhookList) }}
+          td.my-table-duration {{ durationText(details.inWebhookList, 'in ', '') }}
+      //- hr
+
+    //- section
+      br
+      b-field(label="Full Transaction State")
+        b-input.my-state-json(type="textarea", rows="37", v-model="transactionStateJSON", disabled)
+
+  template(v-else)
+    br
+    .notification.is-danger Unknown transaction
+
+</template>
+
+<script>
+import fromUnixTime from 'date-fns/fromUnixTime'
+import formatDistanceToNow from 'date-fns/formatDistanceToNow'
+import formatISO from 'date-fns/formatISO'
+import formatRFC7231 from 'date-fns/formatRFC7231'
+
+export default {
+  components: {
+  },
+
+  props: {
+    txId: String,
+    refreshCounter: Number,
+  },
+
+  async mounted() {
+    // Only run on the client
+    if (process.server) {
+      return { }
+    }
+    this.reloadDetails()
+  }, //- asyncData
+
+  watch: {
+    txId: async function () {
+      // The txid changes on the test page, when a new test is run.
+      // We need to load the details of the new transaction, but we
+      // wait a short while so the log has something to show.
+      // setTimeout(async () => {
+        await this.reloadDetails()
+        // await this.showTransactionDetails()
+      // }, 500)
+    },
+    refreshCounter: async function () {
+      await this.reloadDetails()
+    },
+  },
+
+  data: function () {
+    return {
+      loading: true,
+      loadError: null,
+
+      // // txId: '',
+      // txinfo: null,
+      // steps: [ ],
+      // hierarchy: [ ],
+      // currentStepId: '',
+      // stepDetails: null,
+      details: { },
+      transactionStateJSON: '',
+    }
+  }, //- data
+
+  computed: {
+  },
+
+  methods: {
+    reloadDetails: async function() {
+      // Same loading as asyncData
+      this.loading = true
+      const url = `${this.$monitorEndpoint}/transaction/${this.txId}/stateStatus`
+      console.log(`reloadDetails(): url=${url}`)
+      try {
+        const reply = await this.$axios.$get(url)
+        delete reply._status
+        delete reply._statusText
+        console.log(`reply=`, reply)
+        // const state = reply.state
+        // if (!state) {
+        //   state = { }
+        // }
+        // if (!state.transactionData) {
+        //   state.transactionData = { }
+        // }
+        // if (!state.f2) {
+        //   state.f2 = [ ]
+        // }
+        this.details = reply
+        this.transactionStateJSON = reply.state ? JSON.stringify(reply.state, '', 2) : ''
+        // console.log(`txinfo=`, this.txinfo)
+        // this.steps = this.txinfo.steps
+        // this.hierarchy = formHierarchy(this.steps)
+      } catch (e) {
+        console.log(`e=`, e)
+        console.log(`e.response=`, e.response)
+        console.log(`url was`, url)
+        this.loadError = e.toString()
+      }
+      this.loading = false
+    },//- reloadDetails
+
+    timeText: function (time) {
+      if (!time) return ''
+      try {
+        if (typeof(time) === 'string') {
+          time = parseInt(time)
+          if (time === NaN) {
+            return ''
+          }
+        }
+        const dat = fromUnixTime(time / 1000)
+        const result = formatRFC7231(dat)
+        return result
+      } catch (e) {
+        console.log(`e=`, e)
+        return null
+      }
+    },
+
+    durationText: function(time, prefix, suffix) {
+      if (!time) return ''
+      try {
+        if (typeof(time) === 'string') {
+          time = parseInt(time)
+          if (time === NaN) {
+            return ''
+          }
+        }
+        const dat = fromUnixTime(time / 1000)
+        return prefix + formatDistanceToNow(dat) + suffix
+      } catch (e) {
+        return null
+      }
+    },
+
+  }//- methods
+}
+</script>
+
+<style lang="scss">
+@import "@/assets/scss/main.scss";
+.my-transactionState {
+  // color: pink;
+
+  .my-state-json textarea {
+    // color: #e0e0e0 !important;
+    // font-size: 1.1em;
+    font-size: 0.95em;
+    // font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    line-height: 111%;
+  }
+
+  .my-table-label {
+    text-align: right;
+    padding-right: 10px;
+  }
+
+  .my-table-time {
+    padding-right: 30px;
+  }
+
+  .my-table-duration {
+    padding-right: 30px;
+  }
+
+  .my-flag {
+    display: inline-block;
+    color: yellow;
+    padding-right: 5px;
+  }
+}
+</style>

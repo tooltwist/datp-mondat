@@ -10,7 +10,7 @@
     .notification.is-danger Error: {{loadError}}
   section.section(v-else)
     h2.title.is-4
-      .datemon-heading-icon
+      .mondat-heading-icon
         b-icon(icon="api", size="is-small")
       | Standard API Definitions
 

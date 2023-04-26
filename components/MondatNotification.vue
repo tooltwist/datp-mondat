@@ -38,9 +38,6 @@ export default {
   padding-left: 45px;
   border-radius: 4px;
   border-color: #909090;
-  background-color: #594cb2;
-  background-color: black;
-  background-color: #e0e0e0;
   background-color: #303030;
   // background-color: red;
 }

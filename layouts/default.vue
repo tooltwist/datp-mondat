@@ -26,20 +26,16 @@
 
     section.main-content.columns
       aside.column.is-2.section
-        p.menu-label.is-hidden-touch
-          | General
+        //- p.menu-label.is-hidden-touch
+          | Monitoring
         ul.menu-list
-          li(v-for="(item, key) of items", :key="key")
+          li(v-for="(item, key) of homeItems", :key="key")
             NuxtLink(:to="item.to", exact-active-class="is-active")
-              b-icon(:icon="item.icon")
-              | &nbsp;{{ item.title }}
-        br
-        //div( v-for="route in $router.options.routes")
-          .is-size-6 &nbsp;{{route.name}}
-          br
-        br
+              b-icon.menu-icon(:icon="item.icon")
+              | &nbsp;&nbsp;{{ item.title }}
+
         p.menu-label.is-hidden-touch
-          | Transactions
+          | Monitoring
         ul.menu-list
           //li
             NuxtLink(to="/junk", Zexact-active-class="is-active")
@@ -49,14 +45,37 @@
             NuxtLink(to="mondat-junk", Zexact-active-class="is-active")
               b-icon(icon="cross")
               | &nbspJUNK2
+          li(v-for="(item, key) of monitorItems", :key="key")
+            NuxtLink(:to="item.to", exact-active-class="is-active")
+              b-icon(:icon="item.icon")
+              | &nbsp;{{ item.title }}
+        br
+
+        p.menu-label.is-hidden-touch
+          | Transactions
+        ul.menu-list
           li(v-for="(item, key) of txItems", :key="key")
             NuxtLink(:to="item.to", exact-active-class="is-active")
               b-icon(:icon="item.icon")
               | &nbsp;{{ item.title }}
         br
-        br
+
+        //- aside.column.is-2.section
         p.menu-label.is-hidden-touch
-          | Setup / Configuration
+          | Testing
+        ul.menu-list
+          li(v-for="(item, key) of testItems", :key="key")
+            NuxtLink(:to="item.to", exact-active-class="is-active")
+              b-icon.menu-icon(:icon="item.icon")
+              | &nbsp;&nbsp;{{ item.title }}
+        br
+        //div( v-for="route in $router.options.routes")
+          .is-size-6 &nbsp;{{route.name}}
+          br
+        //- br
+
+        p.menu-label.is-hidden-touch
+          | Setup / Dev
         ul.menu-list
           li(v-for="(item, key) of devitems", :key="key")
             NuxtLink(:to="item.to", exact-active-class="is-active")
@@ -78,68 +97,91 @@ export default {
       darkMode: false,
 
       // For icons see https://materialdesignicons.com/
-      items: [
+      homeItems: [
         {
-          title: 'Home',
-          icon: 'home',
+          title: 'Dashboard',
+          icon: 'monitor-dashboard',
           to: { name: 'mondat' }
         },
-        // {
-        //   title: 'Performance',
-        //   icon: 'gauge',
-        //   to: { name: 'mondat-performance' }
-        // },
+      ],
+
+      monitorItems: [
         {
-          title: 'Caches',
-          icon: 'flash',
-          to: { name: 'mondat-caches' }
+          title: 'Throughput',
+          icon: 'gauge',
+          to: { name: 'mondat-performance' }
         },
+        // {
+        //   title: 'Caches',
+        //   icon: 'flash',
+        //   to: { name: 'mondat-caches' }
+        // },
         {
           title: 'Queues',
           icon: 'human-queue',
           to: { name: 'mondat-queues' }
         },
-        {
-          title: 'Nodes',
-          icon: 'state-machine',
-          to: { name: 'mondat-nodeGroups' }
-        },
-
         // {
-        //   title: 'Queues',
-        //   icon: 'human-queue',
-        //   to: { name: 'mondat-queues' }
+        //   title: 'Sleeping',
+        //   icon: 'sleep',
+        //   to: { name: 'mondat-sleeping' }
         // },
         // {
-        //   title: 'Resolution',
-        //   icon: 'account-alert',
-        //   to: { name: 'mondat-resolution' }
+        //   title: 'Failures',
+        //   icon: 'alert-rhombus-outline',
+        //   to: { name: 'mondat-failures' }
         // },
 
         // {
-        //   title: 'Alerts',
-        //   icon: 'alert',
-        //   to: { name: 'alerts' }
+        //   title: 'Broken webhooks',
+        //   // icon: 'sync-alert',
+        //   icon: 'alert-rhombus-outline',
+        //   to: { name: 'mondat-abandoned' }
         // },
-      ],//- items
-
+        // {
+        //   title: 'Blockage',
+        //   icon: 'wall',
+        //   to: { name: 'mondat-blockages' }
+        // },
+      ],
 
       txItems: [
-        // {
-        //   title: 'Testing',
-        //   icon: 'bike-fast',
-        //   to: { name: 'mondat-testCases' }
-        // },
-        // {
-        //   title: 'Tracing',
-        //   icon: 'eye',
-        //   to: '/forms/messages'
-        // },
         {
-          title: 'Transactions',
+          title: 'Recent',
           // icon: 'eye-outline',
           icon: 'bank-transfer',
-          to: { name: 'mondat-transactions' }
+          // icon: 'binoculars',
+          to: { name: 'mondat-recent' }
+        },
+        {
+          title: 'In Play',
+          icon: 'run',
+          to: { name: 'mondat-inPlay' }
+        },
+        {
+          title: 'Sleeping',
+          icon: 'run',
+          to: { name: 'mondat-sleeping' }
+        },
+        {
+          title: 'Archived',
+          icon: 'archive-outline',
+          to: { name: 'mondat-archived' }
+        },
+        {
+          title: 'Exceptions',
+          // icon: 'alert-outline',
+          icon: 'alert-circle-outline',
+          // icon: 'image-broken-variant',
+          // icon: 'image-broken-variant',
+          to: { name: 'mondat-exceptions' }
+        },
+        {
+          title: 'TX Lookup',
+          // icon: 'eye-outline',
+          icon: 'bank-transfer',
+          // icon: 'binoculars',
+          to: { name: 'mondat-txLookup' }
         },
         // {
         //   title: 'Running',
@@ -175,16 +217,49 @@ export default {
         // },
       ],
 
-      devitems: [
-        {
-          title: 'Pipelines',
-          icon: 'transit-connection',
-          to: { name: 'mondat-pipelines' }
-        },
+      testItems: [
         {
           title: 'Testing',
           icon: 'bike-fast',
           to: { name: 'mondat-tests' }
+        },
+        // {
+        //   title: 'Notifications',
+        //   // icon: 'message-alert-outline',
+        //   // icon: 'message-alert-outline',
+        //   icon: 'message-outline',
+        //   to: { name: 'mondat-queues' }
+        // },
+
+        // {
+        //   title: 'Queues',
+        //   icon: 'human-queue',
+        //   to: { name: 'mondat-queues' }
+        // },
+        // {
+        //   title: 'Resolution',
+        //   icon: 'account-alert',
+        //   to: { name: 'mondat-resolution' }
+        // },
+
+        // {
+        //   title: 'Alerts',
+        //   icon: 'alert',
+        //   to: { name: 'alerts' }
+        // },
+      ],//- testItems
+
+
+      devitems: [
+        {
+          title: 'Nodes',
+          icon: 'state-machine',
+          to: { name: 'mondat-nodeGroups' }
+        },
+        {
+          title: 'Pipelines',
+          icon: 'transit-connection',
+          to: { name: 'mondat-pipelines' }
         },
         // {
         //   title: 'TX Types',
@@ -291,6 +366,20 @@ export default {
     color: #b5b7c0;
 
   }
+
+  // .menu-list {
+  //   font-size: 7px !important;
+  // }
+
+  // .menu-icon {
+  //   font-size: 0.1em !important;
+  //   color: red;
+  // }
+
+  // i.mdi {
+  //   font-size: 0.1em !important;
+  //   color: orange !important;
+  // }
 
   .menu-label {
     margin-left: 32px;

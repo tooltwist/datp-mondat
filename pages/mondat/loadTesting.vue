@@ -12,7 +12,7 @@
         b-checkbox(v-model="useMidiValues") Use midi values
       p.is-size-6.has-text-danger(v-if="errorMsg") {{errorMsg}}
     h2.title.is-3
-      .datemon-heading-icon
+      .mondat-heading-icon
         b-icon(icon="head-question-outline", size="is-medium")
       | Load testing console
 

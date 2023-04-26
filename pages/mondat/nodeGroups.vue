@@ -15,7 +15,7 @@ client-only
         option(:value="60", :key="60") 60 seconds
 
     h2.title.is-4
-      .datemon-heading-icon
+      .mondat-heading-icon
         b-icon(icon="state-machine", size="is-small")
       | Node Groups &nbsp;&nbsp;&nbsp;
       b-tag(v-if="loadError==='Network Error'", rounded, type="is-danger", size="is-large") Offline
@@ -26,7 +26,7 @@ client-only
       p
         | The&nbsp;
         b D.A.T.P.
-        | &nbsp;system is distributed, meaning runs across multiple software servers, which we call nodes.
+        | &nbsp;system is distributed, and runs across multiple software servers, which we call nodes.
         br
         br
       p
@@ -39,10 +39,10 @@ client-only
       p
         | The&nbsp;
         b master
-        | &nbsp;node is reponsible for triaging incoming transactions, and depending upon the
-        | transaction type and data will usually pass the transaction off to a pipeline running on another node.
-        | Nodes are grouped to allow multiple nodes are running the same functionality. This page is used
-        | to configure those groups, and check that all nodes in a group provide the same functionality.
+        | &nbsp;node provides the API endpoints as application code, and as required will initiate DATP
+        | transactions. Depending upon the transaction type and configuration, the pipeline may run on
+        | the master node or may be passed off to a pipeline running on another node.
+        | Nodes are grouped to allow multiple nodes to run the same functionality.
 
     br
     br

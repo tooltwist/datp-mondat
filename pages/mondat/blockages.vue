@@ -8,7 +8,7 @@
 .my-blocked-page
   section.section
     h2.title.is-4
-      .datemon-heading-icon
+      .mondat-heading-icon
         b-icon(icon="timer-off-outline", size="is-small")
       | Blocked Transactions&nbsp;&nbsp;
 
@@ -50,7 +50,7 @@ export default {
 <style lang="scss" scoped>
 .my-blocked-page {
 
-  // .datemon-heading-icon {
+  // .mondat-heading-icon {
   //   display: inline-block;
   //   color: #16aa58;
   //   padding-right: 20px;

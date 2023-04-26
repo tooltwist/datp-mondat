@@ -8,7 +8,7 @@
 .my-abandoned-page
   section.section
     h2.title.is-4
-      .datemon-heading-icon
+      .mondat-heading-icon
         b-icon(icon="head-question-outline", size="is-small")
       | Abandoned Transactions&nbsp;&nbsp;
 
@@ -53,7 +53,7 @@ export default {
 <style lang="scss" scoped>
 .my-abandoned-page {
 
-  // .datemon-heading-icon {
+  // .mondat-heading-icon {
   //   display: inline-block;
   //   color: #16aa58;
   //   padding-right: 20px;

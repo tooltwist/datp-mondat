@@ -9,7 +9,7 @@
   section.section
     //- h1.title Providers / Messages
     h2.title.is-4
-      .datemon-heading-icon
+      .mondat-heading-icon
         b-icon(icon="arrow-left-right-bold", size="is-small")
       | Field mapping
 
@@ -68,11 +68,11 @@
       | {{currentViewName}}
       hr
       b-tabs(v-if="currentlyLoadedView === currentViewName", @input="checkArrows++")
-        b-tab-item(key="fields", label="Fields")
+        b-tab-item(value="fields", label="Fields")
           //ZZZZZ Does this work????
           formservice-fields(:view="currentViewName", :fields="currentViewName.fields", @updated="rightSideViewHasChanged")
 
-        b-tab-item(key="visual", label="Visual mapping")
+        b-tab-item(value="visual", label="Visual mapping")
           formservice-mapping-visual(
             :view="currentViewName",
             :provider="providerCode",
@@ -81,7 +81,7 @@
             :checkArrows="checkArrows"
           )
 
-        b-tab-item(key="mapping", label="Mapping table")
+        b-tab-item(value="mapping", label="Mapping table")
           //- b-table(v-if="messageType.toLowerCase().indexOf('request')>=0", :data="currentViewName.mapping", :columns="mappingRequestColumns")
           //- b-table(v-else, :data="currentViewName.mapping", :columns="mappingResponseColumns")
           formservice-mapping-request(
@@ -89,7 +89,7 @@
             :messageType="messageType"
           )
 
-        b-tab-item(key="details", label="Details")
+        b-tab-item(value="details", label="Details")
           template(v-if="theRightView")
             b-field(label="Description")
               b-input(v-model="description")

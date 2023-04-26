@@ -14,7 +14,7 @@
       a.button(href="/mondat/loadTesting", target="_blank") Load testing...
 
     h2.title.is-4
-      .datemon-heading-icon
+      .mondat-heading-icon
         b-icon(icon="bike-fast", size="is-small")
       | Testing
 

@@ -12,7 +12,7 @@
           b-button(type="is-warning", @click="showNewPipelineModal") Add pipeline
           | &nbsp;&nbsp;&nbsp;
       h2.title.is-4
-        .datemon-heading-icon
+        .mondat-heading-icon
           b-icon(icon="transit-connection", size="is-small")
         | Pipelines
 

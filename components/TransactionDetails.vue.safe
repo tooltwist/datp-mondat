@@ -1,0 +1,181 @@
+/* Copyright Tooltwist Innovations Limited - All Rights Reserved
+ * This file is part of DATP and as such is proprietary and confidential software.
+ * Unauthorized copying of this file, via any medium is strictly prohibited. All
+ * rights reserved. No warranty, explicit or implicit, provided. In no event shall
+ * the author or owner be liable for any claim or damages.
+ */
+<template lang="pug">
+.my-transactionDetails
+  span(v-if="loading")
+    | Loading...
+  span(v-else-if="loadError")
+    .notification.is-danger() {{loadError}}
+  template(v-else-if="state")
+    section
+      b-field(label="Transaction type:", horizontal)
+        //- b-input(v-model="state.transactionData.transactionType", readonly)
+        | {{state.transactionData.transactionType}}
+      b-field(label="Status:", horizontal)
+        //- b-input(v-model="state.transactionData.status", readonly)
+        | {{state.transactionData.status}}
+      b-field(label="Owner:", horizontal)
+        //- b-input(v-model="state.owner", readonly)
+        | {{state.owner}}
+      b-field(label="externalId:", horizontal)
+        //- b-input(v-model="state.externalId", readonly)
+        | {{state.externalId}}
+      b-field(label="Last updated:", horizontal)
+        //- b-input(v-model="state.externalId", readonly)
+        | {{ lastUpdatedText }} &nbsp;&nbsp;&nbsp;&nbsp; ({{lastUpdatedDuration}}) 
+      .columns 
+        .column
+          b-field(label="Input")
+            b-input.my-state-json(type="textarea", rows="25", v-model="inputJSON", disabled)
+        .column
+          b-field(label="Output")
+            b-input.my-state-json(type="textarea", rows="25", v-model="outputJSON", disabled)
+
+      //- br
+      //- b-field(label="Full Transaction State")
+      //-   b-input.my-state-json(type="textarea", rows="37", v-model="transactionStateJSON", disabled)
+  template(v-else)
+    br
+    .notification.is-danger Unknown transaction
+
+</template>
+
+<script>
+import { format } from 'date-fns'
+import fromUnixTime from 'date-fns/fromUnixTime'
+import formatDistanceToNow from 'date-fns/formatDistanceToNow'
+import formatISO from 'date-fns/formatISO'
+import formatRFC7231 from 'date-fns/formatRFC7231'
+
+export default {
+  components: {
+  },
+
+  props: {
+    txId: String,
+    refreshCounter: Number,
+  },
+
+  async mounted() {
+    // Only run on the client
+    if (process.server) {
+      return { }
+    }
+    this.reloadDetails()
+  }, //- asyncData
+
+  watch: {
+    txId: async function () {
+      // The txid changes on the test page, when a new test is run.
+      // We need to load the details of the new transaction, but we
+      // wait a short while so the log has something to show.
+      setTimeout(async () => {
+        await this.reloadDetails()
+        // await this.showTransactionDetails()
+      }, 500)
+    },
+    refreshCounter: async function () {
+      // The txid changes on the test page, when a new test is run.
+      // We need to load the details of the new transaction, but we
+      // wait a short while so the log has something to show.
+      // setTimeout(async () => {
+        await this.reloadDetails()
+        // await this.showTransactionDetails()
+      // }, 500)
+    }
+  },
+
+  data: function () {
+    return {
+      loading: true,
+      loadError: null,
+
+      // // txId: '',
+      // txinfo: null,
+      // steps: [ ],
+      // hierarchy: [ ],
+      // currentStepId: '',
+      // stepDetails: null,
+
+      transactionStateJSON: '',
+      state: {
+        transactionData: { }
+      },
+    }
+  }, //- data
+
+  computed: {
+    lastUpdatedText: function () {
+      try {
+        const dat = fromUnixTime(this.state.transactionData.lastUpdated / 1000)
+        return formatRFC7231(dat)
+      } catch (e) {
+        return null
+      }
+    },
+    lastUpdatedDuration: function() {
+      try {
+        const dat = fromUnixTime(this.state.transactionData.lastUpdated / 1000)
+        return formatDistanceToNow(dat)
+      } catch (e) {
+        return null
+      }
+    },
+    inputJSON: function() {
+      return JSON.stringify(this.state.transactionData.transactionInput, '', 2)
+    },
+    outputJSON: function() {
+      return JSON.stringify(this.state.transactionData.transactionOutput, '', 2)
+    },
+  },
+
+  methods: {
+    reloadDetails: async function() {
+      // Same loading as asyncData
+      this.loading = true
+      const url = `${this.$monitorEndpoint}/transaction/${this.txId}/stateStatus`
+      console.log(`reloadDetails(): url=${url}`)
+      try {
+        const reply = await this.$axios.$get(url)
+        // console.log(`WOMBAT reply=`, reply)
+        delete reply._status
+        delete reply._statusText
+        // console.log(`reply=`, reply)
+        this.state = reply.state
+        // if (!this.state.transactionDetails) {
+        //   this.state.transactionDetails = { }
+        // }
+        // this.transactionStateJSON = JSON.stringify(reply, '', 2)
+        // console.log(`txinfo=`, this.txinfo)
+        // this.steps = this.txinfo.steps
+        // this.hierarchy = formHierarchy(this.steps)
+      } catch (e) {
+        console.log(`url=`, url)
+        console.log(`e.response=`, e.response)
+        this.loadError = e.toString()
+      }
+      this.loading = false
+    },//- reloadDetails
+
+  }//- methods
+}
+</script>
+
+<style lang="scss">
+@import "@/assets/scss/main.scss";
+.my-transactionDetails {
+  // color: pink;
+
+  .my-state-json textarea {
+    // color: #e0e0e0 !important;
+    // font-size: 1.1em;
+    font-size: 0.95em;
+    // font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    line-height: 111%;
+  }
+}
+</style>

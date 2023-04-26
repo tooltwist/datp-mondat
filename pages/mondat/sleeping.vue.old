@@ -12,7 +12,7 @@
     h2.title.is-4
       .mondat-heading-icon
         b-icon(icon="bank-transfer", size="is-small")
-      | Recently Finished Transactions
+      | Currently Running Transactions
 
     MondatNotification
       | The following are the most recently run transactions.
@@ -118,8 +118,18 @@ export default {
           type: 'transactionStatus'
         },
         {
-          field: "startTime",
-          label: "start time",
+          field: "sleepingSince",
+          label: "Sleeping Since",
+          // width:
+        },
+        {
+          field: "sleepCounter",
+          label: "Retries",
+          // width:
+        },
+        {
+          field: "wakeSwitch",
+          label: "Switch",
           // width:
         },
 
@@ -182,15 +192,15 @@ export default {
     // },//- rowClass
 
     infiniteHandler: async function($state) {
-      console.log(`infiniteHandler()`)
+      // console.log(`infiniteHandler()`)
 
-      let url = `${this.$monitorEndpoint}/transactions?page=${this.page}&pagesize=${PAGESIZE}&status=success`
+      let url = `${this.$monitorEndpoint}/transactions?page=${this.page}&pagesize=${PAGESIZE}&status=sleeping`
       if (this.filter) { url += `&filter=${this.filter}` }
       // console.log(`url=`, url)
       try {
         const result = await this.$axios.$get(url)
         const transactions = result
-        // console.log(`transactions.length=`, transactions.length)
+        // console.log(`transactions=`, transactions)
         if (transactions.length) {
           this.page += 1
           this.transactions.push(...transactions)

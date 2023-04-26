@@ -5,15 +5,21 @@
  * the author or owner be liable for any claim or damages.
  */
 <template lang="pug">
-  .my-steps-page
+.my-tx-details-page
     br
-
+    | {{txinfo}}
     span(v-if="loading")
       | Loading...
     span(v-else-if="loadError")
       .notification.is-danger() {{loadError}}
     template(v-else)
-      .columns
+      b-field(label="Legacy Transaction Details")
+        b-input.my-details-json(type="textarea", rows="37", v-model="transactionJSON", disabled)
+
+      //- br
+      //- | {{txinfo}}
+
+      //- .columns
         .column.is-4
           div(@click="showTransactionDetails")
             | Transaction type:&nbsp;&nbsp;&nbsp;
@@ -66,7 +72,7 @@
 
             b-tabs(:animated="false")
 
-              b-tab-item(key="log", label="Log entries")
+              b-tab-item(value="log", label="Log entries")
                 // Log entries
                 b-table.my-table.is-size-7(:data="logEntries")
                   b-table-column(v-slot="props", field="when", label="Time")
@@ -83,7 +89,7 @@
                       | {{props.row.message}}
 
 
-              b-tab-item(key="details", label="Details")
+              b-tab-item(value="details", label="Details")
                 table.table
                   tr(v-if="isPipeline")
                     td Pipeline:
@@ -110,20 +116,20 @@
                   //-   td Progress:
                   //-   td
                   //-     | {{stepDetails.progress}}
-              b-tab-item(key="input", label="Input")
+              b-tab-item(value="input", label="Input")
                 b-field(label="Input")
                   b-input(type="textarea", v-model="stepInputJSON", rows="19", size="is-small", readonly, disabled)
 
-              b-tab-item(key="output", label="output")
+              b-tab-item(value="output", label="output")
                 b-field(label="Output")
                   b-input(type="textarea", v-model="stepOutputJSON", rows="19", size="is-small", readonly, disabled)
 
-              b-tab-item(key="definition", label="Definition")
+              b-tab-item(value="definition", label="Definition")
                 // Step definition
                 b-field(label="Step definition")
                   b-input(type="textarea", v-model="stepDefinitionJSON", rows="19", size="is-small", readonly, disabled)
 
-              //- b-tab-item(key="log2", label="Log entries")
+              //- b-tab-item(value="log2", label="Log entries")
                 // Log entries
                 b-table.my-table.is-size-7(
                   :data="logEntries",
@@ -131,13 +137,13 @@
                   hoverable)
                 //- | {{logEntries}}
 
-              //- b-tab-item(key="artifacts", label="Artifacts")
+              //- b-tab-item(value="artifacts", label="Artifacts")
                 | Not available at this time
 
-              //- b-tab-item(key="audit", label="Audit trail")
+              //- b-tab-item(value="audit", label="Audit trail")
                 | Not available at this time
 
-              b-tab-item(key="stepData", label="StepData")
+              b-tab-item(value="stepData", label="StepData")
                 b-input(type="textarea", v-model="stepDetailsJSON", rows="19", size="is-small", readonly, disabled)
 </template>
 
@@ -166,11 +172,19 @@ export default {
     // console.log(this.txId)
     const url = `${this.$monitorEndpoint}/transaction/${this.txId}`
     try {
+      console.log(`yarp 1`)
       this.txinfo = await this.$axios.$get(url)
+      console.log(`this.txinfo=`, this.txinfo)
+console.log(`yarp 2`)
+      this.transactionJSON = JSON.stringify(this.txinfo, '', 2)
       this.steps = this.txinfo.steps
       this.hierarchy = formHierarchy(this.steps)
       this.loading = false
     } catch (e) {
+      if (e.response && e.response.status === 404) {
+        this.txinfo = null
+        this.transactionJSON = ''
+      }
       console.log(`url=`, url)
       console.log(`e=`, e)
       console.log(`e.response=`, e.response)
@@ -198,6 +212,7 @@ export default {
 
       // txId: '',
       txinfo: null,
+      transactionJSON: '',
       steps: [ ],
       hierarchy: [ ],
       currentStepId: '',
@@ -277,7 +292,10 @@ export default {
       this.loading = true
       const url = `${this.$monitorEndpoint}/transaction/${this.txId}`
       try {
+        console.log(`yarp 3`)
         this.txinfo = await this.$axios.$get(url)
+        console.log(`yarp 4`)
+        this.transactionJSON = JSON.stringify(this.txinfo, '', 2)
         // console.log(`txinfo=`, this.txinfo)
         this.steps = this.txinfo.steps
         this.hierarchy = formHierarchy(this.steps)
@@ -372,7 +390,7 @@ function formHierarchy(steps) {
 <style lang="scss">
 @import "@/assets/scss/main.scss";
 
-.my-steps-page {
+.my-tx-details-page {
   .my-table-row {
     cursor: pointer;
   }
@@ -389,8 +407,14 @@ function formHierarchy(steps) {
     border-radius: 4px;
     background-color: #594cb2;
   }
-  .yarp {
-    background-color: yellow;
+  // .yarp {
+  //   background-color: yellow;
+  // }
+
+  .my-details-json textarea {
+    // color: #e0e0e0 !important;
+    font-size: 0.95em;
+    line-height: 111%;
   }
 }
 </style>

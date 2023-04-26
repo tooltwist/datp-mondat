@@ -10,7 +10,7 @@
     b-field.is-pulled-right
       b-checkbox(v-model="autoUpdate") Auto-update
     h2.title.is-4
-      .datemon-heading-icon
+      .mondat-heading-icon
         b-icon(icon="bank-transfer", size="is-small")
       | Currently Running Transactions
 
@@ -230,7 +230,7 @@ export default {
 
 .my-transactions-page {
 
-  .datemon-heading-icon {
+  .mondat-heading-icon {
     display: inline-block;
     color: #16aa58;
     padding-right: 20px;

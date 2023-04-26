@@ -14,7 +14,7 @@
         option(:value="20", :key="15") 20 seconds
         option(:value="60", :key="60") 60 seconds
     h2.title.is-4
-      .datemon-heading-icon
+      .mondat-heading-icon
         b-icon(icon="bank-transfer", size="is-small")
       | Recent Transactions
 
@@ -94,10 +94,9 @@ export default {
           type: 'transactionIconId'
         },
         {
-          // field: "txId",
+          field: 'externalId',
           label: "external id",
           width: 300,
-          type: 'externalId'
         },
         // {
         //   field: "txId",
@@ -115,7 +114,7 @@ export default {
           type: 'transactionStatus'
         },
         {
-          field: "Switches",
+          field: "retry_wakeSwitch",
           label: "switches",
         },
         // {
@@ -133,16 +132,22 @@ export default {
         //   label: "Switch",
         //   // width:
         // },
+        // {
+        //   field: "startTime",
+        //   label: "start time",
+        //   type: "dateTime"
+        //   // width:
+        // },
         {
-          field: "startTime",
-          label: "start time",
+          field: "lastUpdated",
+          label: "updated",
           type: "dateTime"
           // width:
         },
         {
           field: "lastUpdated",
-          label: "updated",
-          type: "dateTime"
+          label: "",
+          type: "ago"
           // width:
         },
 
@@ -160,7 +165,8 @@ export default {
 
 
       polling: null, // handle from setInterval
-      autoUpdateInterval: 20,
+      // autoUpdateInterval: 20,
+      autoUpdateInterval: 0,
 
       offset: 0,
       filter: '',
@@ -195,7 +201,8 @@ export default {
 
     selectTransaction: function (row) {
       const txId = row.txId
-      this.$router.push({ path: `/mondat/transactions/${txId}` })
+      // this.$router.push({ path: `/mondat/transactions/${txId}` })
+      this.$router.push({ path: `/mondat/txLookup`, query: { txId } })
     },
 
 
@@ -212,13 +219,13 @@ export default {
       if (this.showSleeping) status += 'sleeping,'
       if (this.showTimeout) status += 'timeout,'
       if (this.showInternalError) status += 'internal-error,'
-      let url = `${this.$monitorEndpoint}/transactions?offset=${this.offset}&pagesize=${PAGESIZE}&status=${status}`
+      let url = `${this.$monitorEndpoint}/transactions/recent?offset=${this.offset}&pagesize=${PAGESIZE}&status=${status}`
       if (this.filter) { url += `&filter=${this.filter}` }
       // console.log(`url=`, url)
       try {
         const result = await this.$axios.$get(url)
         const transactions = result
-        // console.log(`transactions=`, transactions)
+        console.log(`transactions=`, transactions)
         if (transactions.length) {
           this.offset += transactions.length
           this.transactions.push(...transactions)
@@ -303,7 +310,7 @@ export default {
 
 .my-transactions-page {
 
-  .datemon-heading-icon {
+  .mondat-heading-icon {
     display: inline-block;
     color: #16aa58;
     padding-right: 20px;

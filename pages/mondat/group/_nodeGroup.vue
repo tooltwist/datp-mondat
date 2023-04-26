@@ -10,7 +10,7 @@
     .is-pulled-right
       b-button(type="is-success", @click="backToNodes") Back
     h2.title.is-4.has-text-grey
-      .datemon-heading-icon
+      .mondat-heading-icon
         b-icon(icon="state-machine", size="is-small")
       | Node Group {{nodeGroup}}
 
