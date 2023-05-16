@@ -23,7 +23,125 @@
     template(v-else)
       //- | StepTypres {{stepTypes}}
       b-tabs(type="is-boxed")
-        b-tab-item(label="Pipelines", icon="google-photos")
+
+        b-tab-item(label="Configuration", icon="cog")
+          br
+          //- pre
+            | {{ JSON.stringify(nodeGroupDetails, '', 2) }}
+          table
+            tr
+              td(colspan="2")
+                h2.title.is-size-4 Pipeline Processing
+            tr
+              td.my-label Worker threads:
+              td.my-value
+                input.my-field(type="text", v-model="nodeGroupDetails.eventloopWorkers", readonly)
+              tr
+              td.my-label Pause between scans:
+              td.my-value
+                input.my-field(type="text", v-model="nodeGroupDetails.eventloopPause", readonly)
+                .my-note ms
+            tr
+              td.my-label Pause after all workers busy:
+              td.my-value
+                input.my-field(type="text", v-model="nodeGroupDetails.eventloopPauseBusy", readonly)
+                .my-note ms
+            tr
+              td.my-label Pause if no workers are busy:
+              td.my-value
+                input.my-field(type="text", v-model="nodeGroupDetails.eventloopPauseIdle", readonly)
+                .my-note ms
+            tr
+              td
+                br
+            tr
+              td(colspan="2")
+                h2.title.is-size-4 MONDAT
+            tr
+              td.my-label
+                input(type="checkbox", v-model="nodeGroupDetails.serveMondatApi", readonly)
+                | &nbsp;Serve the MONDAT backend API
+            tr
+              td
+                br
+            tr
+              td(colspan="2")
+                h2.title.is-size-4 Wakeup Processing
+            tr
+              td.my-label
+                input(type="checkbox", v-model="nodeGroupDetails.wakeupProcessing" readonly)
+                | &nbsp;Enabled
+            tr
+              td.my-label Pause between runs:
+              td.my-value
+                input.my-field(type="text", v-model="nodeGroupDetails.webhookWorkers", readonly)
+                .my-note ms
+            tr
+              td
+                br
+            tr
+              td(colspan="2")
+                h2.title.is-size-4 Webhook Processing
+            tr
+              td.my-label
+                input(type="checkbox", v-model="nodeGroupDetails.webhookProcessing", readonly)
+                | &nbsp;Enabled
+            tr
+              td.my-label Number of Worker threads:
+              td.my-value
+                input.my-field(type="text", v-model="nodeGroupDetails.webhookWorkers", readonly)
+            tr
+              td.my-label Pause between iterations:
+              td.my-value
+                input.my-field(type="text", v-model="nodeGroupDetails.webhookPause", readonly)
+                .my-note ms
+            tr
+              td.my-label Pause if no workers used:
+              td.my-value
+                input.my-field(type="text", v-model="nodeGroupDetails.webhookPauseIdle", readonly)
+                .my-note ms
+            tr
+              td.my-label Pause after all workers were used:
+              td.my-value
+                input.my-field(type="text", v-model="nodeGroupDetails.webhookPauseBusy", readonly)
+                .my-note ms
+              //- "webhookProcessing": 1,
+              //- "webhookWorkers": 0,
+              //- "webhookPause": 0,
+              //- "webhookPauseBusy": 0,
+              //- "webhookPauseIdle": 0,
+            tr
+              td
+                br
+            tr
+              td(colspan="2")
+                h2.title.is-size-4 Archive Processing
+            tr
+              td.my-label
+                input(type="checkbox", v-model="nodeGroupDetails.archiveProcessing", readonly)
+                | &nbsp;Enabled
+            tr
+              td.my-label Batch size:
+              td.my-value
+                input.my-field(type="text", v-model="nodeGroupDetails.archiveBatchSize", readonly)
+                .my-note transactions
+            tr
+              td.my-label Pause between runs:
+              td.my-value
+                input.my-field(type="text", v-model="nodeGroupDetails.archivePause", readonly)
+                .my-note ms
+            tr
+              td.my-label Pause after nothing was archived:
+              td.my-value
+                input.my-field(type="text", v-model="nodeGroupDetails.archivePauseIdle", readonly)
+                .my-note ms
+
+          //- "archiveProcessing": 1,
+          //- "archiveBatchSize": 0,
+          //- "archivePause": 500,
+          //- "archivePauseIdle": 0,
+
+        b-tab-item(label="Pipelines", icon="transit-connection")
           MondatTable(:data="pipelines", :columns="pipelineColumns")
 
         b-tab-item(label="Step Types", icon="google-photos")
@@ -101,6 +219,8 @@ export default {
       const nodes = await $axios.$get(url)
       for (const node of nodes) {
         if (node.nodeGroup === nodeGroup) {
+          console.log(`node=`, node)
+
           myStepTypes = node.stepTypes
           break
         }
@@ -133,7 +253,24 @@ export default {
       return { loading: false, loadError: e.toString() }
     }
 
-    return { nodeGroup, stepTypes: myStepTypes, pipelines: myPipelines, loading: false }
+    let nodeGroupDetails = null
+    const url3 = `${$monitorEndpoint}/nodeGroups`
+    try {
+      const groups = await $axios.$get(url3)
+      for (const grp of groups) {
+        if (grp.nodeGroup === nodeGroup) {
+          nodeGroupDetails = grp
+          break
+        }
+      }
+    } catch (e) {
+      console.log(`url=`, url3)
+      console.log(`e.response=`, e.response)
+      return { loading: false, loadError: e.toString() }
+    }
+
+
+    return { nodeGroup, nodeGroupDetails, stepTypes: myStepTypes, pipelines: myPipelines, loading: false }
 
   },//- asyncData
 
@@ -155,5 +292,25 @@ export default {
   .my-bold-cell span {
     font-weight: 600;
   }
+}
+
+.my-label {
+  padding-left: 30px;
+  padding-right: 10px;
+  text-align: right;
+}
+
+.my-value {
+  padding-left: 10px;
+}
+
+.my-field {
+  width: 50px;
+}
+
+.my-note {
+  display: inline;
+  padding-left: 10px;
+  font-size: 0.8em;
 }
 </style>

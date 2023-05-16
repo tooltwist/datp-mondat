@@ -77,7 +77,7 @@
         p.menu-label.is-hidden-touch
           | Setup / Dev
         ul.menu-list
-          li(v-for="(item, key) of devitems", :key="key")
+          li(v-for="(item, key) of devItems", :key="key")
             NuxtLink(:to="item.to", exact-active-class="is-active")
               b-icon(:icon="item.icon")
               | &nbsp;{{ item.title }}
@@ -85,6 +85,16 @@
             NuxtLink(:to="'/no-such-page'", exact-active-class="is-active")
               b-icon(icon="monitor")
               span(@click.prevent="toggleDarkMode") &nbsp;Dark mode
+
+          br
+        br
+        p.menu-label.is-hidden-touch
+          | Generic APIs
+        ul.menu-list
+          li(v-for="(item, key) of apiItems", :key="key")
+            NuxtLink(:to="item.to", exact-active-class="is-active")
+              b-icon(:icon="item.icon")
+              | &nbsp;{{ item.title }}
 
       .container.column.is-10
         Nuxt
@@ -160,7 +170,7 @@ export default {
         },
         {
           title: 'Sleeping',
-          icon: 'run',
+          icon: 'sleep',
           to: { name: 'mondat-sleeping' }
         },
         {
@@ -250,9 +260,9 @@ export default {
       ],//- testItems
 
 
-      devitems: [
+      devItems: [
         {
-          title: 'Nodes',
+          title: 'Node Groups',
           icon: 'state-machine',
           to: { name: 'mondat-nodeGroups' }
         },
@@ -266,17 +276,6 @@ export default {
         //   icon: 'shape',
         //   to: { name: 'mondat-transactionTypes' }
         // },
-        {
-          title: 'Generic API',
-          icon: 'api',
-          to: { name: 'mondat-forms-standard' }
-        },
-        {
-          title: 'Field mapping',
-          icon: 'arrow-left-right-bold',
-          //to: '/mondat/forms/providers'
-          to: { name: 'mondat-forms-providers' }
-        },
         // {
         //   title: 'UI example',
         //   icon: 'form-textbox-password',
@@ -287,7 +286,21 @@ export default {
         //   icon: 'cog-outline',
         //   to: { name: 'setup' }
         // }
-      ]//- devitems
+      ],//- devItems
+
+      apiItems: [
+      {
+          title: 'API Definitions',
+          icon: 'api',
+          to: { name: 'mondat-forms-standard' }
+        },
+        {
+          title: 'Field mappings',
+          icon: 'arrow-left-right-bold',
+          //to: '/mondat/forms/providers'
+          to: { name: 'mondat-forms-providers' }
+        },
+      ]
     }
   },//- date()
 

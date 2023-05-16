@@ -150,7 +150,7 @@ export default {
     if (process.server) {
       return
     }
-    this.doUpdate()
+    this.reselect()
   },//- created
 
 
@@ -166,14 +166,15 @@ export default {
         clearTimeout(this.polling)
         this.polling = null
       }
-      this.doUpdate()
+      this.reselect()
     },//- changeUpdateInterval
 
-    doUpdate: async function () {
+    reselect: async function () {
       const url = `${this.$monitorEndpoint}/nodeGroups`
       try {
         this.loading = true
         this.groups = await this.$axios.$get(url)
+console.log(`this.groups=`, this.groups)
         this.loading = false
         this.loadError = null
       } catch (e) {
@@ -188,19 +189,19 @@ export default {
 
       // Maybe restart the timer
       if (this.autoUpdateInterval > 0) {
-        this.polling = setTimeout(this.doUpdate, this.autoUpdateInterval * 1000)
+        this.polling = setTimeout(this.reselect, this.autoUpdateInterval * 1000)
       }
-    },//- doUpdate
+    },//- reselect
 
     selectGroup: function (group) {
       console.log(`selectGroup`, group)
-      if (group.activeNodes < 1) {
-        this.$buefy.toast.open({
-            message: "This node group is inactive, so no information is available.",
-            type: "is-info",
-          })
-        return
-      }
+      // if (group.activeNodes < 1) {
+      //   this.$buefy.toast.open({
+      //       message: "This node group is inactive, so no information is available.",
+      //       type: "is-info",
+      //     })
+      //   return
+      // }
       const nodeGroup = group.nodeGroup
       this.$router.push({ path: `/mondat/group/${nodeGroup}` })
     },
